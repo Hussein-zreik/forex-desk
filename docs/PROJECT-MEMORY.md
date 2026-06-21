@@ -86,6 +86,25 @@ Forex Desk/
 - **Portfolio (50):** account stats, positions table, add-position form — localStorage + Yahoo live prices.
 - **Pattern:** most indicators **computed client-side from Yahoo OHLC**; a few datasets are **hardcoded static** (seasonality, session heatmap, rate differential).
 
+### App Shell & Pages — user's mental model 🖥️
+
+**Welcome page** (`Welcome.tsx`): an entry/splash screen with theme + description that conveys the whole project's idea (first impression before entering the app).
+
+**Landing = the app shell** seen on entering the web app:
+1. **Header** with **logo** ("Forex Desk").
+2. **Auto-updating clock** based on **user's location** (local time; distinct from the UTC-based Sessions widget).
+3. **Light / dark mode toggle**.
+4. **Header nav buttons** → pages built later: **Dashboard** (main), **Portfolio**, **Journal**, **Learn**, **Calendar**. *(User wrote "3 buttons" but listed 5 — treat as 5; confirm count in brainstorm.)*
+5. **News sidebar** (`Sidebar.tsx`) — **news source still to be discussed**.
+6. **Moving live ticker** under the header — live prices for FX pairs + crypto (the Live Price Ticker widget, #1).
+
+Maps to the proposed architecture: Header→`Navbar.tsx`, News→`Sidebar.tsx`, ticker→`TickerWidget`, pages→`pages/` (Welcome, Dashboard, Portfolio, Journal, Learning, Calendar).
+
+> **Logged for brainstorm (NOT resolved):**
+> - **Light mode vs dark-only design system.** `linear-modern.md` is spec'd as deep-space dark (ambient blobs, glows, near-black canvas). A real light mode means designing light variants of every signature effect — non-trivial. Confirm whether light mode is full-fidelity or a simpler high-contrast alternative.
+> - **Nav count** "3 vs 5" slip (above).
+> - **News source** for the sidebar (catalog already has gold RSS via rss2json — confirm whether the sidebar reuses those or needs a broader general-news source).
+
 ### Engineering Decisions (declared by user)
 
 | Decision | Detail |
@@ -144,6 +163,7 @@ Quick-reference DNA (do not paraphrase the file — these are reminders):
 | 2026-06-21 | **Engineering:** react-grid-layout (draggable/resizable widgets) + localStorage (client persistence). Frontend persistence question resolved → localStorage. |
 | 2026-06-21 | **Design system chosen: "Linear / Modern"** — cinematic dark dev-tool aesthetic, indigo `#5E6AD2` accent, layered ambient lighting, multi-layer shadows, expo-out micro-interactions. Saved verbatim to `docs/design-system/linear-modern.md`. Noted (not resolved) that this differs from ui-ux-pro-max's default fintech palette; user's explicit choice governs the visual language. |
 | 2026-06-21 | **50 widgets specified** → saved to `docs/widgets/widget-catalog.md` with full data-source map. Key finding: the `services/` proxy is a **Cloudflare Worker** (`forex-desk-proxy.zreik111.workers.dev`); architecture is **client-side PWA + CORS proxies + localStorage** with no SQL/Python required by the widgets. Data providers resolved (Yahoo, FRED, alternative.me, CBOE, RSS2JSON, MyFxBook/ForexFactory, Telegram, Coinbase, TradingView). Python/SQL role is now the top open question for the brainstorm. Telegram bot token + secrets must stay server-side in the Worker. |
+| 2026-06-21 | **App shell / Welcome + Landing layout described** (see §1): Welcome splash; header (logo, geo-clock, light/dark toggle, nav→Dashboard/Portfolio/Journal/Learn/Calendar), news sidebar, live ticker under header. Flags logged: light-mode vs dark-only design system, "3 vs 5" nav slip, news-source TBD. |
 
 ## 5. Open Questions / Parking Lot
 
