@@ -32,6 +32,7 @@
 | **superpowers** | ✅ Methodology loaded | Process framework. Flow: `brainstorming` → spec in `docs/superpowers/specs/` → `writing-plans` → plan in `docs/superpowers/plans/` → `executing-plans`/`subagent-driven-development`. Also TDD, systematic-debugging, verification-before-completion. |
 | **Context7** | ✅ Connected (MCP) | Live library/framework docs via `mcp__Context7__*`. Use before relying on memory for any library API. |
 | **claude-mem** | ❌ Not active | Hook-based + needs worker/Chroma/restart; local DB is ephemeral. Replaced by THIS file. |
+| **ruflow (claude-flow v3.5)** | ✅ Skills loaded | 72 skills incl. SPARC, Vibe Coding Academy, swarm patterns. MCP servers (ruv-swarm, flow-nexus) not active this session — methodology applied manually. Script: `~/.claude/plugins/marketplaces/ruflow/` |
 
 ## 3. Working Agreement
 
@@ -47,6 +48,7 @@
 |------|-----------------|
 | 2026-06-21 | Session start. User requested 4 tools: ui-ux-pro-max, superpowers, Context7, claude-mem. First three set up & usable; claude-mem replaced by this committed memory log due to ephemeral/hook constraints. |
 | 2026-06-21 | Standing by for project description. No planning/questions until user says go. |
+| 2026-06-21 | ruflow (ruvnet/claude-flow v3.5 fork) installed. Key additions: SPARC methodology (Spec→Pseudocode→Architecture→Refinement→Completion), Vibe Coding Academy 12 binding principles (plan-first, surgical changes, no blue/purple AI-slop UIs, push-to-branch when working, etc.), 72 skills including swarm/orchestration. MCP servers need restart to activate. |
 
 ## 5. Open Questions / Parking Lot
 
