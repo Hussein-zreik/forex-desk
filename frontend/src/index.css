@@ -186,6 +186,7 @@
   --animate-shimmer: shimmer 6s linear infinite;
   --animate-fade-up: fade-up 0.6s var(--ease-expo) both;
   --animate-scale-in: scale-in 0.6s var(--ease-expo) both;
+  --animate-ticker: ticker 60s linear infinite;
 }
 
 /* ---------------------------------------------------------------------------
@@ -223,6 +224,11 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
   }
 }
 

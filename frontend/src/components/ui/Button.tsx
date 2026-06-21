@@ -1,3 +1,4 @@
+import { Slot } from '@radix-ui/react-slot'
 import { forwardRef, type ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/cn'
 
@@ -25,16 +26,22 @@ const sizeStyles: Record<Size, string> = {
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant
   size?: Size
+  /** Render as the child element (e.g. a router Link) while keeping button styles. */
+  asChild?: boolean
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', type = 'button', ...props }, ref) => (
-    <button
-      ref={ref}
-      type={type}
-      className={cn(base, variantStyles[variant], sizeStyles[size], className)}
-      {...props}
-    />
-  ),
+  ({ className, variant = 'primary', size = 'md', asChild = false, type, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'button'
+    const typeProp = asChild ? {} : { type: type ?? 'button' }
+    return (
+      <Comp
+        ref={ref}
+        className={cn(base, variantStyles[variant], sizeStyles[size], className)}
+        {...typeProp}
+        {...props}
+      />
+    )
+  },
 )
 Button.displayName = 'Button'
