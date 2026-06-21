@@ -105,6 +105,11 @@ Maps to the proposed architecture: Header→`Navbar.tsx`, News→`Sidebar.tsx`, 
 > - **Nav count** "3 vs 5" slip (above).
 > - **News source** for the sidebar (catalog already has gold RSS via rss2json — confirm whether the sidebar reuses those or needs a broader general-news source).
 
+**Dashboard / widget-grid controls:**
+- **Edit button** → enters edit mode (react-grid-layout): **arrange, remove, and move** widgets (drag + resize); persists layout to localStorage. (Implies add-widget too.)
+- **Search bar** → *(scope to confirm: search/add widgets from the catalog, or a global symbol/data search? Assume widget search+add for now.)*
+- **Refresh button** → manual data refresh, **styled to the Linear/Modern theme** (accent glow, expo-out micro-interaction).
+
 ### Engineering Decisions (declared by user)
 
 | Decision | Detail |
@@ -164,6 +169,8 @@ Quick-reference DNA (do not paraphrase the file — these are reminders):
 | 2026-06-21 | **Design system chosen: "Linear / Modern"** — cinematic dark dev-tool aesthetic, indigo `#5E6AD2` accent, layered ambient lighting, multi-layer shadows, expo-out micro-interactions. Saved verbatim to `docs/design-system/linear-modern.md`. Noted (not resolved) that this differs from ui-ux-pro-max's default fintech palette; user's explicit choice governs the visual language. |
 | 2026-06-21 | **50 widgets specified** → saved to `docs/widgets/widget-catalog.md` with full data-source map. Key finding: the `services/` proxy is a **Cloudflare Worker** (`forex-desk-proxy.zreik111.workers.dev`); architecture is **client-side PWA + CORS proxies + localStorage** with no SQL/Python required by the widgets. Data providers resolved (Yahoo, FRED, alternative.me, CBOE, RSS2JSON, MyFxBook/ForexFactory, Telegram, Coinbase, TradingView). Python/SQL role is now the top open question for the brainstorm. Telegram bot token + secrets must stay server-side in the Worker. |
 | 2026-06-21 | **App shell / Welcome + Landing layout described** (see §1): Welcome splash; header (logo, geo-clock, light/dark toggle, nav→Dashboard/Portfolio/Journal/Learn/Calendar), news sidebar, live ticker under header. Flags logged: light-mode vs dark-only design system, "3 vs 5" nav slip, news-source TBD. |
+| 2026-06-21 | **Dashboard controls added:** edit mode (arrange/remove/move widgets via react-grid-layout), search bar, themed refresh button. |
+| 2026-06-21 | ▶️ **GO signal received** — user said "you can start making the plan." Transitioning from standby into the planning workflow (superpowers brainstorming → spec → writing-plans). Resolving parked blocking questions first. |
 
 ## 5. Open Questions / Parking Lot
 
