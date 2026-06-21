@@ -171,6 +171,10 @@ Quick-reference DNA (do not paraphrase the file — these are reminders):
 | 2026-06-21 | **App shell / Welcome + Landing layout described** (see §1): Welcome splash; header (logo, geo-clock, light/dark toggle, nav→Dashboard/Portfolio/Journal/Learn/Calendar), news sidebar, live ticker under header. Flags logged: light-mode vs dark-only design system, "3 vs 5" nav slip, news-source TBD. |
 | 2026-06-21 | **Dashboard controls added:** edit mode (arrange/remove/move widgets via react-grid-layout), search bar, themed refresh button. |
 | 2026-06-21 | ▶️ **GO signal received** — user said "you can start making the plan." Transitioning from standby into the planning workflow (superpowers brainstorming → spec → writing-plans). Resolving parked blocking questions first. |
+| 2026-06-21 | ✅ **4 blocking decisions answered.** (1) **Architecture = Python backend + SQL DB.** (2) Plan scope = user deferred to me → chose **phased / foundation-first**. (3) Light mode = **full-fidelity light + dark**. (4) **Cloudflare Worker DROPPED** — "forget the proxy, use Python+SQL." The Python backend now IS the data/proxy layer (proxy all upstream APIs, hold secrets, cache in SQL, WebSocket price push). |
+| 2026-06-21 | **My backend tech picks:** FastAPI + Pydantic + httpx (async proxy) + SQLAlchemy + Alembic; DB engine Postgres (prod) / SQLite (dev) via SQLAlchemy so it's swappable; WebSocket for live prices; APScheduler for upstream polling. |
+| 2026-06-21 | ✅ **2 more decisions:** Indicators = **hybrid** (heavy math server-side Python/pandas + cached; trivial calcs client-side). User data = **server-side from day one** (SQL source of truth → adds lightweight email+password+JWT auth; layout/journal/portfolio/alerts/eco-surprises all user-scoped in DB). |
+| 2026-06-21 | ✅ **PLAN APPROVED** (plan mode). Saved to `/root/.claude/plans/humming-wibbling-papert.md`. Monorepo `frontend/` (Vite+React+TS PWA) + `backend/` (FastAPI). 8 phases, foundation-first. **Now executing Phase 0** (monorepo + tooling + full light/dark Linear tokens + primitives + ambient bg + motion). |
 
 ## 5. Open Questions / Parking Lot
 
