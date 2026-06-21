@@ -72,9 +72,19 @@ Forex Desk/
 ```
 
 **Open architecture questions (do NOT resolve yet — for the brainstorm):**
-- Where do **Python + SQL** live? `services/` mentions a "proxy" — likely a separate backend (market-data proxy + journal/portfolio persistence). Not shown in this tree.
-- Data source / API provider for forex quotes & economic calendar (and is a backend proxy needed for API keys/CORS)?
-- ~~Persistence: localStorage vs SQL~~ → **Frontend persistence = localStorage** (confirmed; see Engineering). SQL/Python role still likely a server-side proxy — TBD.
+- ~~Where do Python + SQL live?~~ → **Sharpened:** the `services/` "proxy" is a **Cloudflare Worker** (`forex-desk-proxy.zreik111.workers.dev`), not a Python/SQL backend. The 50-widget catalog needs **no SQL DB / no Python server**. So **where TS/SQL/Python fit is now the single biggest open question.** Hypotheses (UNCONFIRMED): Python = data-pipeline scripts generating the static datasets (seasonality, session heatmap, rate differentials) and/or Cloudflare Python Workers; SQL = Cloudflare D1 caching layer. Park for brainstorm.
+- ~~Data provider?~~ → **Resolved:** Yahoo Finance (primary, via CF Worker), FRED, alternative.me, CBOE (scraped), RSS2JSON, MyFxBook/Babypips/ForexFactory, Telegram, Coinbase, TradingView iframe.
+- ~~Persistence?~~ → **Resolved:** localStorage (`fxdesk_journal_v1`, `fxdesk_portfolio_v1`, `fxdesk_eco_surprises_v1`) + react-grid-layout layout.
+- **New for brainstorm:** API-key handling & secrets (Telegram bot token, any keyed endpoints) — must live in the CF Worker, never in client bundle. CORS reliance on third-party proxies (codetabs, rss2json) = availability risk. Rate-limiting / caching strategy for Yahoo polling.
+
+### Widgets — full catalog saved 📋
+
+**50 widgets specified → [`docs/widgets/widget-catalog.md`](widgets/widget-catalog.md)** (every endpoint, symbol, and localStorage key). Includes a synthesized **Data Sources & Infrastructure** map.
+
+- **~38 dashboard widgets** (Ticker, Sessions, EUR/USD & Gold hero cards, DXY, Composite Bias gauge, MTF Confluence, SMC, Macro Regime, Real Yield, Fear & Greed, Options Sentiment, Eco Surprises, TradingView chart, News, Eco Calendar, Price Alerts→Telegram, Correlation, ETF Flow, Pivots, Volatility, Seasonality, Gold/Silver ratio, News Sentiment, Currency Strength, Crypto, Calculator, Event Countdown, Round Numbers, Key Levels, Session Heatmap, Hi-Lo Breakout, Spread, CB Calendar, …)
+- **Journal (39–49):** stats, entry form, analytics charts, CSV import/export — all localStorage.
+- **Portfolio (50):** account stats, positions table, add-position form — localStorage + Yahoo live prices.
+- **Pattern:** most indicators **computed client-side from Yahoo OHLC**; a few datasets are **hardcoded static** (seasonality, session heatmap, rate differential).
 
 ### Engineering Decisions (declared by user)
 
@@ -133,6 +143,7 @@ Quick-reference DNA (do not paraphrase the file — these are reminders):
 | 2026-06-21 | **App identified:** Forex Desk — a trader's companion PWA. **Proposed frontend architecture provided** (Vite + React Router + Shadcn + Zustand). 6 pages: Welcome, Dashboard (widgets), Calendar (news countdown), Portfolio (P&L), Journal (analytics), Learning. Real-time data via WebSocket; price-alert sounds. Backend (Python/SQL) location TBD. Full tree saved in §1. |
 | 2026-06-21 | **Engineering:** react-grid-layout (draggable/resizable widgets) + localStorage (client persistence). Frontend persistence question resolved → localStorage. |
 | 2026-06-21 | **Design system chosen: "Linear / Modern"** — cinematic dark dev-tool aesthetic, indigo `#5E6AD2` accent, layered ambient lighting, multi-layer shadows, expo-out micro-interactions. Saved verbatim to `docs/design-system/linear-modern.md`. Noted (not resolved) that this differs from ui-ux-pro-max's default fintech palette; user's explicit choice governs the visual language. |
+| 2026-06-21 | **50 widgets specified** → saved to `docs/widgets/widget-catalog.md` with full data-source map. Key finding: the `services/` proxy is a **Cloudflare Worker** (`forex-desk-proxy.zreik111.workers.dev`); architecture is **client-side PWA + CORS proxies + localStorage** with no SQL/Python required by the widgets. Data providers resolved (Yahoo, FRED, alternative.me, CBOE, RSS2JSON, MyFxBook/ForexFactory, Telegram, Coinbase, TradingView). Python/SQL role is now the top open question for the brainstorm. Telegram bot token + secrets must stay server-side in the Worker. |
 
 ## 5. Open Questions / Parking Lot
 
