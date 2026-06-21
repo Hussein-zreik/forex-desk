@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -5,13 +6,21 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.db.session import init_db
-from app.routers import auth
+from app.realtime.poller import poll_loop
+from app.routers import auth, market, ws
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    yield
+    poller_task: asyncio.Task | None = None
+    if settings.poller_enabled:
+        poller_task = asyncio.create_task(poll_loop())
+    try:
+        yield
+    finally:
+        if poller_task is not None:
+            poller_task.cancel()
 
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
@@ -24,8 +33,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 app.include_router(auth.router)
+app.include_router(market.router)
+app.include_router(ws.router)
 
 
 @app.get("/health")

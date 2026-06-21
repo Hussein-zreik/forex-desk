@@ -5,6 +5,7 @@ import tempfile
 _TMP = tempfile.mkdtemp()
 os.environ.setdefault("DATABASE_URL", f"sqlite+aiosqlite:///{_TMP}/test.db")
 os.environ.setdefault("JWT_SECRET", "test-secret")
+os.environ.setdefault("POLLER_ENABLED", "false")
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

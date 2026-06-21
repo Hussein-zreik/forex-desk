@@ -22,5 +22,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 days
 
+    # Live price poller
+    poller_enabled: bool = True
+    poller_interval_seconds: int = 8
+
 
 settings = Settings()
