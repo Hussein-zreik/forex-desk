@@ -1,4 +1,11 @@
 fastapi
 uvicorn[standard]
 pydantic-settings
+email-validator
 httpx
+sqlalchemy
+aiosqlite
+alembic
+bcrypt
+python-jose[cryptography]
+apscheduler
