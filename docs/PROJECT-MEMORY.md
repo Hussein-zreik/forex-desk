@@ -33,6 +33,49 @@
 
 > Implications to confirm later (NOT assumptions): React/JSX/Tailwind ⇒ web frontend; SQL + Python ⇒ a backend/data layer. Exact architecture, frameworks (Next.js? Vite? FastAPI/Flask/Django?), and DB engine still **undeclared** — wait for the user.
 
+### What the app is (emerging picture)
+
+**Forex Desk** — a Forex **trader's companion app**, built as an installable **PWA**. Real-time market data, a widget dashboard, an economic-news calendar with countdowns, a P&L portfolio, a trade journal with analytics, and a learning section.
+
+### Proposed Architecture (user-provided, "keep in mind")
+
+Frontend stack inferred from structure: **Vite** (`main.tsx` entry + `index.css`), **React Router** (`App.tsx` routing), **Shadcn/ui** (`components/ui/`), **Zustand** (stores), **PWA** (`manifest.json`).
+
+```
+Forex Desk/
+├── public/                      # Static assets, icons, manifest.json (PWA install)
+├── src/
+│   ├── assets/                  # Images, custom SVGs, sound effects for price alerts
+│   ├── components/              # Shared global UI components
+│   │   ├── ui/                  # Buttons, Dialogs, Cards (Shadcn components)
+│   │   ├── Navbar.tsx
+│   │   └── Sidebar.tsx
+│   ├── context/ or store/       # Zustand stores (useJournalStore.ts, useMarketData.ts)
+│   ├── hooks/                   # Custom hooks (useCountdown.ts, useLocalStorage.ts)
+│   ├── pages/                   # The 6 core pages
+│   │   ├── Welcome.tsx
+│   │   ├── Dashboard/           # Widget-based landing page
+│   │   │   ├── Dashboard.tsx
+│   │   │   └── widgets/         # TickerWidget, SessionClockWidget, FearGreedWidget
+│   │   ├── Calendar.tsx         # High-impact news countdown hero page
+│   │   ├── Portfolio.tsx        # P&L calculation with stale-data check
+│   │   ├── Journal.tsx          # Deep analytical database charts
+│   │   └── Learning.tsx
+│   ├── services/                # API integration + proxy communication
+│   │   ├── api.ts
+│   │   └── websocket.ts         # Real-time market data
+│   ├── utils/                   # Math helpers (session checking, pips calc)
+│   │   └── sessionCalc.ts
+│   ├── App.tsx                  # Root component with routing
+│   ├── main.tsx                 # Entry point
+│   └── index.css                # Global styles + Tailwind config
+```
+
+**Open architecture questions (do NOT resolve yet — for the brainstorm):**
+- Where do **Python + SQL** live? `services/` mentions a "proxy" — likely a separate backend (market-data proxy + journal/portfolio persistence). Not shown in this tree.
+- Data source / API provider for forex quotes & economic calendar (and is a backend proxy needed for API keys/CORS)?
+- Persistence: localStorage only (hook present) vs. SQL-backed server vs. both?
+
 ## 2. Environment & Tooling
 
 > ⚠️ **Ephemeral caveat:** Everything cloned into `~/.claude/plugins/marketplaces/`
@@ -64,6 +107,7 @@
 | 2026-06-21 | Standing by for project description. No planning/questions until user says go. |
 | 2026-06-21 | ruflow (ruvnet/claude-flow v3.5 fork) installed. Key additions: SPARC methodology (Spec→Pseudocode→Architecture→Refinement→Completion), Vibe Coding Academy 12 binding principles (plan-first, surgical changes, no blue/purple AI-slop UIs, push-to-branch when working, etc.), 72 skills including swarm/orchestration. MCP servers need restart to activate. |
 | 2026-06-21 | **Tech stack declared:** TypeScript, SQL, React, JSX, Tailwind (utility + custom animations), JSON, SVG, Python. Architecture/frameworks/DB engine not yet specified. |
+| 2026-06-21 | **App identified:** Forex Desk — a trader's companion PWA. **Proposed frontend architecture provided** (Vite + React Router + Shadcn + Zustand). 6 pages: Welcome, Dashboard (widgets), Calendar (news countdown), Portfolio (P&L), Journal (analytics), Learning. Real-time data via WebSocket; price-alert sounds. Backend (Python/SQL) location TBD. Full tree saved in §1. |
 
 ## 5. Open Questions / Parking Lot
 
