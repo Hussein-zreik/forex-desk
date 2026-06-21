@@ -74,7 +74,30 @@ Forex Desk/
 **Open architecture questions (do NOT resolve yet — for the brainstorm):**
 - Where do **Python + SQL** live? `services/` mentions a "proxy" — likely a separate backend (market-data proxy + journal/portfolio persistence). Not shown in this tree.
 - Data source / API provider for forex quotes & economic calendar (and is a backend proxy needed for API keys/CORS)?
-- Persistence: localStorage only (hook present) vs. SQL-backed server vs. both?
+- ~~Persistence: localStorage vs SQL~~ → **Frontend persistence = localStorage** (confirmed; see Engineering). SQL/Python role still likely a server-side proxy — TBD.
+
+### Engineering Decisions (declared by user)
+
+| Decision | Detail |
+|----------|--------|
+| **react-grid-layout** | Dashboard widgets are **draggable & resizable**. The Dashboard is a customizable widget grid (TickerWidget, SessionClockWidget, FearGreedWidget, …). |
+| **localStorage** | Client-side persistence — widget layout, journal entries, portfolio, prefs. (Matches `useLocalStorage.ts` hook.) Implies an offline-capable, client-heavy PWA. |
+
+### Design System — "Linear / Modern" 🎨
+
+**Full spec saved verbatim → [`docs/design-system/linear-modern.md`](design-system/linear-modern.md). Follow it exactly.**
+
+Quick-reference DNA (do not paraphrase the file — these are reminders):
+- **Aesthetic:** premium dev-tool / cinematic dark (Linear, Vercel, Raycast). Dark but not oppressive.
+- **Colors:** canvas `#050506` (never pure black), text `#EDEDEF`, muted `#8A8F98`, single accent **indigo `#5E6AD2`** (+ `#6872D9` hover). Surfaces = translucent white 5-8%.
+- **Background:** layered — base radial gradient + SVG noise (0.015) + animated blurred blobs + 64px grid (0.02). Never flat.
+- **Type:** Inter / Geist Sans; gradient-fill headlines; mono `tracking-widest` labels.
+- **Depth:** multi-layer shadows (border highlight + diffuse + accent glow); mouse-tracking spotlights; rounded-2xl cards.
+- **Motion:** 200-300ms, **expo-out `[0.16,1,0.3,1]`**, tiny 4-8px moves, no bounce. Respect `prefers-reduced-motion`.
+- **Layout:** asymmetric bento grids (varied col-spans), generous spacing (`py-24`→`py-32`).
+- **Signature musts:** ambient blobs, spotlights, gradient text, multi-layer shadows, parallax, precision micro-interactions.
+
+> **Note on a tool tension (for the brainstorm, NOT a pushback):** `ui-ux-pro-max`'s default fintech recommendation leans gold + "avoid AI purple/pink gradients." The user has **deliberately** chosen the Linear/indigo system — a high-craft, intentional aesthetic, the opposite of generic AI-slop gradients. **User's explicit choice wins.** I'll use `ui-ux-pro-max` for accessibility/UX rules and chart guidance, but the *visual language* is Linear/Modern.
 
 ## 2. Environment & Tooling
 
@@ -108,6 +131,8 @@ Forex Desk/
 | 2026-06-21 | ruflow (ruvnet/claude-flow v3.5 fork) installed. Key additions: SPARC methodology (Spec→Pseudocode→Architecture→Refinement→Completion), Vibe Coding Academy 12 binding principles (plan-first, surgical changes, no blue/purple AI-slop UIs, push-to-branch when working, etc.), 72 skills including swarm/orchestration. MCP servers need restart to activate. |
 | 2026-06-21 | **Tech stack declared:** TypeScript, SQL, React, JSX, Tailwind (utility + custom animations), JSON, SVG, Python. Architecture/frameworks/DB engine not yet specified. |
 | 2026-06-21 | **App identified:** Forex Desk — a trader's companion PWA. **Proposed frontend architecture provided** (Vite + React Router + Shadcn + Zustand). 6 pages: Welcome, Dashboard (widgets), Calendar (news countdown), Portfolio (P&L), Journal (analytics), Learning. Real-time data via WebSocket; price-alert sounds. Backend (Python/SQL) location TBD. Full tree saved in §1. |
+| 2026-06-21 | **Engineering:** react-grid-layout (draggable/resizable widgets) + localStorage (client persistence). Frontend persistence question resolved → localStorage. |
+| 2026-06-21 | **Design system chosen: "Linear / Modern"** — cinematic dark dev-tool aesthetic, indigo `#5E6AD2` accent, layered ambient lighting, multi-layer shadows, expo-out micro-interactions. Saved verbatim to `docs/design-system/linear-modern.md`. Noted (not resolved) that this differs from ui-ux-pro-max's default fintech palette; user's explicit choice governs the visual language. |
 
 ## 5. Open Questions / Parking Lot
 
