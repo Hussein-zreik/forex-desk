@@ -19,6 +19,20 @@
 - **Working branch:** `claude/kind-hawking-ine4zt`
 - **Description:** _TBD — user is describing requirements across several prompts. Do not plan or ask questions until the user says "go"._
 
+### Tech Stack (declared by user)
+
+| Language / Tool | Role (as understood so far) |
+|-----------------|------------------------------|
+| **TypeScript** | Primary application language (type-safe JS) |
+| **React + JSX** | UI component framework |
+| **Tailwind CSS** | Styling — utility-class syntax **+ custom animations** |
+| **SQL** | Relational database / queries |
+| **Python** | (role TBD — backend, data, or scripting) |
+| **JSON** | Config / data interchange |
+| **SVG** | Vector graphics / icons |
+
+> Implications to confirm later (NOT assumptions): React/JSX/Tailwind ⇒ web frontend; SQL + Python ⇒ a backend/data layer. Exact architecture, frameworks (Next.js? Vite? FastAPI/Flask/Django?), and DB engine still **undeclared** — wait for the user.
+
 ## 2. Environment & Tooling
 
 > ⚠️ **Ephemeral caveat:** Everything cloned into `~/.claude/plugins/marketplaces/`
@@ -49,6 +63,7 @@
 | 2026-06-21 | Session start. User requested 4 tools: ui-ux-pro-max, superpowers, Context7, claude-mem. First three set up & usable; claude-mem replaced by this committed memory log due to ephemeral/hook constraints. |
 | 2026-06-21 | Standing by for project description. No planning/questions until user says go. |
 | 2026-06-21 | ruflow (ruvnet/claude-flow v3.5 fork) installed. Key additions: SPARC methodology (Spec→Pseudocode→Architecture→Refinement→Completion), Vibe Coding Academy 12 binding principles (plan-first, surgical changes, no blue/purple AI-slop UIs, push-to-branch when working, etc.), 72 skills including swarm/orchestration. MCP servers need restart to activate. |
+| 2026-06-21 | **Tech stack declared:** TypeScript, SQL, React, JSX, Tailwind (utility + custom animations), JSON, SVG, Python. Architecture/frameworks/DB engine not yet specified. |
 
 ## 5. Open Questions / Parking Lot
 
