@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.session import init_db
 from app.realtime.poller import poll_loop
-from app.routers import auth, market, ws
+from app.routers import auth, layout, market, widgets, ws
 
 
 @asynccontextmanager
@@ -35,6 +35,8 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(market.router)
+app.include_router(widgets.router)
+app.include_router(layout.router)
 app.include_router(ws.router)
 
 

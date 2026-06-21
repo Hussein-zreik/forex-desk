@@ -12,6 +12,17 @@ async def fetch_chart(symbol: str) -> dict:
         return resp.json()
 
 
+async def fetch_ohlc(symbol: str, interval: str = "1d", range_: str = "6mo") -> dict:
+    """Fetch a historical OHLC series for a symbol."""
+    async with httpx.AsyncClient(timeout=10, headers=_HEADERS) as client:
+        resp = await client.get(
+            CHART_URL.format(symbol=symbol),
+            params={"interval": interval, "range": range_},
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+
 def normalize_quote(symbol: str, data: dict) -> dict:
     """Reduce a Yahoo chart payload to a compact quote."""
     meta = data["chart"]["result"][0]["meta"]
@@ -30,3 +41,10 @@ def normalize_quote(symbol: str, data: dict) -> dict:
         "currency": meta.get("currency"),
         "marketTime": meta.get("regularMarketTime"),
     }
+
+
+def extract_closes(data: dict) -> list[float]:
+    """Extract the non-null close series from an OHLC payload."""
+    result = data["chart"]["result"][0]
+    closes = result["indicators"]["quote"][0]["close"]
+    return [c for c in closes if c is not None]
