@@ -1,8 +1,15 @@
 import { type ReactNode } from 'react'
 import { BiasWidget } from './BiasWidget'
+import { CryptoWidget } from './CryptoWidget'
 import { FearGreedWidget } from './FearGreedWidget'
+import { GoldCalculatorWidget } from './GoldCalculatorWidget'
+import { GoldSilverRatioWidget } from './GoldSilverRatioWidget'
+import { PivotsWidget } from './PivotsWidget'
 import { QuoteCardWidget } from './QuoteCardWidget'
+import { RoundNumbersWidget } from './RoundNumbersWidget'
 import { SessionsWidget } from './SessionsWidget'
+import { TradingViewWidget } from './TradingViewWidget'
+import { VolatilityWidget } from './VolatilityWidget'
 
 export interface WidgetCtx {
   editMode: boolean
@@ -80,6 +87,76 @@ export const WIDGETS: Record<string, WidgetDef> = {
     minW: 3,
     minH: 4,
     render: (c) => <BiasWidget {...c} />,
+  },
+  pivots: {
+    type: 'pivots',
+    title: 'Pivot Points',
+    category: 'Levels',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <PivotsWidget {...c} />,
+  },
+  volatility: {
+    type: 'volatility',
+    title: 'Volatility Range',
+    category: 'Signals',
+    w: 3,
+    h: 4,
+    minW: 2,
+    minH: 4,
+    render: (c) => <VolatilityWidget {...c} />,
+  },
+  goldSilver: {
+    type: 'goldSilver',
+    title: 'Gold / Silver Ratio',
+    category: 'Metals',
+    w: 3,
+    h: 4,
+    minW: 2,
+    minH: 3,
+    render: (c) => <GoldSilverRatioWidget {...c} />,
+  },
+  crypto: {
+    type: 'crypto',
+    title: 'Crypto Prices',
+    category: 'Quotes',
+    w: 4,
+    h: 5,
+    minW: 3,
+    minH: 4,
+    render: (c) => <CryptoWidget {...c} />,
+  },
+  roundNumbers: {
+    type: 'roundNumbers',
+    title: 'Round Numbers',
+    category: 'Levels',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <RoundNumbersWidget {...c} />,
+  },
+  calculator: {
+    type: 'calculator',
+    title: 'Gold Calculator',
+    category: 'Tools',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <GoldCalculatorWidget {...c} />,
+  },
+  tradingView: {
+    type: 'tradingView',
+    title: 'Live Chart',
+    category: 'Charts',
+    w: 6,
+    h: 7,
+    minW: 4,
+    minH: 5,
+    render: (c) => <TradingViewWidget {...c} />,
   },
 }
 

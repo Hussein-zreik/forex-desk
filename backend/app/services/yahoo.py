@@ -48,3 +48,18 @@ def extract_closes(data: dict) -> list[float]:
     result = data["chart"]["result"][0]
     closes = result["indicators"]["quote"][0]["close"]
     return [c for c in closes if c is not None]
+
+
+def extract_candles(data: dict) -> list[dict]:
+    """Extract non-null OHLC candles from a chart payload."""
+    quote = data["chart"]["result"][0]["indicators"]["quote"][0]
+    opens = quote.get("open") or []
+    highs = quote.get("high") or []
+    lows = quote.get("low") or []
+    closes = quote.get("close") or []
+    candles: list[dict] = []
+    for o, h, low, c in zip(opens, highs, lows, closes, strict=False):
+        if None in (o, h, low, c):
+            continue
+        candles.append({"o": o, "h": h, "l": low, "c": c})
+    return candles
