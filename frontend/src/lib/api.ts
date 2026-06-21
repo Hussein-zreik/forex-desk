@@ -34,7 +34,12 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     let detail = res.statusText
     try {
       const body = await res.json()
-      detail = body.detail ?? detail
+      if (typeof body.detail === 'string') {
+        detail = body.detail
+      } else if (Array.isArray(body.detail) && body.detail[0]?.msg) {
+        // FastAPI validation errors: detail is a list of {loc, msg, ...}
+        detail = body.detail[0].msg
+      }
     } catch {
       // non-JSON error body
     }
