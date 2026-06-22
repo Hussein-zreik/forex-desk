@@ -1,18 +1,22 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from '@/components/AppLayout'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { RouteFallback } from '@/components/RouteFallback'
 import { setOnUnauthorized } from '@/lib/api'
-import Calendar from '@/pages/Calendar'
-import Dashboard from '@/pages/Dashboard/Dashboard'
-import Journal from '@/pages/Journal'
-import Learning from '@/pages/Learning'
-import Portfolio from '@/pages/Portfolio'
-import Welcome from '@/pages/Welcome'
-import Login from '@/pages/auth/Login'
-import Register from '@/pages/auth/Register'
 import { useAuth } from '@/store/useAuth'
 import { useSettings } from '@/store/useSettings'
+
+// Route-level code splitting: each page (and its heavy deps such as
+// recharts and react-grid-layout) loads on demand.
+const Welcome = lazy(() => import('@/pages/Welcome'))
+const Login = lazy(() => import('@/pages/auth/Login'))
+const Register = lazy(() => import('@/pages/auth/Register'))
+const Dashboard = lazy(() => import('@/pages/Dashboard/Dashboard'))
+const Portfolio = lazy(() => import('@/pages/Portfolio'))
+const Journal = lazy(() => import('@/pages/Journal'))
+const Learning = lazy(() => import('@/pages/Learning'))
+const Calendar = lazy(() => import('@/pages/Calendar'))
 
 function App() {
   const theme = useSettings((s) => s.theme)
@@ -26,21 +30,23 @@ function App() {
   }, [])
 
   return (
-    <Routes>
-      <Route path="/" element={<Welcome />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route element={<ProtectedRoute />}>
-        <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="/journal" element={<Journal />} />
-          <Route path="/learn" element={<Learning />} />
-          <Route path="/calendar" element={<Calendar />} />
+    <Suspense fallback={<RouteFallback />}>
+      <Routes>
+        <Route path="/" element={<Welcome />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/journal" element={<Journal />} />
+            <Route path="/learn" element={<Learning />} />
+            <Route path="/calendar" element={<Calendar />} />
+          </Route>
         </Route>
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   )
 }
 
