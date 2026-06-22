@@ -6,6 +6,7 @@ from app.db.session import get_db
 from app.indicators.bias import composite_bias
 from app.indicators.smc import smc
 from app.indicators.technical import atr, key_levels, pearson, pivot_points, returns
+from app.services import calendar as cal_svc
 from app.services import fred, news, sentiment, yahoo
 from app.services.cache import get_cached
 from app.services.market import get_quote
@@ -234,6 +235,15 @@ async def correlation(symbols: str = Query(...), db: AsyncSession = Depends(get_
                 row.append(None)
         matrix.append(row)
     return {"symbols": syms, "matrix": matrix}
+
+
+@router.get("/calendar")
+async def calendar(db: AsyncSession = Depends(get_db)) -> dict:
+    try:
+        raw = await get_cached(db, "calendar:thisweek", 3600, cal_svc.fetch_calendar)
+        return {"events": cal_svc.normalize_calendar(raw)}
+    except (httpx.HTTPError, KeyError, ValueError, TypeError):
+        return {"events": [], "error": "unavailable"}
 
 
 @router.get("/etf-flow")

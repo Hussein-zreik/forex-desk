@@ -249,6 +249,28 @@ def test_correlation_matrix(client, monkeypatch):
     assert -1.0 <= body["matrix"][0][1] <= 1.0
 
 
+def test_calendar(client, monkeypatch):
+    sample = [
+        {
+            "title": "Non-Farm Employment Change",
+            "country": "USD",
+            "date": "2026-07-03T12:30:00-04:00",
+            "impact": "High",
+            "forecast": "180K",
+            "previous": "200K",
+        }
+    ]
+
+    async def fake_calendar():
+        return sample
+
+    monkeypatch.setattr("app.services.calendar.fetch_calendar", fake_calendar)
+    body = client.get("/api/calendar").json()
+    assert len(body["events"]) == 1
+    assert body["events"][0]["currency"] == "USD"
+    assert body["events"][0]["impact"] == "high"
+
+
 def test_etf_flow(client, monkeypatch):
     vols = [1000.0] * 20 + [2000.0]
     ohlc = {
