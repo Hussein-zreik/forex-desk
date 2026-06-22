@@ -35,7 +35,20 @@ Then open **http://localhost:5173** and create an account on the Welcome screen.
 Live market data flows automatically (your machine has normal internet access).
 Stop with `Ctrl+C`; reset data with `docker compose down`.
 
-### Option B — two terminals (no Docker)
+### Option B — one command, no Docker
+
+Needs Python 3.11+ and Node 18+. The script sets up the virtualenv, installs
+dependencies on first run, launches both servers, and stops both on `Ctrl+C`.
+
+```bash
+git clone https://github.com/hussein-zreik/forex-desk
+cd forex-desk
+./dev.sh
+```
+
+Then open **http://localhost:5173**. (On Windows, run it from Git Bash or WSL.)
+
+### Option C — two terminals (manual)
 
 Needs Python 3.11+ and Node 18+.
 
