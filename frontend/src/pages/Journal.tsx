@@ -1,5 +1,5 @@
 import { Trash2 } from 'lucide-react'
-import { useRef, useState, type FormEvent } from 'react'
+import { useMemo, useRef, useState, type FormEvent } from 'react'
 import {
   Area,
   AreaChart,
@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { useVirtualRows } from '@/hooks/useVirtualRows'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -77,11 +78,24 @@ function BarPanel({ title, data, xKey }: { title: string; data: { pnl: number }[
   )
 }
 
+const ROW_H = 48
+const VIRT_THRESHOLD = 40
+
 export default function Journal() {
   const { data, refresh } = useWidgetData<JournalEntry[]>(() => api('/api/journal'), [])
-  const entries = data ?? []
+  const entries = useMemo(() => data ?? [], [data])
   const stats = summarize(entries)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // Newest first; virtualize only once the list is long enough to matter.
+  const rows = useMemo(() => [...entries].reverse(), [entries])
+  const tableRef = useRef<HTMLDivElement>(null)
+  const virtualize = rows.length > VIRT_THRESHOLD
+  const { start, end, topPad, bottomPad } = useVirtualRows(tableRef, {
+    count: rows.length,
+    rowHeight: ROW_H,
+  })
+  const visibleRows = virtualize ? rows.slice(start, end) : rows
 
   const [form, setForm] = useState({
     symbol: 'XAU=F',
@@ -254,55 +268,80 @@ export default function Journal() {
         <BarPanel title="By Weekday" data={byWeekday(entries)} xKey="day" />
       </div>
 
-      <Card className="overflow-x-auto p-0">
+      <Card className="p-0">
         {entries.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">No trades logged yet.</div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                <th className="p-3 font-medium">Date</th>
-                <th className="p-3 font-medium">Symbol</th>
-                <th className="p-3 font-medium">Dir</th>
-                <th className="p-3 text-right font-medium">P&L</th>
-                <th className="p-3 font-medium">Session</th>
-                <th className="p-3 font-medium">Mistake</th>
-                <th className="p-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {[...entries].reverse().map((e) => (
-                <tr key={e.id} className="border-b border-border/50 last:border-0">
-                  <td className="p-3 tabular-nums">{e.traded_on}</td>
-                  <td className="p-3 font-medium">{e.symbol}</td>
-                  <td className={cn('p-3', e.direction === 'LONG' ? 'text-up' : 'text-down')}>
-                    {e.direction}
-                  </td>
-                  <td
-                    className={cn(
-                      'p-3 text-right font-medium tabular-nums',
-                      e.pnl >= 0 ? 'text-up' : 'text-down',
-                    )}
-                  >
-                    {e.pnl >= 0 ? '+' : ''}
-                    {money(e.pnl)}
-                  </td>
-                  <td className="p-3 text-muted-foreground">{e.session || '—'}</td>
-                  <td className="p-3 text-muted-foreground">{e.mistake || '—'}</td>
-                  <td className="p-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => remove(e.id)}
-                      className="text-muted-foreground hover:text-destructive"
-                      aria-label="Delete entry"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </td>
+          <div ref={tableRef} className={cn('overflow-auto', virtualize && 'max-h-[34rem]')}>
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 z-10 bg-surface">
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                  <th className="p-3 font-medium">Date</th>
+                  <th className="p-3 font-medium">Symbol</th>
+                  <th className="p-3 font-medium">Dir</th>
+                  <th className="p-3 text-right font-medium">P&L</th>
+                  <th className="p-3 font-medium">Session</th>
+                  <th className="p-3 font-medium">Mistake</th>
+                  <th className="p-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {virtualize && topPad > 0 && (
+                  <tr aria-hidden style={{ height: topPad }}>
+                    <td colSpan={7} />
+                  </tr>
+                )}
+                {visibleRows.map((e) => (
+                  <tr
+                    key={e.id}
+                    style={{ height: ROW_H }}
+                    className="border-b border-border/50 last:border-0"
+                  >
+                    <td className="p-3 whitespace-nowrap tabular-nums">{e.traded_on}</td>
+                    <td className="p-3 font-medium whitespace-nowrap">{e.symbol}</td>
+                    <td
+                      className={cn(
+                        'p-3 whitespace-nowrap',
+                        e.direction === 'LONG' ? 'text-up' : 'text-down',
+                      )}
+                    >
+                      {e.direction}
+                    </td>
+                    <td
+                      className={cn(
+                        'p-3 text-right font-medium whitespace-nowrap tabular-nums',
+                        e.pnl >= 0 ? 'text-up' : 'text-down',
+                      )}
+                    >
+                      {e.pnl >= 0 ? '+' : ''}
+                      {money(e.pnl)}
+                    </td>
+                    <td className="p-3 whitespace-nowrap text-muted-foreground">
+                      {e.session || '—'}
+                    </td>
+                    <td className="max-w-[12rem] truncate p-3 text-muted-foreground">
+                      {e.mistake || '—'}
+                    </td>
+                    <td className="p-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => remove(e.id)}
+                        className="text-muted-foreground hover:text-destructive"
+                        aria-label="Delete entry"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {virtualize && bottomPad > 0 && (
+                  <tr aria-hidden style={{ height: bottomPad }}>
+                    <td colSpan={7} />
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
     </div>

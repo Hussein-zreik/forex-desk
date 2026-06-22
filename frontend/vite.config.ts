@@ -41,6 +41,21 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api/, /^\/ws/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
+        runtimeCaching: [
+          {
+            // Last-known data for GET API reads, so the installed app stays
+            // usable offline. Fresh when online (5s network race), cached fallback otherwise.
+            urlPattern: ({ url, request }) =>
+              request.method === 'GET' && url.pathname.startsWith('/api/'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'fxdesk-api',
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],
