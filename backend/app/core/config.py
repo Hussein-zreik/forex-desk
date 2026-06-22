@@ -26,5 +26,9 @@ class Settings(BaseSettings):
     poller_enabled: bool = True
     poller_interval_seconds: int = 8
 
+    # Telegram price-alert delivery (optional)
+    telegram_bot_token: str = ""
+    telegram_chat_id: str = ""
+
 
 settings = Settings()

@@ -2,6 +2,9 @@ import { type ReactNode } from 'react'
 import { BiasWidget } from './BiasWidget'
 import { CBCalendarWidget } from './CBCalendarWidget'
 import { CorrelationWidget } from './CorrelationWidget'
+import { EcoSurprisesWidget } from './EcoSurprisesWidget'
+import { EventCountdownWidget } from './EventCountdownWidget'
+import { PriceAlertsWidget } from './PriceAlertsWidget'
 import { ETFFlowWidget } from './ETFFlowWidget'
 import { SMCWidget } from './SMCWidget'
 import { SpreadWidget } from './SpreadWidget'
@@ -343,6 +346,36 @@ export const WIDGETS: Record<string, WidgetDef> = {
     minW: 2,
     minH: 3,
     render: (c) => <CBCalendarWidget {...c} />,
+  },
+  ecoSurprises: {
+    type: 'ecoSurprises',
+    title: 'Eco Surprises',
+    category: 'Macro',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <EcoSurprisesWidget {...c} />,
+  },
+  priceAlerts: {
+    type: 'priceAlerts',
+    title: 'Price Alerts',
+    category: 'Tools',
+    w: 4,
+    h: 5,
+    minW: 3,
+    minH: 4,
+    render: (c) => <PriceAlertsWidget {...c} />,
+  },
+  eventCountdown: {
+    type: 'eventCountdown',
+    title: 'Event Countdown',
+    category: 'Macro',
+    w: 3,
+    h: 4,
+    minW: 2,
+    minH: 3,
+    render: (c) => <EventCountdownWidget {...c} />,
   },
 }
 
