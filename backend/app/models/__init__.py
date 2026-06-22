@@ -1,4 +1,5 @@
 from app.models.dashboard import DashboardLayout
+from app.models.journal import JournalEntry
 from app.models.market import DataCache, QuoteCache
 from app.models.portfolio import Position
 from app.models.user import User
@@ -12,4 +13,5 @@ __all__ = [
     "EcoSurprise",
     "PriceAlert",
     "Position",
+    "JournalEntry",
 ]

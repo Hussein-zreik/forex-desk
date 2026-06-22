@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.session import init_db
 from app.realtime.poller import poll_loop
-from app.routers import auth, layout, market, portfolio, userdata, widgets, ws
+from app.routers import auth, journal, layout, market, portfolio, userdata, widgets, ws
 
 
 @asynccontextmanager
@@ -39,6 +39,7 @@ app.include_router(widgets.router)
 app.include_router(layout.router)
 app.include_router(userdata.router)
 app.include_router(portfolio.router)
+app.include_router(journal.router)
 app.include_router(ws.router)
 
 
