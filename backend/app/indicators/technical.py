@@ -23,3 +23,22 @@ def atr(candles: list[dict], period: int = 14) -> float | None:
         low = candles[i]["l"]
         trs.append(max(high - low, abs(high - prev_close), abs(low - prev_close)))
     return sum(trs[-period:]) / period
+
+
+def key_levels(candles: list[dict], price: float, lookback: int = 3, count: int = 3) -> dict:
+    """Detect swing-high resistances above price and swing-low supports below."""
+    resistance: set[float] = set()
+    support: set[float] = set()
+    n = len(candles)
+    for i in range(lookback, n - lookback):
+        window = range(i - lookback, i + lookback + 1)
+        high = candles[i]["h"]
+        low = candles[i]["l"]
+        if all(high >= candles[j]["h"] for j in window) and high > price:
+            resistance.add(round(high, 2))
+        if all(low <= candles[j]["l"] for j in window) and low < price:
+            support.add(round(low, 2))
+    return {
+        "resistance": sorted(resistance)[:count],
+        "support": sorted(support, reverse=True)[:count],
+    }

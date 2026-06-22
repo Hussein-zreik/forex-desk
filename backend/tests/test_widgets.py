@@ -128,6 +128,76 @@ def test_real_yield(client, monkeypatch):
     assert len(body["history"]) == 3
 
 
+def test_mtf_all_bullish(client, monkeypatch):
+    closes = [float(x) for x in range(100, 160)]
+    ohlc = {"chart": {"result": [{"indicators": {"quote": [{"close": closes}]}}]}}
+
+    async def fake_ohlc(symbol, interval="1d", range_="6mo"):
+        return ohlc
+
+    monkeypatch.setattr("app.services.yahoo.fetch_ohlc", fake_ohlc)
+    body = client.get("/api/indicators/mtf", params={"symbol": "XAU=F"}).json()
+    assert body["overall"] == "BULLISH"
+    assert len(body["timeframes"]) == 3
+    assert all(t["label"] == "BULLISH" for t in body["timeframes"])
+
+
+def test_hilo_breakout_up(client, monkeypatch):
+    ohlc = {
+        "chart": {
+            "result": [
+                {
+                    "indicators": {
+                        "quote": [
+                            {
+                                "open": [100.0] * 20 + [150.0],
+                                "high": [101.0] * 20 + [201.0],
+                                "low": [99.0] * 20 + [150.0],
+                                "close": [100.0] * 20 + [200.0],
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+    async def fake_ohlc(symbol, interval="1d", range_="6mo"):
+        return ohlc
+
+    monkeypatch.setattr("app.services.yahoo.fetch_ohlc", fake_ohlc)
+    body = client.get("/api/indicators/hilo", params={"symbol": "GBPUSD=X", "days": 20}).json()
+    assert body["status"] == "breakout-up"
+    assert body["price"] == 200.0
+
+
+def test_key_levels(client, monkeypatch):
+    n = 15
+    highs = [100.0 + (10 if i == 7 else 0) for i in range(n)]
+    lows = [90.0 - (10 if i == 3 else 0) for i in range(n)]
+    closes = [95.0] * n
+    ohlc = {
+        "chart": {
+            "result": [
+                {
+                    "indicators": {
+                        "quote": [{"open": closes, "high": highs, "low": lows, "close": closes}]
+                    }
+                }
+            ]
+        }
+    }
+
+    async def fake_ohlc(symbol, interval="1d", range_="6mo"):
+        return ohlc
+
+    monkeypatch.setattr("app.services.yahoo.fetch_ohlc", fake_ohlc)
+    body = client.get("/api/indicators/key-levels", params={"symbol": "EURUSD=X"}).json()
+    assert body["price"] == 95.0
+    assert 110.0 in body["resistance"]
+    assert 80.0 in body["support"]
+
+
 def test_macro_regime_risk_on(client, monkeypatch):
     vix_chart = {
         "chart": {"result": [{"meta": {"regularMarketPrice": 12.5, "chartPreviousClose": 13.0}}]}

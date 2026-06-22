@@ -1,5 +1,12 @@
 import { type ReactNode } from 'react'
 import { BiasWidget } from './BiasWidget'
+import { CurrencyStrengthWidget } from './CurrencyStrengthWidget'
+import { HiLoWidget } from './HiLoWidget'
+import { KeyLevelsWidget } from './KeyLevelsWidget'
+import { MTFWidget } from './MTFWidget'
+import { RateDifferentialWidget } from './RateDifferentialWidget'
+import { SeasonalityWidget } from './SeasonalityWidget'
+import { SessionHeatmapWidget } from './SessionHeatmapWidget'
 import { CryptoWidget } from './CryptoWidget'
 import { FearGreedWidget } from './FearGreedWidget'
 import { GoldCalculatorWidget } from './GoldCalculatorWidget'
@@ -201,6 +208,76 @@ export const WIDGETS: Record<string, WidgetDef> = {
     minW: 2,
     minH: 3,
     render: (c) => <MacroRegimeWidget {...c} />,
+  },
+  mtf: {
+    type: 'mtf',
+    title: 'MTF Confluence',
+    category: 'Signals',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <MTFWidget {...c} />,
+  },
+  hilo: {
+    type: 'hilo',
+    title: 'Hi-Lo Breakout',
+    category: 'Signals',
+    w: 3,
+    h: 4,
+    minW: 2,
+    minH: 4,
+    render: (c) => <HiLoWidget {...c} />,
+  },
+  keyLevels: {
+    type: 'keyLevels',
+    title: 'Key Levels',
+    category: 'Levels',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <KeyLevelsWidget {...c} />,
+  },
+  currencyStrength: {
+    type: 'currencyStrength',
+    title: 'Currency Strength',
+    category: 'Market',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <CurrencyStrengthWidget {...c} />,
+  },
+  seasonality: {
+    type: 'seasonality',
+    title: 'Gold Seasonality',
+    category: 'Macro',
+    w: 4,
+    h: 4,
+    minW: 3,
+    minH: 3,
+    render: (c) => <SeasonalityWidget {...c} />,
+  },
+  sessionHeatmap: {
+    type: 'sessionHeatmap',
+    title: 'Session Heatmap',
+    category: 'Market',
+    w: 4,
+    h: 4,
+    minW: 3,
+    minH: 3,
+    render: (c) => <SessionHeatmapWidget {...c} />,
+  },
+  rateDifferential: {
+    type: 'rateDifferential',
+    title: 'Rate Differential',
+    category: 'Macro',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <RateDifferentialWidget {...c} />,
   },
 }
 

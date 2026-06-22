@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.indicators.bias import composite_bias
-from app.indicators.technical import atr, pivot_points
+from app.indicators.technical import atr, key_levels, pivot_points
 from app.services import fred, news, sentiment, yahoo
 from app.services.cache import get_cached
 from app.services.market import get_quote
@@ -129,3 +129,69 @@ async def macro_regime(db: AsyncSession = Depends(get_db)) -> dict:
         return {"regime": regime, "vix": vix, "realYield": real}
     except (httpx.HTTPError, KeyError, IndexError, ValueError, TypeError):
         return {"error": "unavailable"}
+
+
+_MTF_INTERVALS = [("1d", "6mo", "D1"), ("1h", "1mo", "H1"), ("15m", "5d", "M15")]
+
+
+@router.get("/indicators/mtf")
+async def mtf(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
+    rows = []
+    for interval, rng, label in _MTF_INTERVALS:
+        try:
+            raw = await get_cached(
+                db,
+                f"ohlc:{symbol}:{interval}",
+                300,
+                lambda i=interval, r=rng: yahoo.fetch_ohlc(symbol, i, r),
+            )
+            result = composite_bias(yahoo.extract_closes(raw))
+            rows.append({"tf": label, "label": result["label"], "score": result["score"]})
+        except _OHLC_ERRORS:
+            rows.append({"tf": label, "label": "N/A", "score": 0})
+
+    valid = [r for r in rows if r["label"] != "N/A"]
+    avg = sum(r["score"] for r in valid) / len(valid) if valid else 0
+    overall = "BULLISH" if avg > 20 else "BEARISH" if avg < -20 else "NEUTRAL" if valid else "N/A"
+    return {"symbol": symbol, "timeframes": rows, "overall": overall, "score": round(avg, 1)}
+
+
+@router.get("/indicators/hilo")
+async def hilo(
+    symbol: str = Query(...),
+    days: int = 20,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    try:
+        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: yahoo.fetch_ohlc(symbol))
+        candles = yahoo.extract_candles(raw)
+        if len(candles) < days + 1:
+            return {"symbol": symbol, "error": "unavailable"}
+        window = candles[-(days + 1) : -1]
+        high = max(c["h"] for c in window)
+        low = min(c["l"] for c in window)
+        price = candles[-1]["c"]
+        status = "breakout-up" if price > high else "breakout-down" if price < low else "in-range"
+        return {
+            "symbol": symbol,
+            "days": days,
+            "high": high,
+            "low": low,
+            "price": price,
+            "status": status,
+        }
+    except _OHLC_ERRORS:
+        return {"symbol": symbol, "error": "unavailable"}
+
+
+@router.get("/indicators/key-levels")
+async def key_levels_endpoint(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
+    try:
+        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: yahoo.fetch_ohlc(symbol))
+        candles = yahoo.extract_candles(raw)
+        if not candles:
+            return {"symbol": symbol, "error": "unavailable"}
+        price = candles[-1]["c"]
+        return {"symbol": symbol, "price": price, **key_levels(candles, price)}
+    except _OHLC_ERRORS:
+        return {"symbol": symbol, "error": "unavailable"}
