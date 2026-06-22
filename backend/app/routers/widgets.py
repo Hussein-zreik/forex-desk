@@ -7,7 +7,7 @@ from app.indicators.bias import composite_bias
 from app.indicators.smc import smc
 from app.indicators.technical import atr, key_levels, pearson, pivot_points, returns
 from app.services import calendar as cal_svc
-from app.services import fred, news, sentiment, yahoo
+from app.services import cboe, fred, news, sentiment, yahoo
 from app.services.cache import get_cached
 from app.services.market import get_quote
 
@@ -244,6 +244,25 @@ async def calendar(db: AsyncSession = Depends(get_db)) -> dict:
         return {"events": cal_svc.normalize_calendar(raw)}
     except (httpx.HTTPError, KeyError, ValueError, TypeError):
         return {"events": [], "error": "unavailable"}
+
+
+@router.get("/options-sentiment")
+async def options_sentiment(db: AsyncSession = Depends(get_db)) -> dict:
+    try:
+        text = await get_cached(db, "cboe:putcall", 3600, cboe.fetch_putcall)
+        series = cboe.parse_putcall(text)
+        if not series:
+            return {"error": "unavailable"}
+        latest = series[-1]
+        ratio = latest["ratio"]
+        return {
+            "ratio": ratio,
+            "date": latest["date"],
+            "sentiment": cboe.classify(ratio),
+            "history": [s["ratio"] for s in series[-35:]],
+        }
+    except (httpx.HTTPError, KeyError, ValueError, TypeError):
+        return {"error": "unavailable"}
 
 
 @router.get("/etf-flow")

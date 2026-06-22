@@ -271,6 +271,36 @@ def test_calendar(client, monkeypatch):
     assert body["events"][0]["impact"] == "high"
 
 
+def test_options_sentiment(client, monkeypatch):
+    csv_text = (
+        "DATE,CALLS,PUTS,Put/Call Ratio\n"
+        "2026-06-19,1000,800,0.80\n"
+        "2026-06-20,1000,1200,1.20\n"
+    )
+
+    async def fake_putcall():
+        return csv_text
+
+    monkeypatch.setattr("app.services.cboe.fetch_putcall", fake_putcall)
+    body = client.get("/api/options-sentiment").json()
+    assert body["ratio"] == 1.2
+    assert body["sentiment"] == "Fear"
+    assert body["history"] == [0.8, 1.2]
+
+
+def test_options_sentiment_derives_ratio_from_columns(client, monkeypatch):
+    # No explicit ratio column → derive puts/calls; low ratio ⇒ Greed.
+    csv_text = "Date,Calls,Puts\n2026-06-20,2000,1000\n"
+
+    async def fake_putcall():
+        return csv_text
+
+    monkeypatch.setattr("app.services.cboe.fetch_putcall", fake_putcall)
+    body = client.get("/api/options-sentiment").json()
+    assert body["ratio"] == 0.5
+    assert body["sentiment"] == "Greed"
+
+
 def test_etf_flow(client, monkeypatch):
     vols = [1000.0] * 20 + [2000.0]
     ohlc = {

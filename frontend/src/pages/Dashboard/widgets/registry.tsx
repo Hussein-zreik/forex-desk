@@ -23,6 +23,7 @@ import { GoldSilverRatioWidget } from './GoldSilverRatioWidget'
 import { MacroRegimeWidget } from './MacroRegimeWidget'
 import { NewsSentimentWidget } from './NewsSentimentWidget'
 import { NewsWidget } from './NewsWidget'
+import { OptionsSentimentWidget } from './OptionsSentimentWidget'
 import { PivotsWidget } from './PivotsWidget'
 import { RealYieldWidget } from './RealYieldWidget'
 import { QuoteCardWidget } from './QuoteCardWidget'
@@ -387,6 +388,16 @@ export const WIDGETS: Record<string, WidgetDef> = {
     minW: 3,
     minH: 4,
     render: (c) => <EconomicCalendarWidget {...c} />,
+  },
+  optionsSentiment: {
+    type: 'optionsSentiment',
+    title: 'Options Sentiment',
+    category: 'Sentiment',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <OptionsSentimentWidget {...c} />,
   },
 }
 
