@@ -4,7 +4,11 @@ import { CryptoWidget } from './CryptoWidget'
 import { FearGreedWidget } from './FearGreedWidget'
 import { GoldCalculatorWidget } from './GoldCalculatorWidget'
 import { GoldSilverRatioWidget } from './GoldSilverRatioWidget'
+import { MacroRegimeWidget } from './MacroRegimeWidget'
+import { NewsSentimentWidget } from './NewsSentimentWidget'
+import { NewsWidget } from './NewsWidget'
 import { PivotsWidget } from './PivotsWidget'
+import { RealYieldWidget } from './RealYieldWidget'
 import { QuoteCardWidget } from './QuoteCardWidget'
 import { RoundNumbersWidget } from './RoundNumbersWidget'
 import { SessionsWidget } from './SessionsWidget'
@@ -157,6 +161,46 @@ export const WIDGETS: Record<string, WidgetDef> = {
     minW: 4,
     minH: 5,
     render: (c) => <TradingViewWidget {...c} />,
+  },
+  news: {
+    type: 'news',
+    title: 'Gold News',
+    category: 'News',
+    w: 4,
+    h: 6,
+    minW: 3,
+    minH: 4,
+    render: (c) => <NewsWidget {...c} />,
+  },
+  newsSentiment: {
+    type: 'newsSentiment',
+    title: 'News Sentiment',
+    category: 'Sentiment',
+    w: 3,
+    h: 4,
+    minW: 2,
+    minH: 3,
+    render: (c) => <NewsSentimentWidget {...c} />,
+  },
+  realYield: {
+    type: 'realYield',
+    title: '10Y Real Yield',
+    category: 'Macro',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <RealYieldWidget {...c} />,
+  },
+  macroRegime: {
+    type: 'macroRegime',
+    title: 'Macro Regime',
+    category: 'Macro',
+    w: 3,
+    h: 4,
+    minW: 2,
+    minH: 3,
+    render: (c) => <MacroRegimeWidget {...c} />,
   },
 }
 

@@ -94,3 +94,54 @@ def test_volatility(client, monkeypatch):
     assert body["symbol"] == "GBPUSD=X"
     assert body["atr"] is not None
     assert body["upper"] > body["price"] > body["lower"]
+
+
+def test_news_classifies_sentiment(client, monkeypatch):
+    feed = {
+        "feed": {"title": "Kitco"},
+        "items": [
+            {"title": "Gold rallies to record high", "link": "http://x/1", "pubDate": "d"},
+            {"title": "Gold falls on dollar strength", "link": "http://x/2", "pubDate": "d"},
+        ],
+    }
+
+    async def fake_feed(url):
+        return feed
+
+    monkeypatch.setattr("app.services.news.fetch_feed", fake_feed)
+    body = client.get("/api/news").json()
+    assert len(body["articles"]) == 2
+    assert body["articles"][0]["sentiment"] == "positive"
+    assert body["sentiment"]["positive"] >= 1
+
+
+def test_real_yield(client, monkeypatch):
+    csv_text = "DATE,DFII10\n2026-06-19,2.10\n2026-06-20,2.15\n2026-06-21,2.18\n"
+
+    async def fake_series(series_id):
+        return csv_text
+
+    monkeypatch.setattr("app.services.fred.fetch_series", fake_series)
+    body = client.get("/api/real-yield").json()
+    assert body["value"] == 2.18
+    assert body["trend"] == "up"
+    assert len(body["history"]) == 3
+
+
+def test_macro_regime_risk_on(client, monkeypatch):
+    vix_chart = {
+        "chart": {"result": [{"meta": {"regularMarketPrice": 12.5, "chartPreviousClose": 13.0}}]}
+    }
+
+    async def fake_chart(symbol):
+        return vix_chart
+
+    async def fake_series(series_id):
+        return "DATE,DFII10\n2026-06-21,2.10\n"
+
+    monkeypatch.setattr("app.services.yahoo.fetch_chart", fake_chart)
+    monkeypatch.setattr("app.services.fred.fetch_series", fake_series)
+    body = client.get("/api/macro-regime").json()
+    assert body["vix"] == 12.5
+    assert body["regime"] == "RISK-ON"
+    assert body["realYield"] == 2.10
