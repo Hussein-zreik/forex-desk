@@ -19,25 +19,46 @@ forex-desk/
 - [`docs/widgets/widget-catalog.md`](docs/widgets/widget-catalog.md) — all ~50 widgets + data sources
 - [`docs/design-system/linear-modern.md`](docs/design-system/linear-modern.md) — visual language / tokens
 
-## Quick start
+## Run it locally (see it in your browser)
 
-**Frontend**
+### Option A — one command (Docker)
+
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+```bash
+git clone https://github.com/hussein-zreik/forex-desk
+cd forex-desk
+docker compose up --build
+```
+
+Then open **http://localhost:5173** and create an account on the Welcome screen.
+Live market data flows automatically (your machine has normal internet access).
+Stop with `Ctrl+C`; reset data with `docker compose down`.
+
+### Option B — two terminals (no Docker)
+
+Needs Python 3.11+ and Node 18+.
+
+**Terminal 1 — backend**
+```bash
+cd backend
+python3 -m venv .venv && . .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000        # API + docs at /docs
+```
+
+**Terminal 2 — frontend**
 ```bash
 cd frontend
 npm install
-npm run dev        # http://localhost:5173
-npm run test       # Vitest + React Testing Library
-npm run build
+npm run dev                                      # http://localhost:5173
 ```
 
-**Backend**
-```bash
-cd backend
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements-dev.txt
-uvicorn app.main:app --reload   # http://127.0.0.1:8000  (docs at /docs)
-pytest
-```
+Open **http://localhost:5173**. The frontend defaults to the backend at
+`http://localhost:8000`, the database is a zero-setup SQLite file, and CORS is
+preconfigured — no `.env` required.
+
+**Dev checks:** `npm run test` (Vitest) and `npm run build` in `frontend/`; `pytest` in `backend/`.
 
 ## Architecture
 

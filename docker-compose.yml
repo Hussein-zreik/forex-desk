@@ -1,0 +1,28 @@
+# Forex Desk — one-command local run.
+#
+#   docker compose up --build
+#   → open http://localhost:5173
+#
+# The browser loads the frontend from :5173, which calls the API on :8000
+# (the frontend already defaults VITE_API_URL to http://localhost:8000).
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      # Live price poller hits Yahoo/FRED/etc. — works on a machine with
+      # normal internet access. Set to false to run fully offline.
+      - POLLER_ENABLED=true
+      # Optional: Telegram price-alert delivery.
+      # - TELEGRAM_BOT_TOKEN=your-token
+      # - TELEGRAM_CHAT_ID=your-chat-id
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
