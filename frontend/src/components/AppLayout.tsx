@@ -17,11 +17,17 @@ export function AppLayout() {
 
   return (
     <div className="relative min-h-dvh">
+      <a
+        href="#main-content"
+        className="sr-only z-50 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground focus:not-sr-only focus:absolute focus:top-4 focus:left-4"
+      >
+        Skip to content
+      </a>
       <Background />
       <Navbar />
       <TickerWidget />
       <div className="mx-auto flex max-w-[1600px] gap-6 px-4 py-6">
-        <main className="min-w-0 flex-1">
+        <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 focus:outline-none">
           <Outlet />
         </main>
         <Sidebar />
