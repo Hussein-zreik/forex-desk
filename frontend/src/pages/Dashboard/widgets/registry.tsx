@@ -1,5 +1,10 @@
 import { type ReactNode } from 'react'
 import { BiasWidget } from './BiasWidget'
+import { CBCalendarWidget } from './CBCalendarWidget'
+import { CorrelationWidget } from './CorrelationWidget'
+import { ETFFlowWidget } from './ETFFlowWidget'
+import { SMCWidget } from './SMCWidget'
+import { SpreadWidget } from './SpreadWidget'
 import { CurrencyStrengthWidget } from './CurrencyStrengthWidget'
 import { HiLoWidget } from './HiLoWidget'
 import { KeyLevelsWidget } from './KeyLevelsWidget'
@@ -278,6 +283,66 @@ export const WIDGETS: Record<string, WidgetDef> = {
     minW: 2,
     minH: 4,
     render: (c) => <RateDifferentialWidget {...c} />,
+  },
+  smc: {
+    type: 'smc',
+    title: 'Smart Money (SMC)',
+    category: 'Signals',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <SMCWidget {...c} />,
+  },
+  correlation: {
+    type: 'correlation',
+    title: 'Correlation Matrix',
+    category: 'Market',
+    w: 4,
+    h: 5,
+    minW: 3,
+    minH: 4,
+    render: (c) => <CorrelationWidget {...c} />,
+  },
+  etfFlow: {
+    type: 'etfFlow',
+    title: 'Gold ETF Flow',
+    category: 'Metals',
+    w: 3,
+    h: 4,
+    minW: 2,
+    minH: 3,
+    render: (c) => <ETFFlowWidget {...c} />,
+  },
+  dxyTrend: {
+    type: 'dxyTrend',
+    title: 'DXY Trend Strength',
+    category: 'Signals',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    render: (c) => <MTFWidget symbol="DX-Y.NYB" title="DXY Trend Strength" {...c} />,
+  },
+  spread: {
+    type: 'spread',
+    title: 'Spread Monitor',
+    category: 'Tools',
+    w: 3,
+    h: 4,
+    minW: 2,
+    minH: 3,
+    render: (c) => <SpreadWidget {...c} />,
+  },
+  cbCalendar: {
+    type: 'cbCalendar',
+    title: 'Central Bank Calendar',
+    category: 'Macro',
+    w: 3,
+    h: 4,
+    minW: 2,
+    minH: 3,
+    render: (c) => <CBCalendarWidget {...c} />,
   },
 }
 

@@ -198,6 +198,88 @@ def test_key_levels(client, monkeypatch):
     assert 80.0 in body["support"]
 
 
+def test_smc_bos_up(client, monkeypatch):
+    ohlc = {
+        "chart": {
+            "result": [
+                {
+                    "indicators": {
+                        "quote": [
+                            {
+                                "open": [100.0] * 10,
+                                "high": [101.0] * 9 + [121.0],
+                                "low": [99.0] * 9 + [119.0],
+                                "close": [100.0] * 9 + [120.0],
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+    async def fake_ohlc(symbol, interval="1d", range_="6mo"):
+        return ohlc
+
+    monkeypatch.setattr("app.services.yahoo.fetch_ohlc", fake_ohlc)
+    body = client.get("/api/indicators/smc", params={"symbol": "XAU=F"}).json()
+    assert body["structure"] == "BOS ↑"
+    assert body["price"] == 120.0
+
+
+def test_correlation_matrix(client, monkeypatch):
+    rising = {
+        "chart": {
+            "result": [{"indicators": {"quote": [{"close": [float(i) for i in range(1, 20)]}]}}]
+        }
+    }
+    falling = {
+        "chart": {
+            "result": [{"indicators": {"quote": [{"close": [float(i) for i in range(20, 1, -1)]}]}}]
+        }
+    }
+
+    async def fake_ohlc(symbol, interval="1d", range_="6mo"):
+        return rising if symbol == "AAA" else falling
+
+    monkeypatch.setattr("app.services.yahoo.fetch_ohlc", fake_ohlc)
+    body = client.get("/api/correlation", params={"symbols": "AAA,BBB"}).json()
+    assert body["symbols"] == ["AAA", "BBB"]
+    assert body["matrix"][0][0] == 1.0
+    assert -1.0 <= body["matrix"][0][1] <= 1.0
+
+
+def test_etf_flow(client, monkeypatch):
+    vols = [1000.0] * 20 + [2000.0]
+    ohlc = {
+        "chart": {
+            "result": [
+                {
+                    "indicators": {
+                        "quote": [
+                            {
+                                "open": [1.0] * 21,
+                                "high": [1.0] * 21,
+                                "low": [1.0] * 21,
+                                "close": [1.0] * 21,
+                                "volume": vols,
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+    async def fake_ohlc(symbol, interval="1d", range_="6mo"):
+        return ohlc
+
+    monkeypatch.setattr("app.services.yahoo.fetch_ohlc", fake_ohlc)
+    body = client.get("/api/etf-flow").json()
+    assert body["etfs"]["GLD"]["ratio"] == 2.0
+    assert body["etfs"]["IAU"]["volume"] == 2000.0
+
+
 def test_macro_regime_risk_on(client, monkeypatch):
     vix_chart = {
         "chart": {"result": [{"meta": {"regularMarketPrice": 12.5, "chartPreviousClose": 13.0}}]}

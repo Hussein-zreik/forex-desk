@@ -63,3 +63,10 @@ def extract_candles(data: dict) -> list[dict]:
             continue
         candles.append({"o": o, "h": h, "l": low, "c": c})
     return candles
+
+
+def extract_volumes(data: dict) -> list[float]:
+    """Extract the non-null volume series from an OHLC payload."""
+    quote = data["chart"]["result"][0]["indicators"]["quote"][0]
+    volumes = quote.get("volume") or []
+    return [v for v in volumes if v is not None]

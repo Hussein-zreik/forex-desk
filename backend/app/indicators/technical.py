@@ -42,3 +42,23 @@ def key_levels(candles: list[dict], price: float, lookback: int = 3, count: int 
         "resistance": sorted(resistance)[:count],
         "support": sorted(support, reverse=True)[:count],
     }
+
+
+def returns(closes: list[float]) -> list[float]:
+    """Period-over-period simple returns."""
+    return [closes[i] / closes[i - 1] - 1 for i in range(1, len(closes)) if closes[i - 1]]
+
+
+def pearson(a: list[float], b: list[float]) -> float | None:
+    """Pearson correlation over the overlapping tail of two series."""
+    n = min(len(a), len(b))
+    if n < 2:
+        return None
+    a, b = a[-n:], b[-n:]
+    ma, mb = sum(a) / n, sum(b) / n
+    cov = sum((a[i] - ma) * (b[i] - mb) for i in range(n))
+    va = sum((x - ma) ** 2 for x in a)
+    vb = sum((x - mb) ** 2 for x in b)
+    if va == 0 or vb == 0:
+        return None
+    return cov / (va**0.5 * vb**0.5)

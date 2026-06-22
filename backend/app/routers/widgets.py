@@ -4,7 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.indicators.bias import composite_bias
-from app.indicators.technical import atr, key_levels, pivot_points
+from app.indicators.smc import smc
+from app.indicators.technical import atr, key_levels, pearson, pivot_points, returns
 from app.services import fred, news, sentiment, yahoo
 from app.services.cache import get_cached
 from app.services.market import get_quote
@@ -195,3 +196,63 @@ async def key_levels_endpoint(symbol: str = Query(...), db: AsyncSession = Depen
         return {"symbol": symbol, "price": price, **key_levels(candles, price)}
     except _OHLC_ERRORS:
         return {"symbol": symbol, "error": "unavailable"}
+
+
+@router.get("/indicators/smc")
+async def smc_endpoint(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
+    try:
+        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: yahoo.fetch_ohlc(symbol))
+        result = smc(yahoo.extract_candles(raw))
+        if not result:
+            return {"symbol": symbol, "error": "unavailable"}
+        return {"symbol": symbol, **result}
+    except _OHLC_ERRORS:
+        return {"symbol": symbol, "error": "unavailable"}
+
+
+@router.get("/correlation")
+async def correlation(symbols: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
+    syms = [s.strip() for s in symbols.split(",") if s.strip()][:6]
+    series: dict[str, list[float]] = {}
+    for s in syms:
+        try:
+            raw = await get_cached(db, f"ohlc:{s}:1d", 300, lambda x=s: yahoo.fetch_ohlc(x))
+            series[s] = returns(yahoo.extract_closes(raw))
+        except _OHLC_ERRORS:
+            series[s] = []
+
+    matrix = []
+    for a in syms:
+        row = []
+        for b in syms:
+            if a == b:
+                row.append(1.0)
+            elif series[a] and series[b]:
+                c = pearson(series[a], series[b])
+                row.append(round(c, 2) if c is not None else None)
+            else:
+                row.append(None)
+        matrix.append(row)
+    return {"symbols": syms, "matrix": matrix}
+
+
+@router.get("/etf-flow")
+async def etf_flow(db: AsyncSession = Depends(get_db)) -> dict:
+    out: dict[str, dict | None] = {}
+    for sym in ("GLD", "IAU"):
+        try:
+            raw = await get_cached(db, f"ohlc:{sym}:1d", 300, lambda s=sym: yahoo.fetch_ohlc(s))
+            volumes = yahoo.extract_volumes(raw)
+            if len(volumes) < 21:
+                out[sym] = None
+                continue
+            last = volumes[-1]
+            avg20 = sum(volumes[-21:-1]) / 20
+            out[sym] = {
+                "volume": last,
+                "avg20": round(avg20),
+                "ratio": round(last / avg20, 2) if avg20 else None,
+            }
+        except _OHLC_ERRORS:
+            out[sym] = None
+    return {"etfs": out}
