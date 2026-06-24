@@ -32,6 +32,33 @@ test('addWidget is idempotent per type', () => {
   expect(useLayout.getState().widgets).toHaveLength(1)
 })
 
+test('addWidget places the new item without overlapping existing ones', () => {
+  useLayout.setState({
+    widgets: [{ id: 'gold', type: 'gold' }],
+    layouts: { lg: [{ i: 'gold', x: 0, y: 0, w: 3, h: 3 }] },
+  })
+  useLayout.getState().addWidget('eurusd')
+  const items = useLayout.getState().layouts.lg
+  const a = items.find((i) => i.i === 'gold')!
+  const b = items.find((i) => i.i === 'eurusd')!
+  const overlap =
+    a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
+  expect(overlap).toBe(false)
+})
+
+test('commitLayout writes a breakpoint and ignores no-op updates', () => {
+  useLayout.setState({
+    widgets: [{ id: 'gold', type: 'gold' }],
+    layouts: { lg: [{ i: 'gold', x: 0, y: 0, w: 3, h: 3 }] },
+  })
+  useLayout.getState().commitLayout('lg', [{ i: 'gold', x: 4, y: 2, w: 3, h: 3 }])
+  expect(useLayout.getState().layouts.lg[0]).toMatchObject({ x: 4, y: 2 })
+  const ref = useLayout.getState().layouts
+  // identical layout → no state churn (same object reference kept)
+  useLayout.getState().commitLayout('lg', [{ i: 'gold', x: 4, y: 2, w: 3, h: 3 }])
+  expect(useLayout.getState().layouts).toBe(ref)
+})
+
 test('removeWidget drops the instance and its layout item', () => {
   useLayout.setState({
     widgets: [{ id: 'gold', type: 'gold' }],

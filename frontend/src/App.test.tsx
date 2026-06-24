@@ -10,7 +10,7 @@ test('renders the Welcome page at root', async () => {
       <App />
     </MemoryRouter>,
   )
-  expect(await screen.findByRole('heading', { name: /forex desk/i })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: /your edge in/i })).toBeInTheDocument()
 })
 
 test('redirects unauthenticated users away from protected routes', async () => {
