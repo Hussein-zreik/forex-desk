@@ -281,15 +281,15 @@ export default function Welcome() {
           </Link>
           <div className="ml-auto flex items-center gap-2">
             {token ? (
-              <Button asChild size="sm">
+              <Button asChild size="sm" className="max-sm:h-11 max-sm:px-4">
                 <Link to="/dashboard">Open dashboard</Link>
               </Button>
             ) : (
               <>
-                <Button asChild size="sm" variant="ghost">
+                <Button asChild size="sm" variant="ghost" className="max-sm:h-11 max-sm:px-4">
                   <Link to="/login">Log in</Link>
                 </Button>
-                <Button asChild size="sm">
+                <Button asChild size="sm" className="max-sm:h-11 max-sm:px-4">
                   <Link to="/register">Get started</Link>
                 </Button>
               </>
@@ -326,7 +326,7 @@ export default function Welcome() {
                 <Button asChild size="lg">
                   <Link to={primaryHref}>
                     {primaryLabel}
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4" aria-hidden />
                   </Link>
                 </Button>
                 {!token && (
@@ -342,7 +342,7 @@ export default function Welcome() {
                       key={t}
                       className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground"
                     >
-                      <Check className="h-3 w-3 text-up" />
+                      <Check className="h-3 w-3 text-up" aria-hidden />
                       {t}
                     </span>
                   ),
@@ -394,7 +394,7 @@ export default function Welcome() {
                   )}
                 >
                   <div className="mb-5 grid h-11 w-11 place-items-center rounded-xl border border-border-hover bg-surface shadow-inner-top">
-                    <Icon className="h-5 w-5 text-primary" />
+                    <Icon className="h-5 w-5 text-primary" aria-hidden />
                   </div>
                   <h3
                     className={cn(
@@ -404,7 +404,7 @@ export default function Welcome() {
                   >
                     {f.title}
                   </h3>
-                  <p className="mt-2.5 max-w-prose text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-2.5 max-w-prose text-base leading-relaxed text-muted-foreground sm:text-sm">
                     {f.desc}
                   </p>
                   <div className="mt-auto flex flex-wrap gap-2 pt-6">
@@ -453,7 +453,9 @@ export default function Welcome() {
                     {s.n}
                   </div>
                   <h3 className="mt-6 text-lg font-semibold tracking-tight">{s.title}</h3>
-                  <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                  <p className="mt-2.5 text-base leading-relaxed text-muted-foreground sm:text-sm">
+                    {s.desc}
+                  </p>
                 </Reveal>
               ))}
             </div>
