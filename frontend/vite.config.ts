@@ -6,7 +6,13 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // react-grid-layout (and some deps) read process.env.NODE_ENV at runtime.
+  // Vite doesn't expose `process` in the browser, so without this the grid's
+  // drag/resize handlers throw "process is not defined" in dev.
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(mode),
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -70,4 +76,4 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     css: true,
   },
-})
+}))
