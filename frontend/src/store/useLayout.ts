@@ -24,6 +24,36 @@ export const BREAKPOINTS = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }
 
 const DEFAULT_TYPES = ['eurusd', 'gold', 'dxy', 'sessions', 'bias', 'fearGreed']
 
+/**
+ * Canonical signature of a layout's *positional* state (the only fields that
+ * affect rendering). react-grid-layout fires `onLayoutChange` on every render —
+ * often with an unchanged layout — so comparing signatures lets us skip
+ * redundant state updates that would otherwise feed back into an infinite
+ * render loop ("Maximum update depth exceeded").
+ */
+function layoutSignature(layouts: Layouts): string {
+  return Object.keys(layouts)
+    .sort()
+    .map(
+      (bp) =>
+        `${bp}:` +
+        layouts[bp].map((i) => `${i.i},${i.x},${i.y},${i.w},${i.h}`).join('|'),
+    )
+    .join(';')
+}
+
+/** First-fit (top-left) slot for a w×h block that doesn't overlap `items`. */
+function findSlot(items: GridItem[], w: number, h: number, cols: number): { x: number; y: number } {
+  const overlaps = (x: number, y: number) =>
+    items.some((it) => x < it.x + it.w && x + w > it.x && y < it.y + it.h && y + h > it.y)
+  for (let y = 0; y < 1000; y++) {
+    for (let x = 0; x + w <= cols; x++) {
+      if (!overlaps(x, y)) return { x, y }
+    }
+  }
+  return { x: 0, y: 0 }
+}
+
 function buildLayouts(instances: WidgetInstance[]): Layouts {
   const layouts: Layouts = {}
   for (const [bp, cols] of Object.entries(COLS)) {
@@ -53,7 +83,7 @@ interface LayoutState {
   editMode: boolean
   loaded: boolean
   load: () => Promise<void>
-  setLayouts: (layouts: Layouts) => void
+  commitLayout: (bp: string, layout: GridItem[]) => void
   addWidget: (type: string) => void
   removeWidget: (id: string) => void
   toggleEdit: () => void
@@ -97,8 +127,26 @@ export const useLayout = create<LayoutState>((set, get) => ({
     set({ widgets: instances, layouts: buildLayouts(instances), loaded: true })
   },
 
-  setLayouts(layouts) {
-    set({ layouts })
+  // Persist a user-driven move/resize for one breakpoint. Called from
+  // react-grid-layout's drag/resize *stop* events (not the per-render
+  // onLayoutChange, which feeds an endless update loop), so we only write when
+  // something actually changed.
+  commitLayout(bp, layout) {
+    const cur = get().layouts
+    const next: Layouts = {
+      ...cur,
+      [bp]: layout.map((i) => ({
+        i: i.i,
+        x: i.x,
+        y: i.y,
+        w: i.w,
+        h: i.h,
+        minW: i.minW,
+        minH: i.minH,
+      })),
+    }
+    if (layoutSignature(next) === layoutSignature(cur)) return
+    set({ layouts: next })
     scheduleSave(get)
   },
 
@@ -111,16 +159,9 @@ export const useLayout = create<LayoutState>((set, get) => ({
     const layouts: Layouts = { ...state.layouts }
     for (const [bp, cols] of Object.entries(COLS)) {
       const items = layouts[bp] ? [...layouts[bp]] : []
-      const maxY = items.reduce((m, it) => Math.max(m, it.y + it.h), 0)
-      items.push({
-        i: inst.id,
-        x: 0,
-        y: maxY,
-        w: Math.min(def.w, cols),
-        h: def.h,
-        minW: def.minW,
-        minH: def.minH,
-      })
+      const w = Math.min(def.w, cols)
+      const { x, y } = findSlot(items, w, def.h, cols)
+      items.push({ i: inst.id, x, y, w, h: def.h, minW: def.minW, minH: def.minH })
       layouts[bp] = items
     }
     set({ widgets: [...state.widgets, inst], layouts })
