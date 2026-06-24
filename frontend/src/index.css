@@ -286,18 +286,48 @@
   border-radius: 1rem;
   opacity: 1;
 }
+/* Resize handles: hidden normally; revealed in edit mode (not hover-only, so
+   touch users can find them) or on hover. Branded indigo grips. */
 .react-grid-item > .react-resizable-handle {
   opacity: 0;
   transition: opacity 0.2s var(--ease-expo);
 }
+.rgl-editing .react-grid-item > .react-resizable-handle,
 .react-grid-item:hover > .react-resizable-handle {
   opacity: 1;
 }
-.react-grid-item > .react-resizable-handle::after {
-  border-right-color: var(--muted-foreground);
-  border-bottom-color: var(--muted-foreground);
-  width: 7px;
-  height: 7px;
+/* Corner grip — resize width + height */
+.react-grid-item > .react-resizable-handle-se::after {
+  border-right: 2px solid var(--primary);
+  border-bottom: 2px solid var(--primary);
+  width: 9px;
+  height: 9px;
+  right: 4px;
+  bottom: 4px;
+}
+/* Edge grips — resize a single axis: a short rounded accent bar */
+.react-grid-item > .react-resizable-handle-e::after,
+.react-grid-item > .react-resizable-handle-s::after {
+  content: '';
+  position: absolute;
+  border: none;
+  border-radius: 9999px;
+  background: var(--primary);
+  opacity: 0.65;
+}
+.react-grid-item > .react-resizable-handle-e::after {
+  width: 3px;
+  height: 22px;
+  right: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.react-grid-item > .react-resizable-handle-s::after {
+  height: 3px;
+  width: 22px;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .react-grid-item.react-draggable-dragging {
   z-index: 30;

@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { GridLayout, noCompactor, useContainerWidth } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
+import { cn } from '@/lib/cn'
 import { BREAKPOINTS, COLS, type GridItem, useLayout } from '@/store/useLayout'
 import { WIDGETS } from './widgets/registry'
 
@@ -46,7 +47,10 @@ export function DashboardGrid() {
     () => ({ enabled: editMode, handle: '.widget-drag-handle', cancel: '.no-drag' }),
     [editMode],
   )
-  const resizeConfig = useMemo(() => ({ enabled: editMode }), [editMode])
+  const resizeConfig = useMemo(
+    () => ({ enabled: editMode, handles: ['se', 's', 'e'] as const }),
+    [editMode],
+  )
 
   // Stable child identities — RGL diffs `children` in a layout-sync effect, and
   // a fresh array each render would keep that effect setState-ing.
@@ -69,7 +73,7 @@ export function DashboardGrid() {
   const persist = (next: readonly GridItem[]) => commitLayout(bp, next as GridItem[])
 
   return (
-    <div ref={containerRef} className="-mx-2">
+    <div ref={containerRef} className={cn('-mx-2', editMode && 'rgl-editing')}>
       {mounted && (
         <GridLayout
           width={width}
