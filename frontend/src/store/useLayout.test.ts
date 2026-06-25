@@ -34,6 +34,18 @@ test('addWidget clamps minW to the breakpoint column count', () => {
   expect(item.minW ?? 0).toBeLessThanOrEqual(2)
 })
 
+test('default layouts give every widget in a row the same height', () => {
+  useLayout.getState().reset()
+  const { layouts } = useLayout.getState()
+  for (const bp of Object.keys(layouts)) {
+    const byRow: Record<number, number[]> = {}
+    for (const it of layouts[bp]) (byRow[it.y] ??= []).push(it.h)
+    for (const heights of Object.values(byRow)) {
+      expect(new Set(heights).size).toBe(1) // one height per row
+    }
+  }
+})
+
 test('addWidget adds an instance with a unique id and a layout item', () => {
   useLayout.setState({ widgets: [], layouts: { lg: [] } })
   useLayout.getState().addWidget('gold')

@@ -67,7 +67,7 @@ function buildLayouts(instances: WidgetInstance[]): Layouts {
     let x = 0
     let y = 0
     let rowH = 0
-    layouts[bp] = instances.map((inst) => {
+    const items = instances.map((inst) => {
       const def = WIDGETS[inst.type]
       const w = Math.min(def.w, cols)
       if (x + w > cols) {
@@ -88,6 +88,13 @@ function buildLayouts(instances: WidgetInstance[]): Layouts {
       rowH = Math.max(rowH, def.h)
       return item
     })
+    // Equal-height rows: widgets in a row share `y`, so give each the row's
+    // tallest height. Bottoms align for a tidy, symmetrical grid (the row pitch
+    // already used this max, so nothing overlaps).
+    const rowMax: Record<number, number> = {}
+    for (const it of items) rowMax[it.y] = Math.max(rowMax[it.y] ?? 0, it.h)
+    for (const it of items) it.h = rowMax[it.y]
+    layouts[bp] = items
   }
   return layouts
 }
