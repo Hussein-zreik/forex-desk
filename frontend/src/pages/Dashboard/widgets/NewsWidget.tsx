@@ -1,5 +1,5 @@
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -30,23 +30,24 @@ interface Props {
 }
 
 export function NewsWidget({ editMode, onRemove }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<NewsData>(() => api('/api/news'), [], {
+  const query = useWidgetData<NewsData>(() => api('/api/news'), [], {
     pollMs: 600_000,
   })
-  const articles = data?.articles ?? []
 
   return (
-    <WidgetFrame
+    <AsyncWidget
       title="Gold News"
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={data?.error ? 'News unavailable' : error}
+      query={query}
+      isEmpty={(d) => !!d.error || d.articles.length === 0}
+      empty={
+        <EmptyState compact title={query.data?.error ? 'News unavailable' : 'No headlines'} />
+      }
     >
-      {articles.length > 0 ? (
+      {(d) => (
         <ul className="flex h-full flex-col gap-1 overflow-auto">
-          {articles.map((a, i) => (
+          {d.articles.map((a, i) => (
             <li key={i}>
               <a
                 href={a.link}
@@ -55,9 +56,7 @@ export function NewsWidget({ editMode, onRemove }: Props) {
                 className="no-drag block rounded-lg p-1.5 hover:bg-surface"
               >
                 <div className="flex items-start gap-2">
-                  <span
-                    className={cn('mt-1 h-1.5 w-1.5 shrink-0 rounded-full', DOT[a.sentiment])}
-                  />
+                  <span className={cn('mt-1 h-1.5 w-1.5 shrink-0 rounded-full', DOT[a.sentiment])} />
                   <span className="text-xs leading-snug">{a.title}</span>
                 </div>
                 {a.source && (
@@ -67,9 +66,7 @@ export function NewsWidget({ editMode, onRemove }: Props) {
             </li>
           ))}
         </ul>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+      )}
+    </AsyncWidget>
   )
 }

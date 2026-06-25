@@ -1,5 +1,5 @@
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -36,22 +36,22 @@ export function VolatilityWidget({
   editMode,
   onRemove,
 }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<VolData>(
+  const query = useWidgetData<VolData>(
     () => api(`/api/indicators/volatility?symbol=${encodeURIComponent(symbol)}`),
     [symbol],
     { pollMs: 300_000 },
   )
 
   return (
-    <WidgetFrame
+    <AsyncWidget
       title={title}
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={data?.error ? 'ATR unavailable' : error}
+      query={query}
+      isEmpty={(d) => !!d.error || d.atr == null}
+      empty={<EmptyState compact title="ATR unavailable" />}
     >
-      {data && data.atr != null ? (
+      {(data) => (
         <div className="flex h-full flex-col justify-center gap-2">
           <Row label="Projected High" value={data.upper} cls="text-up" />
           <Row label="Current" value={data.price} />
@@ -60,9 +60,7 @@ export function VolatilityWidget({
             Daily ATR {fmtPrice(data.atr)}
           </div>
         </div>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+      )}
+    </AsyncWidget>
   )
 }

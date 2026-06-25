@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -33,13 +33,20 @@ function timeLabel(iso: string): string {
   })
 }
 
+function upcomingEvents(d: CalData, now: number): CalEvent[] {
+  return (d.events ?? [])
+    .filter((e) => e.date && new Date(e.date).getTime() > now)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 8)
+}
+
 interface Props {
   editMode?: boolean
   onRemove?: () => void
 }
 
 export function EconomicCalendarWidget({ editMode, onRemove }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<CalData>(() => api('/api/calendar'), [], {
+  const query = useWidgetData<CalData>(() => api('/api/calendar'), [], {
     pollMs: 600_000,
   })
   const [now, setNow] = useState(() => Date.now())
@@ -49,29 +56,26 @@ export function EconomicCalendarWidget({ editMode, onRemove }: Props) {
     return () => clearInterval(id)
   }, [])
 
-  const upcoming = (data?.events ?? [])
-    .filter((e) => e.date && new Date(e.date).getTime() > now)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 8)
-
   return (
-    <WidgetFrame
+    <AsyncWidget
       title="Economic Calendar"
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={data?.error ? 'Calendar unavailable' : error}
+      query={query}
+      isEmpty={(d) => !!d.error || upcomingEvents(d, now).length === 0}
+      empty={
+        <EmptyState
+          compact
+          title={query.data?.error ? 'Calendar unavailable' : 'No upcoming events'}
+        />
+      }
     >
-      {upcoming.length > 0 ? (
+      {(d) => (
         <ul className="flex h-full flex-col gap-1.5 overflow-auto text-sm">
-          {upcoming.map((e, i) => (
+          {upcomingEvents(d, now).map((e, i) => (
             <li key={i} className="flex items-center gap-2">
               <span
-                className={cn(
-                  'h-2 w-2 shrink-0 rounded-full',
-                  IMPACT_DOT[e.impact] ?? IMPACT_DOT.low,
-                )}
+                className={cn('h-2 w-2 shrink-0 rounded-full', IMPACT_DOT[e.impact] ?? IMPACT_DOT.low)}
               />
               <span className="w-24 shrink-0 text-[11px] tabular-nums text-muted-foreground">
                 {timeLabel(e.date)}
@@ -83,13 +87,7 @@ export function EconomicCalendarWidget({ editMode, onRemove }: Props) {
             </li>
           ))}
         </ul>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : (
-        <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-          No upcoming events
-        </div>
       )}
-    </WidgetFrame>
+    </AsyncWidget>
   )
 }

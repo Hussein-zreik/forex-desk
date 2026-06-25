@@ -1,5 +1,6 @@
 import { GripVertical, RefreshCw, X } from 'lucide-react'
 import { type ReactNode } from 'react'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { cn } from '@/lib/cn'
 
 interface Props {
@@ -58,22 +59,7 @@ export function WidgetFrame({
         </div>
       </div>
       <div className="relative min-h-0 flex-1 overflow-auto p-3">
-        {error ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
-            <p className="text-xs text-muted-foreground">{error}</p>
-            {onRefresh && (
-              <button
-                type="button"
-                onClick={onRefresh}
-                className="text-xs text-primary hover:text-accent-bright"
-              >
-                Retry
-              </button>
-            )}
-          </div>
-        ) : (
-          children
-        )}
+        {error ? <ErrorState message={error} onRetry={onRefresh} compact /> : children}
       </div>
     </div>
   )

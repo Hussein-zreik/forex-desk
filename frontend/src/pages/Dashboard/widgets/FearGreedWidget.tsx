@@ -1,7 +1,7 @@
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { Gauge } from '@/components/widget/Gauge'
 import { Sparkline } from '@/components/widget/Sparkline'
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 
@@ -30,45 +30,42 @@ interface Props {
 }
 
 export function FearGreedWidget({ editMode, onRemove }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<FngData>(
-    () => api<FngData>('/api/fear-greed'),
-    [],
-    { pollMs: 600_000 },
-  )
-
-  const latest = data?.latest
-  const color = fngColor(latest?.value ?? 50)
+  const query = useWidgetData<FngData>(() => api<FngData>('/api/fear-greed'), [], {
+    pollMs: 600_000,
+  })
 
   return (
-    <WidgetFrame
+    <AsyncWidget
       title="Fear & Greed"
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={data?.error ? 'Sentiment data unavailable' : error}
+      query={query}
+      isEmpty={(d) => !!d.error || !d.latest}
+      empty={<EmptyState compact title="Sentiment data unavailable" />}
     >
-      {latest ? (
-        <div className="flex h-full flex-col items-center justify-center">
-          <Gauge
-            value={latest.value}
-            min={0}
-            max={100}
-            color={color}
-            centerLabel={String(latest.value)}
-            centerSub={latest.classification ?? ''}
-          />
-          {data && data.history.length > 1 && (
-            <Sparkline
-              values={data.history.map((h) => h.value)}
+      {(data) => {
+        const latest = data.latest!
+        const color = fngColor(latest.value)
+        return (
+          <div className="flex h-full flex-col items-center justify-center">
+            <Gauge
+              value={latest.value}
+              min={0}
+              max={100}
               color={color}
-              className="mt-1 h-7 w-full"
+              centerLabel={String(latest.value)}
+              centerSub={latest.classification ?? ''}
             />
-          )}
-        </div>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+            {data.history.length > 1 && (
+              <Sparkline
+                values={data.history.map((h) => h.value)}
+                color={color}
+                className="mt-1 h-7 w-full"
+              />
+            )}
+          </div>
+        )
+      }}
+    </AsyncWidget>
   )
 }

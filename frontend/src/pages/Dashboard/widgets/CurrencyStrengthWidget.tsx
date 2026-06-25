@@ -1,5 +1,5 @@
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -36,52 +36,48 @@ interface Props {
 }
 
 export function CurrencyStrengthWidget({ editMode, onRemove }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<{ quotes: Quote[] }>(
+  const query = useWidgetData<{ quotes: Quote[] }>(
     () => api(`/api/quotes?symbols=${PAIRS.join(',')}`),
     [],
     { pollMs: 60_000 },
   )
-  const strength = computeStrength(data?.quotes ?? [])
 
   return (
-    <WidgetFrame
+    <AsyncWidget
       title="Currency Strength"
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={error}
+      query={query}
+      isEmpty={(d) => computeStrength(d.quotes).length === 0}
+      empty={<EmptyState compact title="Waiting for prices…" />}
     >
-      {strength.length > 0 ? (
-        <ul className="flex h-full flex-col justify-center gap-1.5">
-          {strength.map((s) => (
-            <li key={s.ccy} className="flex items-center gap-2">
-              <span className="w-9 text-xs font-medium">{s.ccy}</span>
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface">
-                <div
-                  className={cn('h-full rounded-full', s.value >= 0 ? 'bg-up' : 'bg-down')}
-                  style={{ width: `${Math.min(100, Math.abs(s.value) * 25)}%` }}
-                />
-              </div>
-              <span
-                className={cn(
-                  'w-12 text-right text-[11px] tabular-nums',
-                  s.value >= 0 ? 'text-up' : 'text-down',
-                )}
-              >
-                {s.value >= 0 ? '+' : ''}
-                {s.value.toFixed(2)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : (
-        <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-          Waiting for prices…
-        </div>
-      )}
-    </WidgetFrame>
+      {(d) => {
+        const strength = computeStrength(d.quotes)
+        return (
+          <ul className="flex h-full flex-col justify-center gap-1.5">
+            {strength.map((s) => (
+              <li key={s.ccy} className="flex items-center gap-2">
+                <span className="w-9 text-xs font-medium">{s.ccy}</span>
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface">
+                  <div
+                    className={cn('h-full rounded-full', s.value >= 0 ? 'bg-up' : 'bg-down')}
+                    style={{ width: `${Math.min(100, Math.abs(s.value) * 25)}%` }}
+                  />
+                </div>
+                <span
+                  className={cn(
+                    'w-12 text-right text-[11px] tabular-nums',
+                    s.value >= 0 ? 'text-up' : 'text-down',
+                  )}
+                >
+                  {s.value >= 0 ? '+' : ''}
+                  {s.value.toFixed(2)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )
+      }}
+    </AsyncWidget>
   )
 }

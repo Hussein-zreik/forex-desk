@@ -1,5 +1,5 @@
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -37,31 +37,28 @@ export function MTFWidget({
   editMode,
   onRemove,
 }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<MtfData>(
+  const query = useWidgetData<MtfData>(
     () => api(`/api/indicators/mtf?symbol=${encodeURIComponent(symbol)}`),
     [symbol],
     { pollMs: 300_000 },
   )
 
   return (
-    <WidgetFrame
+    <AsyncWidget
       title={title}
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={data?.error ? 'MTF unavailable' : error}
+      query={query}
+      isEmpty={(d) => !!d.error || !d.timeframes}
+      empty={<EmptyState compact title="MTF unavailable" />}
     >
-      {data?.timeframes ? (
+      {(data) => (
         <div className="flex h-full flex-col justify-center gap-3">
           <div className="grid grid-cols-3 gap-2">
             {data.timeframes.map((t) => {
               const s = SIG[t.label] ?? SIG['N/A']
               return (
-                <div
-                  key={t.tf}
-                  className="rounded-lg border border-border bg-surface p-2 text-center"
-                >
+                <div key={t.tf} className="rounded-lg border border-border bg-surface p-2 text-center">
                   <div className="text-[11px] text-muted-foreground">{t.tf}</div>
                   <div className={cn('text-xl font-semibold', s.c)}>{s.a}</div>
                 </div>
@@ -75,9 +72,7 @@ export function MTFWidget({
             </span>
           </div>
         </div>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+      )}
+    </AsyncWidget>
   )
 }

@@ -1,5 +1,5 @@
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -16,30 +16,26 @@ interface Props {
 }
 
 export function EcoSurprisesWidget({ editMode, onRemove }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<EcoRow[]>(
-    () => api('/api/eco-surprises'),
-    [],
-  )
-  const rows = data ?? []
+  const query = useWidgetData<EcoRow[]>(() => api('/api/eco-surprises'), [])
 
   async function adjust(currency: string, field: 'beats' | 'misses', delta: number) {
     await api('/api/eco-surprises', {
       method: 'POST',
       body: JSON.stringify({ currency, field, delta }),
     })
-    await refresh()
+    await query.refresh()
   }
 
   return (
-    <WidgetFrame
+    <AsyncWidget
       title="Eco Surprises"
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={error}
+      query={query}
+      isEmpty={(d) => d.length === 0}
+      empty={<EmptyState compact title="No surprises tracked yet" />}
     >
-      {rows.length > 0 ? (
+      {(rows) => (
         <ul className="flex h-full flex-col justify-center gap-1 text-xs">
           {rows.map((r) => {
             const net = r.beats - r.misses
@@ -77,9 +73,7 @@ export function EcoSurprisesWidget({ editMode, onRemove }: Props) {
             )
           })}
         </ul>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+      )}
+    </AsyncWidget>
   )
 }

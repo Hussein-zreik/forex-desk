@@ -1,6 +1,6 @@
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { StatRow } from '@/components/widget/StatRow'
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -29,46 +29,45 @@ export function SMCWidget({
   editMode,
   onRemove,
 }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<SmcData>(
+  const query = useWidgetData<SmcData>(
     () => api(`/api/indicators/smc?symbol=${encodeURIComponent(symbol)}`),
     [symbol],
     { pollMs: 300_000 },
   )
 
-  const struct = data?.structure
-  const color = struct?.includes('↑')
-    ? 'text-up'
-    : struct?.includes('↓')
-      ? 'text-down'
-      : 'text-muted-foreground'
-
   return (
-    <WidgetFrame
+    <AsyncWidget
       title={title}
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={data?.error ? 'SMC unavailable' : error}
+      query={query}
+      isEmpty={(d) => !!d.error || d.price == null}
+      empty={<EmptyState compact title="SMC unavailable" />}
     >
-      {data && data.price != null ? (
-        <div className="flex h-full flex-col justify-center gap-2">
-          <div className={cn('text-center text-lg font-semibold', color)}>{struct}</div>
-          <StatRow label="Swing resistance" value={fmtPrice(data.swingHigh)} cls="text-up" />
-          <StatRow label="Price" value={fmtPrice(data.price)} />
-          <StatRow label="Swing support" value={fmtPrice(data.swingLow)} cls="text-down" />
-          {data.fvg && (
-            <div className="mt-1 rounded-lg border border-border bg-surface px-2 py-1 text-center text-[11px]">
-              <span className={data.fvg.type === 'bullish' ? 'text-up' : 'text-down'}>
-                FVG {data.fvg.type}
-              </span>{' '}
-              {fmtPrice(data.fvg.from)}–{fmtPrice(data.fvg.to)}
-            </div>
-          )}
-        </div>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+      {(data) => {
+        const struct = data.structure
+        const color = struct?.includes('↑')
+          ? 'text-up'
+          : struct?.includes('↓')
+            ? 'text-down'
+            : 'text-muted-foreground'
+        return (
+          <div className="flex h-full flex-col justify-center gap-2">
+            <div className={cn('text-center text-lg font-semibold', color)}>{struct}</div>
+            <StatRow label="Swing resistance" value={fmtPrice(data.swingHigh)} cls="text-up" />
+            <StatRow label="Price" value={fmtPrice(data.price)} />
+            <StatRow label="Swing support" value={fmtPrice(data.swingLow)} cls="text-down" />
+            {data.fvg && (
+              <div className="mt-1 rounded-lg border border-border bg-surface px-2 py-1 text-center text-[11px]">
+                <span className={data.fvg.type === 'bullish' ? 'text-up' : 'text-down'}>
+                  FVG {data.fvg.type}
+                </span>{' '}
+                {fmtPrice(data.fvg.from)}–{fmtPrice(data.fvg.to)}
+              </div>
+            )}
+          </div>
+        )
+      }}
+    </AsyncWidget>
   )
 }

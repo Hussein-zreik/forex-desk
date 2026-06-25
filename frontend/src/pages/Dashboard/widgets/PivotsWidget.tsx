@@ -1,5 +1,5 @@
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -27,22 +27,22 @@ export function PivotsWidget({
   editMode,
   onRemove,
 }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<PivotsData>(
+  const query = useWidgetData<PivotsData>(
     () => api(`/api/indicators/pivots?symbol=${encodeURIComponent(symbol)}`),
     [symbol],
     { pollMs: 300_000 },
   )
 
   return (
-    <WidgetFrame
+    <AsyncWidget
       title={title}
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={data?.error ? 'Levels unavailable' : error}
+      query={query}
+      isEmpty={(d) => !!d.error || !d.levels}
+      empty={<EmptyState compact title="Levels unavailable" />}
     >
-      {data?.levels ? (
+      {(data) => (
         <ul className="flex h-full flex-col justify-center gap-1 text-sm">
           {ROWS.map((k) => {
             const isPivot = k === 'pp'
@@ -62,9 +62,7 @@ export function PivotsWidget({
             )
           })}
         </ul>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+      )}
+    </AsyncWidget>
   )
 }

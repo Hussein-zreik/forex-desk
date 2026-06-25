@@ -1,5 +1,5 @@
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -14,40 +14,36 @@ interface EtfData {
   error?: string
 }
 
+const hasFlow = (d: EtfData) => Object.values(d.etfs ?? {}).some(Boolean)
+
 interface Props {
   editMode?: boolean
   onRemove?: () => void
 }
 
 export function ETFFlowWidget({ editMode, onRemove }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<EtfData>(() => api('/api/etf-flow'), [], {
+  const query = useWidgetData<EtfData>(() => api('/api/etf-flow'), [], {
     pollMs: 300_000,
   })
 
-  const entries = Object.entries(data?.etfs ?? {})
-  const hasData = entries.some(([, v]) => v)
-
   return (
-    <WidgetFrame
+    <AsyncWidget
       title="Gold ETF Flow"
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={error}
+      query={query}
+      isEmpty={(d) => !!d.error || !hasFlow(d)}
+      empty={<EmptyState compact title="Flow data unavailable" />}
     >
-      {hasData ? (
+      {(d) => (
         <div className="flex h-full flex-col justify-center gap-3">
-          {entries.map(([sym, v]) => (
+          {Object.entries(d.etfs).map(([sym, v]) => (
             <div key={sym}>
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">{sym}</span>
                 {v ? (
                   <span
-                    className={cn(
-                      'tabular-nums',
-                      v.ratio && v.ratio >= 1 ? 'text-up' : 'text-down',
-                    )}
+                    className={cn('tabular-nums', v.ratio && v.ratio >= 1 ? 'text-up' : 'text-down')}
                   >
                     {v.ratio ? `${v.ratio}×` : '—'} avg
                   </span>
@@ -66,13 +62,7 @@ export function ETFFlowWidget({ editMode, onRemove }: Props) {
             Volume vs 20-day average (flow proxy)
           </p>
         </div>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : (
-        <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-          Flow data unavailable
-        </div>
       )}
-    </WidgetFrame>
+    </AsyncWidget>
   )
 }
