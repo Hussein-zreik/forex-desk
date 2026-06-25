@@ -15,6 +15,25 @@ test('reset populates the six default widgets', () => {
   expect(layouts.lg).toHaveLength(6)
 })
 
+test('default layouts clamp width and minW to each breakpoint column count', () => {
+  useLayout.getState().reset()
+  const { layouts } = useLayout.getState()
+  // xxs has 2 columns; defaults include `bias` (minW 3), which must be clamped.
+  for (const it of layouts.xxs) {
+    expect(it.w).toBeLessThanOrEqual(2)
+    expect(it.minW ?? 0).toBeLessThanOrEqual(2)
+  }
+})
+
+test('addWidget clamps minW to the breakpoint column count', () => {
+  useLayout.setState({ widgets: [], layouts: { xxs: [] } })
+  // `bias` declares minW 3; on the 2-col xxs grid it must be clamped to 2.
+  useLayout.getState().addWidget('bias')
+  const item = useLayout.getState().layouts.xxs.find((i) => i.i === 'bias')!
+  expect(item.w).toBeLessThanOrEqual(2)
+  expect(item.minW ?? 0).toBeLessThanOrEqual(2)
+})
+
 test('addWidget adds an instance and a layout item', () => {
   useLayout.setState({ widgets: [], layouts: { lg: [] } })
   useLayout.getState().addWidget('gold')
@@ -41,8 +60,7 @@ test('addWidget places the new item without overlapping existing ones', () => {
   const items = useLayout.getState().layouts.lg
   const a = items.find((i) => i.i === 'gold')!
   const b = items.find((i) => i.i === 'eurusd')!
-  const overlap =
-    a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
+  const overlap = a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
   expect(overlap).toBe(false)
 })
 

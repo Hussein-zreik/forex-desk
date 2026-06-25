@@ -34,11 +34,7 @@ const DEFAULT_TYPES = ['eurusd', 'gold', 'dxy', 'sessions', 'bias', 'fearGreed']
 function layoutSignature(layouts: Layouts): string {
   return Object.keys(layouts)
     .sort()
-    .map(
-      (bp) =>
-        `${bp}:` +
-        layouts[bp].map((i) => `${i.i},${i.x},${i.y},${i.w},${i.h}`).join('|'),
-    )
+    .map((bp) => `${bp}:` + layouts[bp].map((i) => `${i.i},${i.x},${i.y},${i.w},${i.h}`).join('|'))
     .join(';')
 }
 
@@ -68,7 +64,15 @@ function buildLayouts(instances: WidgetInstance[]): Layouts {
         y += rowH
         rowH = 0
       }
-      const item: GridItem = { i: inst.id, x, y, w, h: def.h, minW: def.minW, minH: def.minH }
+      const item: GridItem = {
+        i: inst.id,
+        x,
+        y,
+        w,
+        h: def.h,
+        minW: Math.min(def.minW, cols),
+        minH: def.minH,
+      }
       x += w
       rowH = Math.max(rowH, def.h)
       return item
@@ -161,7 +165,7 @@ export const useLayout = create<LayoutState>((set, get) => ({
       const items = layouts[bp] ? [...layouts[bp]] : []
       const w = Math.min(def.w, cols)
       const { x, y } = findSlot(items, w, def.h, cols)
-      items.push({ i: inst.id, x, y, w, h: def.h, minW: def.minW, minH: def.minH })
+      items.push({ i: inst.id, x, y, w, h: def.h, minW: Math.min(def.minW, cols), minH: def.minH })
       layouts[bp] = items
     }
     set({ widgets: [...state.widgets, inst], layouts })
