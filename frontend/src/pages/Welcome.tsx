@@ -488,7 +488,7 @@ export default function Welcome() {
                   delay={i * 0.05}
                   className="group flex gap-4 rounded-2xl border border-border bg-gradient-to-b from-surface to-surface/10 p-6 shadow-card backdrop-blur-sm transition-[transform,box-shadow,border-color] duration-300 ease-expo hover:-translate-y-1 hover:border-border-hover hover:shadow-card-hover"
                 >
-                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-border-hover bg-surface shadow-inner-top">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-primary/20 bg-primary/10 shadow-inner-top">
                     <Icon className="h-5 w-5 text-primary" aria-hidden />
                   </div>
                   <div>

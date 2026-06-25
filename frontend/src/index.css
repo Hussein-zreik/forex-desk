@@ -12,22 +12,24 @@
  * LIGHT THEME (default :root)
  * ------------------------------------------------------------------------ */
 :root {
-  --bg-deep: #f1f1f4;
-  --background: #fbfbfd;
-  --bg-elevated: #ffffff;
+  /* Cool slate canvas — tinted, not sterile white, so white cards lift off it */
+  --bg-deep: #e2e8f1;
+  --background: #edf0f6;
+  --bg-elevated: #f8fafc;
 
-  --surface: rgba(0, 0, 0, 0.03);
-  --surface-hover: rgba(0, 0, 0, 0.05);
+  /* Glass cards = near-white panels (light glass should be >= white/80) */
+  --surface: rgba(255, 255, 255, 0.85);
+  --surface-hover: rgba(255, 255, 255, 0.97);
 
   --card: #ffffff;
-  --card-foreground: #1a1a22;
+  --card-foreground: #0f172a;
   --popover: #ffffff;
-  --popover-foreground: #1a1a22;
+  --popover-foreground: #0f172a;
 
-  --foreground: #1a1a22;
-  --muted: #f1f1f4;
-  --muted-foreground: #5c616b;
-  --foreground-subtle: rgba(0, 0, 0, 0.55);
+  --foreground: #0f172a;
+  --muted: #e6eaf1;
+  --muted-foreground: #475569;
+  --foreground-subtle: rgba(15, 23, 42, 0.6);
 
   /* Brand indigo accent (shared across themes) */
   --primary: #5e6ad2;
@@ -36,10 +38,10 @@
   --accent-glow: rgba(94, 106, 210, 0.22);
 
   /* shadcn "accent" = subtle hover surface (not the brand color) */
-  --accent: rgba(0, 0, 0, 0.04);
-  --accent-foreground: #1a1a22;
-  --secondary: rgba(0, 0, 0, 0.04);
-  --secondary-foreground: #1a1a22;
+  --accent: rgba(15, 23, 42, 0.045);
+  --accent-foreground: #0f172a;
+  --secondary: rgba(15, 23, 42, 0.045);
+  --secondary-foreground: #0f172a;
 
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
@@ -47,30 +49,30 @@
   --up: #16a34a;
   --down: #dc2626;
 
-  --border: rgba(0, 0, 0, 0.08);
-  --border-hover: rgba(0, 0, 0, 0.12);
+  --border: rgba(15, 23, 42, 0.1);
+  --border-hover: rgba(15, 23, 42, 0.16);
   --border-accent: rgba(94, 106, 210, 0.35);
-  --input: rgba(0, 0, 0, 0.12);
+  --input: rgba(15, 23, 42, 0.16);
   --ring: #5e6ad2;
 
-  /* Ambient background */
-  --blob-1: rgba(94, 106, 210, 0.14);
-  --blob-2: rgba(94, 106, 210, 0.08);
-  --blob-3: rgba(94, 106, 210, 0.06);
-  --grid-line: rgba(0, 0, 0, 0.04);
-  --noise-opacity: 0.02;
+  /* Ambient — soft cool indigo wash over the slate canvas */
+  --blob-1: rgba(94, 106, 210, 0.16);
+  --blob-2: rgba(94, 106, 210, 0.1);
+  --blob-3: rgba(99, 102, 241, 0.08);
+  --grid-line: rgba(15, 23, 42, 0.045);
+  --noise-opacity: 0.018;
 
-  /* Multi-layer shadows (light: soft gray + crisp top highlight) */
+  /* Multi-layer shadows — cool slate so white cards lift off the slate canvas */
   --shadow-card-raw:
-    0 0 0 1px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.08), 0 14px 32px rgba(0, 0, 0, 0.09),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    0 0 0 1px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.06),
+    0 12px 28px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --shadow-card-hover-raw:
-    0 0 0 1px rgba(94, 106, 210, 0.28), 0 14px 36px rgba(0, 0, 0, 0.14),
-    0 0 50px rgba(94, 106, 210, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    0 0 0 1px rgba(94, 106, 210, 0.3), 0 16px 38px rgba(15, 23, 42, 0.14),
+    0 0 50px rgba(94, 106, 210, 0.14), inset 0 1px 0 rgba(255, 255, 255, 1);
   --shadow-cta-raw:
-    0 0 0 1px rgba(94, 106, 210, 0.5), 0 4px 12px rgba(94, 106, 210, 0.3),
+    0 0 0 1px rgba(94, 106, 210, 0.5), 0 6px 16px rgba(94, 106, 210, 0.32),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
-  --shadow-inner-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+  --shadow-inner-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.7);
 
   --radius: 0.5rem;
 }
