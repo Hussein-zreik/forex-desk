@@ -1,10 +1,21 @@
 import { create } from 'zustand'
 import { api } from '@/lib/api'
-import { WIDGETS } from '@/pages/Dashboard/widgets/registry'
+import { WIDGETS, type WidgetConfig } from '@/pages/Dashboard/widgets/registry'
 
 export interface WidgetInstance {
   id: string
   type: string
+  /** Per-instance config (e.g. symbol) so a type can appear more than once. */
+  config?: WidgetConfig
+}
+
+/** Unique, readable instance id, e.g. "bias-3f9a1c0b". */
+function newId(type: string): string {
+  const rand =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID().slice(0, 8)
+      : Math.random().toString(36).slice(2, 10)
+  return `${type}-${rand}`
 }
 
 export interface GridItem {
@@ -81,6 +92,36 @@ function buildLayouts(instances: WidgetInstance[]): Layouts {
   return layouts
 }
 
+/**
+ * Make `layouts` consistent with `widgets` for every breakpoint: drop orphan
+ * items, append a first-fit slot for any widget missing one, and clamp w/minW to
+ * the column count. Hardens server/legacy data where a breakpoint is partial or a
+ * widget was added/removed out of band.
+ */
+export function reconcileLayouts(widgets: WidgetInstance[], layouts: Layouts): Layouts {
+  const ids = new Set(widgets.map((w) => w.id))
+  const out: Layouts = {}
+  for (const [bp, cols] of Object.entries(COLS)) {
+    const items: GridItem[] = (layouts[bp] ?? [])
+      .filter((it) => ids.has(it.i))
+      .map((it) => ({
+        ...it,
+        w: Math.min(it.w, cols),
+        minW: it.minW != null ? Math.min(it.minW, cols) : undefined,
+      }))
+    for (const inst of widgets) {
+      if (items.some((it) => it.i === inst.id)) continue
+      const def = WIDGETS[inst.type]
+      if (!def) continue
+      const w = Math.min(def.w, cols)
+      const { x, y } = findSlot(items, w, def.h, cols)
+      items.push({ i: inst.id, x, y, w, h: def.h, minW: Math.min(def.minW, cols), minH: def.minH })
+    }
+    out[bp] = items
+  }
+  return out
+}
+
 interface LayoutState {
   widgets: WidgetInstance[]
   layouts: Layouts
@@ -88,7 +129,7 @@ interface LayoutState {
   loaded: boolean
   load: () => Promise<void>
   commitLayout: (bp: string, layout: GridItem[]) => void
-  addWidget: (type: string) => void
+  addWidget: (type: string, config?: WidgetConfig) => void
   removeWidget: (id: string) => void
   toggleEdit: () => void
   reset: () => void
@@ -121,7 +162,9 @@ export const useLayout = create<LayoutState>((set, get) => ({
     try {
       const data = await api<{ layouts: Layouts; widgets: WidgetInstance[] }>('/api/layout')
       if (data.widgets && data.widgets.length > 0) {
-        set({ widgets: data.widgets, layouts: data.layouts ?? {}, loaded: true })
+        // Drop instances whose type no longer exists, then make layouts consistent.
+        const widgets = data.widgets.filter((w) => WIDGETS[w.type])
+        set({ widgets, layouts: reconcileLayouts(widgets, data.layouts ?? {}), loaded: true })
         return
       }
     } catch {
@@ -154,12 +197,11 @@ export const useLayout = create<LayoutState>((set, get) => ({
     scheduleSave(get)
   },
 
-  addWidget(type) {
+  addWidget(type, config) {
     const state = get()
-    if (state.widgets.some((w) => w.type === type)) return
     const def = WIDGETS[type]
     if (!def) return
-    const inst: WidgetInstance = { id: type, type }
+    const inst: WidgetInstance = { id: newId(type), type, ...(config ? { config } : {}) }
     const layouts: Layouts = { ...state.layouts }
     for (const [bp, cols] of Object.entries(COLS)) {
       const items = layouts[bp] ? [...layouts[bp]] : []

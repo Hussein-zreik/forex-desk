@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { symbolLabel } from '@/lib/symbols'
 import { BiasWidget } from './BiasWidget'
 import { CBCalendarWidget } from './CBCalendarWidget'
 import { CorrelationWidget } from './CorrelationWidget'
@@ -37,6 +38,12 @@ export interface WidgetCtx {
   onRemove: () => void
 }
 
+/** Per-instance configuration so the same widget type can be added more than once. */
+export interface WidgetConfig {
+  symbol?: string
+  title?: string
+}
+
 export interface WidgetDef {
   type: string
   title: string
@@ -45,7 +52,25 @@ export interface WidgetDef {
   h: number
   minW: number
   minH: number
-  render: (ctx: WidgetCtx) => ReactNode
+  /** When set, the widget accepts a per-instance symbol (offered in the add menu). */
+  symbols?: string[]
+  render: (ctx: WidgetCtx, config?: WidgetConfig) => ReactNode
+}
+
+/** Symbols offered for configurable indicator widgets. */
+export const INDICATOR_SYMBOLS = [
+  'XAU=F',
+  'XAG=F',
+  'EURUSD=X',
+  'GBPUSD=X',
+  'USDJPY=X',
+  'DX-Y.NYB',
+  'BTC-USD',
+]
+
+/** Build the per-instance title for an indicator, e.g. "Composite Bias — EUR/USD". */
+function indicatorTitle(base: string, cfg?: WidgetConfig): string | undefined {
+  return cfg?.symbol ? `${base} — ${symbolLabel(cfg.symbol)}` : undefined
 }
 
 export const WIDGETS: Record<string, WidgetDef> = {
@@ -107,7 +132,10 @@ export const WIDGETS: Record<string, WidgetDef> = {
     h: 5,
     minW: 3,
     minH: 4,
-    render: (c) => <BiasWidget {...c} />,
+    symbols: INDICATOR_SYMBOLS,
+    render: (c, cfg) => (
+      <BiasWidget symbol={cfg?.symbol} title={indicatorTitle('Composite Bias', cfg)} {...c} />
+    ),
   },
   pivots: {
     type: 'pivots',
@@ -117,7 +145,10 @@ export const WIDGETS: Record<string, WidgetDef> = {
     h: 5,
     minW: 2,
     minH: 4,
-    render: (c) => <PivotsWidget {...c} />,
+    symbols: INDICATOR_SYMBOLS,
+    render: (c, cfg) => (
+      <PivotsWidget symbol={cfg?.symbol} title={indicatorTitle('Pivot Points', cfg)} {...c} />
+    ),
   },
   volatility: {
     type: 'volatility',
@@ -127,7 +158,14 @@ export const WIDGETS: Record<string, WidgetDef> = {
     h: 4,
     minW: 2,
     minH: 4,
-    render: (c) => <VolatilityWidget {...c} />,
+    symbols: INDICATOR_SYMBOLS,
+    render: (c, cfg) => (
+      <VolatilityWidget
+        symbol={cfg?.symbol}
+        title={indicatorTitle('Volatility Range', cfg)}
+        {...c}
+      />
+    ),
   },
   goldSilver: {
     type: 'goldSilver',
@@ -227,7 +265,10 @@ export const WIDGETS: Record<string, WidgetDef> = {
     h: 5,
     minW: 2,
     minH: 4,
-    render: (c) => <MTFWidget {...c} />,
+    symbols: INDICATOR_SYMBOLS,
+    render: (c, cfg) => (
+      <MTFWidget symbol={cfg?.symbol} title={indicatorTitle('MTF Confluence', cfg)} {...c} />
+    ),
   },
   hilo: {
     type: 'hilo',
@@ -237,7 +278,10 @@ export const WIDGETS: Record<string, WidgetDef> = {
     h: 4,
     minW: 2,
     minH: 4,
-    render: (c) => <HiLoWidget {...c} />,
+    symbols: INDICATOR_SYMBOLS,
+    render: (c, cfg) => (
+      <HiLoWidget symbol={cfg?.symbol} title={indicatorTitle('Hi-Lo Breakout', cfg)} {...c} />
+    ),
   },
   keyLevels: {
     type: 'keyLevels',
@@ -247,7 +291,10 @@ export const WIDGETS: Record<string, WidgetDef> = {
     h: 5,
     minW: 2,
     minH: 4,
-    render: (c) => <KeyLevelsWidget {...c} />,
+    symbols: INDICATOR_SYMBOLS,
+    render: (c, cfg) => (
+      <KeyLevelsWidget symbol={cfg?.symbol} title={indicatorTitle('Key Levels', cfg)} {...c} />
+    ),
   },
   currencyStrength: {
     type: 'currencyStrength',
@@ -297,7 +344,10 @@ export const WIDGETS: Record<string, WidgetDef> = {
     h: 5,
     minW: 2,
     minH: 4,
-    render: (c) => <SMCWidget {...c} />,
+    symbols: INDICATOR_SYMBOLS,
+    render: (c, cfg) => (
+      <SMCWidget symbol={cfg?.symbol} title={indicatorTitle('Smart Money', cfg)} {...c} />
+    ),
   },
   correlation: {
     type: 'correlation',

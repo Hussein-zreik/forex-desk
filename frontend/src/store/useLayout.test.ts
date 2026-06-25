@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { useLayout } from './useLayout'
+import { reconcileLayouts, useLayout } from './useLayout'
 
 // Avoid real network from the debounced save.
 vi.mock('@/lib/api', () => ({ api: vi.fn(() => Promise.resolve({})) }))
@@ -29,39 +29,63 @@ test('addWidget clamps minW to the breakpoint column count', () => {
   useLayout.setState({ widgets: [], layouts: { xxs: [] } })
   // `bias` declares minW 3; on the 2-col xxs grid it must be clamped to 2.
   useLayout.getState().addWidget('bias')
-  const item = useLayout.getState().layouts.xxs.find((i) => i.i === 'bias')!
+  const item = useLayout.getState().layouts.xxs[0]
   expect(item.w).toBeLessThanOrEqual(2)
   expect(item.minW ?? 0).toBeLessThanOrEqual(2)
 })
 
-test('addWidget adds an instance and a layout item', () => {
+test('addWidget adds an instance with a unique id and a layout item', () => {
   useLayout.setState({ widgets: [], layouts: { lg: [] } })
   useLayout.getState().addWidget('gold')
   const { widgets, layouts } = useLayout.getState()
-  expect(widgets).toEqual([{ id: 'gold', type: 'gold' }])
-  expect(layouts.lg.some((i) => i.i === 'gold')).toBe(true)
+  expect(widgets).toHaveLength(1)
+  expect(widgets[0].type).toBe('gold')
+  expect(widgets[0].id).not.toBe('gold') // unique, not the bare type
+  expect(layouts.lg.some((i) => i.i === widgets[0].id)).toBe(true)
 })
 
-test('addWidget is idempotent per type', () => {
-  useLayout.setState({
-    widgets: [{ id: 'gold', type: 'gold' }],
-    layouts: { lg: [{ i: 'gold', x: 0, y: 0, w: 3, h: 3 }] },
-  })
-  useLayout.getState().addWidget('gold')
-  expect(useLayout.getState().widgets).toHaveLength(1)
+test('addWidget allows multiple instances of the same type', () => {
+  useLayout.setState({ widgets: [], layouts: { lg: [] } })
+  useLayout.getState().addWidget('bias', { symbol: 'XAU=F' })
+  useLayout.getState().addWidget('bias', { symbol: 'EURUSD=X' })
+  const { widgets } = useLayout.getState()
+  expect(widgets).toHaveLength(2)
+  expect(new Set(widgets.map((w) => w.id)).size).toBe(2) // distinct ids
+  expect(widgets.map((w) => w.config?.symbol)).toEqual(['XAU=F', 'EURUSD=X'])
 })
 
 test('addWidget places the new item without overlapping existing ones', () => {
-  useLayout.setState({
-    widgets: [{ id: 'gold', type: 'gold' }],
-    layouts: { lg: [{ i: 'gold', x: 0, y: 0, w: 3, h: 3 }] },
-  })
+  useLayout.setState({ widgets: [], layouts: { lg: [] } })
+  useLayout.getState().addWidget('gold')
   useLayout.getState().addWidget('eurusd')
-  const items = useLayout.getState().layouts.lg
-  const a = items.find((i) => i.i === 'gold')!
-  const b = items.find((i) => i.i === 'eurusd')!
+  const { widgets, layouts } = useLayout.getState()
+  const a = layouts.lg.find((i) => i.i === widgets[0].id)!
+  const b = layouts.lg.find((i) => i.i === widgets[1].id)!
   const overlap = a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
   expect(overlap).toBe(false)
+})
+
+test('reconcileLayouts drops orphans, appends missing items, and clamps to cols', () => {
+  const widgets = [
+    { id: 'gold', type: 'gold' },
+    { id: 'bias-1', type: 'bias' },
+  ]
+  // lg has an orphan ('ghost') and is missing 'bias-1'; xxs is entirely absent.
+  const layouts = {
+    lg: [
+      { i: 'gold', x: 0, y: 0, w: 3, h: 3 },
+      { i: 'ghost', x: 3, y: 0, w: 3, h: 3 },
+    ],
+  }
+  const out = reconcileLayouts(widgets, layouts)
+  // orphan removed, every widget present at lg
+  expect(out.lg.map((i) => i.i).sort()).toEqual(['bias-1', 'gold'])
+  // missing breakpoint built, with widths/minW clamped to xxs's 2 columns
+  expect(out.xxs.map((i) => i.i).sort()).toEqual(['bias-1', 'gold'])
+  for (const it of out.xxs) {
+    expect(it.w).toBeLessThanOrEqual(2)
+    expect(it.minW ?? 0).toBeLessThanOrEqual(2)
+  }
 })
 
 test('commitLayout writes a breakpoint and ignores no-op updates', () => {

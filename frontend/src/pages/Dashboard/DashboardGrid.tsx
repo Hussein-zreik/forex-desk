@@ -72,7 +72,7 @@ export function DashboardGrid() {
           if (!def) return null
           return (
             <div key={inst.id}>
-              {def.render({ editMode, onRemove: () => removeWidget(inst.id) })}
+              {def.render({ editMode, onRemove: () => removeWidget(inst.id) }, inst.config)}
             </div>
           )
         })
