@@ -55,7 +55,10 @@ export function CryptoWidget({ editMode, onRemove }: Props) {
           {withPrice(d.quotes).map((q) => {
             const up = (q.changePercent ?? 0) >= 0
             return (
-              <div key={q.symbol} className="rounded-lg border border-border bg-surface px-2 py-1.5">
+              <div
+                key={q.symbol}
+                className="rounded-lg border border-border bg-surface px-2 py-1.5"
+              >
                 <div className="text-[11px] text-muted-foreground">
                   {LABEL[q.symbol] ?? q.symbol}
                 </div>

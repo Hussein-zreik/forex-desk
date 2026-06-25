@@ -58,7 +58,10 @@ export function MTFWidget({
             {data.timeframes.map((t) => {
               const s = SIG[t.label] ?? SIG['N/A']
               return (
-                <div key={t.tf} className="rounded-lg border border-border bg-surface p-2 text-center">
+                <div
+                  key={t.tf}
+                  className="rounded-lg border border-border bg-surface p-2 text-center"
+                >
                   <div className="text-[11px] text-muted-foreground">{t.tf}</div>
                   <div className={cn('text-xl font-semibold', s.c)}>{s.a}</div>
                 </div>

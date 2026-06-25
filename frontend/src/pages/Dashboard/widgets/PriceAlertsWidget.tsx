@@ -125,7 +125,11 @@ export function PriceAlertsWidget({ editMode, onRemove }: Props) {
             aria-label={soundEnabled ? 'Mute alert sound' : 'Unmute alert sound'}
             title={soundEnabled ? 'Alert sound on' : 'Alert sound off'}
           >
-            {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            {soundEnabled ? (
+              <Volume2 className="h-3.5 w-3.5" />
+            ) : (
+              <VolumeX className="h-3.5 w-3.5" />
+            )}
           </button>
         </form>
 

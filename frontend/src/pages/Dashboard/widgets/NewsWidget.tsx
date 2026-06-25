@@ -41,9 +41,7 @@ export function NewsWidget({ editMode, onRemove }: Props) {
       onRemove={onRemove}
       query={query}
       isEmpty={(d) => !!d.error || d.articles.length === 0}
-      empty={
-        <EmptyState compact title={query.data?.error ? 'News unavailable' : 'No headlines'} />
-      }
+      empty={<EmptyState compact title={query.data?.error ? 'News unavailable' : 'No headlines'} />}
     >
       {(d) => (
         <ul className="flex h-full flex-col gap-1 overflow-auto">
@@ -56,7 +54,9 @@ export function NewsWidget({ editMode, onRemove }: Props) {
                 className="no-drag block rounded-lg p-1.5 hover:bg-surface"
               >
                 <div className="flex items-start gap-2">
-                  <span className={cn('mt-1 h-1.5 w-1.5 shrink-0 rounded-full', DOT[a.sentiment])} />
+                  <span
+                    className={cn('mt-1 h-1.5 w-1.5 shrink-0 rounded-full', DOT[a.sentiment])}
+                  />
                   <span className="text-xs leading-snug">{a.title}</span>
                 </div>
                 {a.source && (

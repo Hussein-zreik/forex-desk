@@ -43,7 +43,10 @@ export function ETFFlowWidget({ editMode, onRemove }: Props) {
                 <span className="font-medium">{sym}</span>
                 {v ? (
                   <span
-                    className={cn('tabular-nums', v.ratio && v.ratio >= 1 ? 'text-up' : 'text-down')}
+                    className={cn(
+                      'tabular-nums',
+                      v.ratio && v.ratio >= 1 ? 'text-up' : 'text-down',
+                    )}
                   >
                     {v.ratio ? `${v.ratio}×` : '—'} avg
                   </span>

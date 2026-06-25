@@ -33,7 +33,12 @@ interface PortfolioData {
 const SYMBOLS = ['XAU=F', 'XAG=F', 'EURUSD=X', 'GBPUSD=X', 'USDJPY=X', 'DX-Y.NYB', 'BTC-USD']
 
 const COLUMNS: Column<Position>[] = [
-  { key: 'symbol', header: 'Symbol', cell: (p) => symbolLabel(p.symbol), cellClassName: 'font-medium' },
+  {
+    key: 'symbol',
+    header: 'Symbol',
+    cell: (p) => symbolLabel(p.symbol),
+    cellClassName: 'font-medium',
+  },
   {
     key: 'side',
     header: 'Side',
@@ -47,7 +52,11 @@ const COLUMNS: Column<Position>[] = [
     header: 'P&L',
     numeric: true,
     cellClassName: (p) =>
-      p.pnl == null ? 'text-muted-foreground font-medium' : p.pnl >= 0 ? 'text-up font-medium' : 'text-down font-medium',
+      p.pnl == null
+        ? 'text-muted-foreground font-medium'
+        : p.pnl >= 0
+          ? 'text-up font-medium'
+          : 'text-down font-medium',
     cell: (p) => (p.pnl == null ? '—' : `${p.pnl >= 0 ? '+' : ''}$${p.pnl.toLocaleString()}`),
   },
 ]

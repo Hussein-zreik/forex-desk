@@ -75,7 +75,10 @@ export function EconomicCalendarWidget({ editMode, onRemove }: Props) {
           {upcomingEvents(d, now).map((e, i) => (
             <li key={i} className="flex items-center gap-2">
               <span
-                className={cn('h-2 w-2 shrink-0 rounded-full', IMPACT_DOT[e.impact] ?? IMPACT_DOT.low)}
+                className={cn(
+                  'h-2 w-2 shrink-0 rounded-full',
+                  IMPACT_DOT[e.impact] ?? IMPACT_DOT.low,
+                )}
               />
               <span className="w-24 shrink-0 text-[11px] tabular-nums text-muted-foreground">
                 {timeLabel(e.date)}

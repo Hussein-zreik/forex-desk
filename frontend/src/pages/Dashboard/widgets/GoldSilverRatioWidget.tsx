@@ -14,9 +14,13 @@ interface Props {
 }
 
 export function GoldSilverRatioWidget({ editMode, onRemove }: Props) {
-  const query = useWidgetData<{ quotes: Quote[] }>(() => api('/api/quotes?symbols=XAU=F,XAG=F'), [], {
-    pollMs: 60_000,
-  })
+  const query = useWidgetData<{ quotes: Quote[] }>(
+    () => api('/api/quotes?symbols=XAU=F,XAG=F'),
+    [],
+    {
+      pollMs: 60_000,
+    },
+  )
 
   return (
     <AsyncWidget

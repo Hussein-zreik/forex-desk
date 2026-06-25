@@ -202,13 +202,7 @@ export default function Journal() {
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard
-          size="sm"
-          label="Total P&L"
-          value={stats.totalPnl}
-          format="money"
-          colorByValue
-        />
+        <StatCard size="sm" label="Total P&L" value={stats.totalPnl} format="money" colorByValue />
         <StatCard size="sm" label="Win Rate" value={`${stats.winRate}%`} />
         <StatCard size="sm" label="Trades" value={stats.trades} />
         <StatCard size="sm" label="Profit Factor" value={stats.profitFactor} />
@@ -234,7 +228,11 @@ export default function Journal() {
           </Field>
           <Field label="Direction" className="w-32">
             {(p) => (
-              <Select {...p} value={form.direction} onChange={(e) => set('direction', e.target.value)}>
+              <Select
+                {...p}
+                value={form.direction}
+                onChange={(e) => set('direction', e.target.value)}
+              >
                 <option value="LONG">Long</option>
                 <option value="SHORT">Short</option>
               </Select>

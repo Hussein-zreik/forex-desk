@@ -28,8 +28,7 @@ const buttonVariants = cva(
 )
 
 export interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   /** Render as the child element (e.g. a router Link) while keeping button styles. */
   asChild?: boolean
   /** Show a spinner, disable interaction, and mark `aria-busy`. Ignored when `asChild`. */
@@ -38,7 +37,17 @@ export interface ButtonProps
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant, size, asChild = false, loading = false, type, disabled, children, ...props },
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      loading = false,
+      type,
+      disabled,
+      children,
+      ...props
+    },
     ref,
   ) => {
     const Comp = asChild ? Slot : 'button'

@@ -15,7 +15,10 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
  * `wrapperClassName="w-auto"` for inline/compact use.
  */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, wrapperClassName, invalid, 'aria-invalid': ariaInvalid, children, ...props }, ref) => (
+  (
+    { className, wrapperClassName, invalid, 'aria-invalid': ariaInvalid, children, ...props },
+    ref,
+  ) => (
     <div className={cn('relative inline-flex w-full', wrapperClassName)}>
       <select
         ref={ref}

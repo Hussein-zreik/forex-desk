@@ -23,7 +23,9 @@ export function QuoteCardWidget({ symbol, title, editMode, onRemove }: Props) {
     setLoading(true)
     setError(null)
     try {
-      const res = await api<{ quotes: Quote[] }>(`/api/quotes?symbols=${encodeURIComponent(symbol)}`)
+      const res = await api<{ quotes: Quote[] }>(
+        `/api/quotes?symbols=${encodeURIComponent(symbol)}`,
+      )
       upsertQuotes(res.quotes)
     } catch (e) {
       // Keep the last value if we have one; only surface the error when there's nothing to show.

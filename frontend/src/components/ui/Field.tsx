@@ -38,10 +38,7 @@ export function Field({ label, error, hint, hideLabel, className, children }: Fi
     <div className={cn('flex flex-col gap-1.5', className)}>
       <label
         htmlFor={id}
-        className={cn(
-          'text-xs font-medium text-muted-foreground',
-          hideLabel && 'sr-only',
-        )}
+        className={cn('text-xs font-medium text-muted-foreground', hideLabel && 'sr-only')}
       >
         {label}
       </label>

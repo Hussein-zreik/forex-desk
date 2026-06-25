@@ -13,10 +13,7 @@ export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(
     <div
       ref={ref}
       aria-hidden="true"
-      className={cn(
-        'animate-pulse rounded-md bg-surface-hover',
-        className,
-      )}
+      className={cn('animate-pulse rounded-md bg-surface-hover', className)}
       {...props}
     />
   ),
