@@ -4,6 +4,7 @@ import { Background } from '@/components/Background'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { useAuth } from '@/store/useAuth'
 
@@ -47,34 +48,32 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <div className="space-y-1.5">
-            <label htmlFor="email" className="text-xs font-medium text-muted-foreground">
-              Email
-            </label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="password" className="text-xs font-medium text-muted-foreground">
-              Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete={isLogin ? 'current-password' : 'new-password'}
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
-          </div>
+          <Field label="Email">
+            {(p) => (
+              <Input
+                {...p}
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+              />
+            )}
+          </Field>
+          <Field label="Password">
+            {(p) => (
+              <Input
+                {...p}
+                type="password"
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+            )}
+          </Field>
 
           {error && (
             <p role="alert" className="text-sm text-destructive">
@@ -82,8 +81,8 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             </p>
           )}
 
-          <Button type="submit" size="lg" disabled={loading} className="w-full">
-            {loading ? 'Please wait…' : isLogin ? 'Sign in' : 'Create account'}
+          <Button type="submit" size="lg" loading={loading} className="w-full">
+            {isLogin ? 'Sign in' : 'Create account'}
           </Button>
         </form>
 

@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react'
+import { ClipboardList, Trash2 } from 'lucide-react'
 import { useMemo, useRef, useState, type FormEvent } from 'react'
 import {
   Area,
@@ -11,13 +11,19 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { AsyncBoundary } from '@/components/ui/AsyncBoundary'
+import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { type Column, DataTable } from '@/components/ui/DataTable'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
-import { useVirtualRows } from '@/hooks/useVirtualRows'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Select } from '@/components/ui/Select'
+import { StatCard } from '@/components/ui/StatCard'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
-import { cn } from '@/lib/cn'
 import {
   bySession,
   byWeekday,
@@ -47,15 +53,6 @@ function money(n: number): string {
   return `${n < 0 ? '-' : ''}$${Math.abs(n).toLocaleString()}`
 }
 
-function Stat({ label, value, color }: { label: string; value: string; color?: string }) {
-  return (
-    <Card className="p-3">
-      <div className="text-[11px] text-muted-foreground">{label}</div>
-      <div className={cn('mt-0.5 text-lg font-semibold tabular-nums', color)}>{value}</div>
-    </Card>
-  )
-}
-
 function BarPanel({ title, data, xKey }: { title: string; data: { pnl: number }[]; xKey: string }) {
   return (
     <Card>
@@ -78,24 +75,55 @@ function BarPanel({ title, data, xKey }: { title: string; data: { pnl: number }[
   )
 }
 
-const ROW_H = 48
-const VIRT_THRESHOLD = 40
+const COLUMNS: Column<JournalEntry>[] = [
+  {
+    key: 'date',
+    header: 'Date',
+    cell: (e) => e.traded_on,
+    cellClassName: 'whitespace-nowrap tabular-nums',
+  },
+  {
+    key: 'symbol',
+    header: 'Symbol',
+    cell: (e) => e.symbol,
+    cellClassName: 'font-medium whitespace-nowrap',
+  },
+  {
+    key: 'dir',
+    header: 'Dir',
+    cell: (e) => <Badge variant={e.direction === 'LONG' ? 'up' : 'down'}>{e.direction}</Badge>,
+  },
+  {
+    key: 'pnl',
+    header: 'P&L',
+    numeric: true,
+    cellClassName: (e) => (e.pnl >= 0 ? 'text-up font-medium' : 'text-down font-medium'),
+    cell: (e) => `${e.pnl >= 0 ? '+' : ''}${money(e.pnl)}`,
+  },
+  {
+    key: 'session',
+    header: 'Session',
+    cell: (e) => e.session || '—',
+    cellClassName: 'whitespace-nowrap text-muted-foreground',
+  },
+  {
+    key: 'mistake',
+    header: 'Mistake',
+    cell: (e) => e.mistake || '—',
+    cellClassName: 'max-w-[12rem] truncate text-muted-foreground',
+    hideOnMobile: true,
+  },
+]
 
 export default function Journal() {
-  const { data, refresh } = useWidgetData<JournalEntry[]>(() => api('/api/journal'), [])
-  const entries = useMemo(() => data ?? [], [data])
+  const query = useWidgetData<JournalEntry[]>(() => api('/api/journal'), [])
+  const { refresh } = query
+  const entries = useMemo(() => query.data ?? [], [query.data])
   const stats = summarize(entries)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  // Newest first; virtualize only once the list is long enough to matter.
+  // Newest first for the table.
   const rows = useMemo(() => [...entries].reverse(), [entries])
-  const tableRef = useRef<HTMLDivElement>(null)
-  const virtualize = rows.length > VIRT_THRESHOLD
-  const { start, end, topPad, bottomPad } = useVirtualRows(tableRef, {
-    count: rows.length,
-    rowHeight: ROW_H,
-  })
-  const visibleRows = virtualize ? rows.slice(start, end) : rows
 
   const [form, setForm] = useState({
     symbol: 'XAU=F',
@@ -106,12 +134,17 @@ export default function Journal() {
     mistake: '',
     notes: '',
   })
+  const [errors, setErrors] = useState<{ pnl?: string; traded_on?: string }>({})
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
 
   async function add(e: FormEvent) {
     e.preventDefault()
     const pnl = parseFloat(form.pnl)
-    if (Number.isNaN(pnl) || !form.traded_on) return
+    const next: { pnl?: string; traded_on?: string } = {}
+    if (Number.isNaN(pnl)) next.pnl = 'Enter the trade P&L (can be negative).'
+    if (!form.traded_on) next.traded_on = 'Pick the trade date.'
+    setErrors(next)
+    if (next.pnl || next.traded_on) return
     await api('/api/journal', { method: 'POST', body: JSON.stringify({ ...form, pnl }) })
     setForm((f) => ({ ...f, pnl: '', mistake: '', notes: '' }))
     await refresh()
@@ -133,106 +166,121 @@ export default function Journal() {
   }
 
   async function importCsv(file: File) {
-    const rows = parseCsv(await file.text())
-    for (const r of rows) {
+    const parsed = parseCsv(await file.text())
+    for (const r of parsed) {
       if (!r.traded_on || r.pnl == null) continue
       await api('/api/journal', { method: 'POST', body: JSON.stringify(r) }).catch(() => {})
     }
     await refresh()
   }
 
-  const selectCls =
-    'h-10 rounded-lg border border-input bg-bg-elevated px-2 text-sm text-foreground'
-
   return (
     <div className="animate-fade-up space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Journal</h1>
-        <div className="flex gap-2">
-          <Button size="sm" variant="secondary" onClick={() => fileRef.current?.click()}>
-            Import CSV
-          </Button>
-          <Button size="sm" variant="secondary" onClick={exportCsv}>
-            Export CSV
-          </Button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".csv"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) void importCsv(f)
-              e.target.value = ''
-            }}
-          />
-        </div>
-      </div>
+      <PageHeader
+        title="Journal"
+        actions={
+          <>
+            <Button size="sm" variant="secondary" onClick={() => fileRef.current?.click()}>
+              Import CSV
+            </Button>
+            <Button size="sm" variant="secondary" onClick={exportCsv}>
+              Export CSV
+            </Button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) void importCsv(f)
+                e.target.value = ''
+              }}
+            />
+          </>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat
+        <StatCard
+          size="sm"
           label="Total P&L"
-          value={money(stats.totalPnl)}
-          color={stats.totalPnl > 0 ? 'text-up' : stats.totalPnl < 0 ? 'text-down' : undefined}
+          value={stats.totalPnl}
+          format="money"
+          colorByValue
         />
-        <Stat label="Win Rate" value={`${stats.winRate}%`} />
-        <Stat label="Trades" value={String(stats.trades)} />
-        <Stat label="Profit Factor" value={String(stats.profitFactor)} />
-        <Stat label="Avg Win" value={money(stats.avgWin)} color="text-up" />
-        <Stat label="Avg Loss" value={money(-stats.avgLoss)} color="text-down" />
-        <Stat label="Max Drawdown" value={money(-stats.maxDrawdown)} color="text-down" />
-        <Stat label="Best Streak" value={`${stats.bestStreak}W`} />
+        <StatCard size="sm" label="Win Rate" value={`${stats.winRate}%`} />
+        <StatCard size="sm" label="Trades" value={stats.trades} />
+        <StatCard size="sm" label="Profit Factor" value={stats.profitFactor} />
+        <StatCard size="sm" label="Avg Win" value={stats.avgWin} format="money" tone="up" />
+        <StatCard size="sm" label="Avg Loss" value={-stats.avgLoss} format="money" tone="down" />
+        <StatCard
+          size="sm"
+          label="Max Drawdown"
+          value={-stats.maxDrawdown}
+          format="money"
+          tone="down"
+        />
+        <StatCard size="sm" label="Best Streak" value={`${stats.bestStreak}W`} />
       </div>
 
       <Card>
         <h2 className="mb-3 text-sm font-semibold tracking-tight">Log a Trade</h2>
-        <form onSubmit={add} className="flex flex-wrap items-end gap-2">
-          <Input
-            value={form.symbol}
-            onChange={(e) => set('symbol', e.target.value)}
-            placeholder="Symbol"
-            className="w-28"
-          />
-          <select
-            value={form.direction}
-            onChange={(e) => set('direction', e.target.value)}
-            className={selectCls}
-          >
-            <option value="LONG">Long</option>
-            <option value="SHORT">Short</option>
-          </select>
-          <Input
-            type="number"
-            inputMode="decimal"
-            value={form.pnl}
-            onChange={(e) => set('pnl', e.target.value)}
-            placeholder="P&L"
-            className="w-24"
-          />
-          <Input
-            type="date"
-            value={form.traded_on}
-            onChange={(e) => set('traded_on', e.target.value)}
-            className="w-40"
-          />
-          <select
-            value={form.session}
-            onChange={(e) => set('session', e.target.value)}
-            className={selectCls}
-          >
-            {SESSIONS.map((s) => (
-              <option key={s} value={s}>
-                {s || 'Session'}
-              </option>
-            ))}
-          </select>
-          <Input
-            value={form.mistake}
-            onChange={(e) => set('mistake', e.target.value)}
-            placeholder="Mistake (optional)"
-            className="w-40"
-          />
-          <Button type="submit">Log</Button>
+        <form onSubmit={add} className="flex flex-wrap items-start gap-3">
+          <Field label="Symbol" className="w-32">
+            {(p) => (
+              <Input {...p} value={form.symbol} onChange={(e) => set('symbol', e.target.value)} />
+            )}
+          </Field>
+          <Field label="Direction" className="w-32">
+            {(p) => (
+              <Select {...p} value={form.direction} onChange={(e) => set('direction', e.target.value)}>
+                <option value="LONG">Long</option>
+                <option value="SHORT">Short</option>
+              </Select>
+            )}
+          </Field>
+          <Field label="P&L" error={errors.pnl} className="w-28">
+            {(p) => (
+              <Input
+                {...p}
+                type="number"
+                inputMode="decimal"
+                placeholder="0.00"
+                value={form.pnl}
+                onChange={(e) => set('pnl', e.target.value)}
+              />
+            )}
+          </Field>
+          <Field label="Date" error={errors.traded_on} className="w-40">
+            {(p) => (
+              <Input
+                {...p}
+                type="date"
+                value={form.traded_on}
+                onChange={(e) => set('traded_on', e.target.value)}
+              />
+            )}
+          </Field>
+          <Field label="Session" className="w-36">
+            {(p) => (
+              <Select {...p} value={form.session} onChange={(e) => set('session', e.target.value)}>
+                {SESSIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s || 'Any'}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+          <Field label="Mistake (optional)" className="w-44">
+            {(p) => (
+              <Input {...p} value={form.mistake} onChange={(e) => set('mistake', e.target.value)} />
+            )}
+          </Field>
+          <Button type="submit" className="mt-[22px]">
+            Log
+          </Button>
         </form>
       </Card>
 
@@ -269,80 +317,41 @@ export default function Journal() {
       </div>
 
       <Card className="p-0">
-        {entries.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">No trades logged yet.</div>
-        ) : (
-          <div ref={tableRef} className={cn('overflow-auto', virtualize && 'max-h-[34rem]')}>
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-surface">
-                <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                  <th className="p-3 font-medium">Date</th>
-                  <th className="p-3 font-medium">Symbol</th>
-                  <th className="p-3 font-medium">Dir</th>
-                  <th className="p-3 text-right font-medium">P&L</th>
-                  <th className="p-3 font-medium">Session</th>
-                  <th className="p-3 font-medium">Mistake</th>
-                  <th className="p-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {virtualize && topPad > 0 && (
-                  <tr aria-hidden style={{ height: topPad }}>
-                    <td colSpan={7} />
-                  </tr>
-                )}
-                {visibleRows.map((e) => (
-                  <tr
-                    key={e.id}
-                    style={{ height: ROW_H }}
-                    className="border-b border-border/50 last:border-0"
-                  >
-                    <td className="p-3 whitespace-nowrap tabular-nums">{e.traded_on}</td>
-                    <td className="p-3 font-medium whitespace-nowrap">{e.symbol}</td>
-                    <td
-                      className={cn(
-                        'p-3 whitespace-nowrap',
-                        e.direction === 'LONG' ? 'text-up' : 'text-down',
-                      )}
-                    >
-                      {e.direction}
-                    </td>
-                    <td
-                      className={cn(
-                        'p-3 text-right font-medium whitespace-nowrap tabular-nums',
-                        e.pnl >= 0 ? 'text-up' : 'text-down',
-                      )}
-                    >
-                      {e.pnl >= 0 ? '+' : ''}
-                      {money(e.pnl)}
-                    </td>
-                    <td className="p-3 whitespace-nowrap text-muted-foreground">
-                      {e.session || '—'}
-                    </td>
-                    <td className="max-w-[12rem] truncate p-3 text-muted-foreground">
-                      {e.mistake || '—'}
-                    </td>
-                    <td className="p-3 text-right">
-                      <button
-                        type="button"
-                        onClick={() => remove(e.id)}
-                        className="text-muted-foreground hover:text-destructive"
-                        aria-label="Delete entry"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {virtualize && bottomPad > 0 && (
-                  <tr aria-hidden style={{ height: bottomPad }}>
-                    <td colSpan={7} />
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <AsyncBoundary
+          data={query.data}
+          loading={query.loading}
+          error={query.error}
+          onRetry={refresh}
+          isEmpty={() => rows.length === 0}
+          empty={
+            <EmptyState
+              icon={ClipboardList}
+              title="No trades logged yet"
+              description="Log your first trade above, or import a CSV to backfill history."
+            />
+          }
+        >
+          {() => (
+            <DataTable
+              columns={COLUMNS}
+              rows={rows}
+              rowKey={(e) => e.id}
+              caption="Logged trades"
+              stickyHeader
+              virtual={{ rowHeight: 48, threshold: 40, maxHeight: '34rem' }}
+              rowActions={(e) => (
+                <button
+                  type="button"
+                  onClick={() => remove(e.id)}
+                  className="text-muted-foreground hover:text-destructive"
+                  aria-label="Delete entry"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            />
+          )}
+        </AsyncBoundary>
       </Card>
     </div>
   )
