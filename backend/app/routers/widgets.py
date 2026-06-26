@@ -77,10 +77,18 @@ _EMPTY_SENTIMENT = {"positive": 0, "negative": 0, "neutral": 0}
 
 
 @router.get("/news")
-async def news_feed(db: AsyncSession = Depends(get_db)) -> dict:
+async def news_feed(feed: str = "gold", db: AsyncSession = Depends(get_db)) -> dict:
+    feeds = news.FEED_SETS.get(feed, news.GOLD_FEEDS)
     try:
-        raw = await get_cached(db, "news:gold", 600, lambda: news.fetch_feed(news.GOLD_FEEDS[0]))
-        articles = news.normalize_news(raw)
+        # Aggregate the first few sources in the set (cached per URL), dedupe, tag.
+        datasets = []
+        for url in feeds[:3]:
+            datasets.append(
+                await get_cached(db, f"news:{url}", 600, lambda u=url: news.fetch_feed(u))
+            )
+        articles = news.aggregate(datasets)
+        if not articles:
+            raise ValueError("empty")
         counts = dict(_EMPTY_SENTIMENT)
         for article in articles:
             counts[article["sentiment"]] += 1

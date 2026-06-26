@@ -264,6 +264,16 @@ export const WIDGETS: Record<string, WidgetDef> = {
     minH: 4,
     render: (c) => <NewsWidget {...c} />,
   },
+  fxNews: {
+    type: 'fxNews',
+    title: 'FX News',
+    category: 'News',
+    w: 4,
+    h: 6,
+    minW: 3,
+    minH: 4,
+    render: (c) => <NewsWidget feed="fx" {...c} />,
+  },
   newsSentiment: {
     type: 'newsSentiment',
     title: 'News Sentiment',

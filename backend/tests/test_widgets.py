@@ -380,3 +380,33 @@ def test_cot_net_positioning(client, monkeypatch):
 def test_cot_unknown_symbol_is_unavailable(client):
     body = client.get("/api/cot", params={"symbol": "ZZZ"}).json()
     assert body["error"] == "unavailable"
+
+
+def test_news_fx_aggregates_dedupes_and_tags(client, monkeypatch):
+    feed_a = {
+        "feed": {"title": "ForexLive"},
+        "items": [
+            {"title": "Dollar rises as Fed holds", "link": "a1"},
+            {"title": "ECB keeps euro steady", "link": "a2"},
+        ],
+    }
+    feed_b = {
+        "feed": {"title": "FXStreet"},
+        "items": [
+            {"title": "Dollar rises as Fed holds", "link": "dup"},  # duplicate title
+            {"title": "Gold climbs on demand", "link": "b1"},
+        ],
+    }
+    calls = iter([feed_a, feed_b, feed_b])
+
+    async def fake_fetch(url):
+        return next(calls)
+
+    monkeypatch.setattr("app.services.news.fetch_feed", fake_fetch)
+    body = client.get("/api/news", params={"feed": "fx"}).json()
+    titles = [a["title"] for a in body["articles"]]
+    assert titles.count("Dollar rises as Fed holds") == 1  # deduped
+    usd = next(a for a in body["articles"] if "Dollar" in a["title"])
+    assert "USD" in usd["tags"]
+    eur = next(a for a in body["articles"] if "ECB" in a["title"])
+    assert "EUR" in eur["tags"]

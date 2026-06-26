@@ -10,6 +10,7 @@ export interface Article {
   pubDate?: string
   source?: string
   sentiment: 'positive' | 'negative' | 'neutral'
+  tags?: string[]
 }
 
 export interface NewsData {
@@ -25,18 +26,20 @@ const DOT: Record<string, string> = {
 }
 
 interface Props {
+  feed?: 'gold' | 'fx'
+  title?: string
   editMode?: boolean
   onRemove?: () => void
 }
 
-export function NewsWidget({ editMode, onRemove }: Props) {
-  const query = useWidgetData<NewsData>(() => api('/api/news'), [], {
+export function NewsWidget({ feed = 'gold', title, editMode, onRemove }: Props) {
+  const query = useWidgetData<NewsData>(() => api(`/api/news?feed=${feed}`), [feed], {
     pollMs: 600_000,
   })
 
   return (
     <AsyncWidget
-      title="Gold News"
+      title={title ?? (feed === 'fx' ? 'FX News' : 'Gold News')}
       editMode={editMode}
       onRemove={onRemove}
       query={query}
@@ -59,9 +62,19 @@ export function NewsWidget({ editMode, onRemove }: Props) {
                   />
                   <span className="text-xs leading-snug">{a.title}</span>
                 </div>
-                {a.source && (
-                  <span className="ml-3.5 text-[10px] text-muted-foreground">{a.source}</span>
-                )}
+                <div className="ml-3.5 mt-0.5 flex flex-wrap items-center gap-1">
+                  {a.source && (
+                    <span className="text-[10px] text-muted-foreground">{a.source}</span>
+                  )}
+                  {a.tags?.map((t) => (
+                    <span
+                      key={t}
+                      className="rounded bg-surface px-1 font-mono text-[9px] tracking-wide text-muted-foreground"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
               </a>
             </li>
           ))}
