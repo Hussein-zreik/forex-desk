@@ -1,6 +1,6 @@
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { Sparkline } from '@/components/widget/Sparkline'
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -25,24 +25,22 @@ interface Props {
 }
 
 export function OptionsSentimentWidget({ editMode, onRemove }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<OptionsData>(
-    () => api('/api/options-sentiment'),
-    [],
-    { pollMs: 3_600_000 },
-  )
+  const query = useWidgetData<OptionsData>(() => api('/api/options-sentiment'), [], {
+    pollMs: 3_600_000,
+  })
 
   return (
-    <WidgetFrame
+    <AsyncWidget
       title="Options Sentiment"
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={data?.error ? 'CBOE data unavailable' : error}
+      query={query}
+      isEmpty={(d) => !!d.error || d.ratio == null}
+      empty={<EmptyState compact title="CBOE data unavailable" />}
     >
-      {data && data.ratio != null ? (
+      {(data) => (
         <div className="flex h-full flex-col items-center justify-center">
-          <div className="text-3xl font-semibold tabular-nums">{data.ratio.toFixed(2)}</div>
+          <div className="text-3xl font-semibold tabular-nums">{data.ratio!.toFixed(2)}</div>
           <div className="mt-1 text-[11px] tracking-wide text-muted-foreground">
             CBOE total put/call ratio
           </div>
@@ -68,9 +66,7 @@ export function OptionsSentimentWidget({ editMode, onRemove }: Props) {
             />
           )}
         </div>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+      )}
+    </AsyncWidget>
   )
 }

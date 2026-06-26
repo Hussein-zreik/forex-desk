@@ -7,7 +7,7 @@ from app.indicators.bias import composite_bias
 from app.indicators.smc import smc
 from app.indicators.technical import atr, key_levels, pearson, pivot_points, returns
 from app.services import calendar as cal_svc
-from app.services import cboe, fred, news, sentiment, yahoo
+from app.services import cboe, cot, fred, news, sentiment, yahoo
 from app.services.cache import get_cached
 from app.services.market import get_quote
 
@@ -77,10 +77,18 @@ _EMPTY_SENTIMENT = {"positive": 0, "negative": 0, "neutral": 0}
 
 
 @router.get("/news")
-async def news_feed(db: AsyncSession = Depends(get_db)) -> dict:
+async def news_feed(feed: str = "gold", db: AsyncSession = Depends(get_db)) -> dict:
+    feeds = news.FEED_SETS.get(feed, news.GOLD_FEEDS)
     try:
-        raw = await get_cached(db, "news:gold", 600, lambda: news.fetch_feed(news.GOLD_FEEDS[0]))
-        articles = news.normalize_news(raw)
+        # Aggregate the first few sources in the set (cached per URL), dedupe, tag.
+        datasets = []
+        for url in feeds[:3]:
+            datasets.append(
+                await get_cached(db, f"news:{url}", 600, lambda u=url: news.fetch_feed(u))
+            )
+        articles = news.aggregate(datasets)
+        if not articles:
+            raise ValueError("empty")
         counts = dict(_EMPTY_SENTIMENT)
         for article in articles:
             counts[article["sentiment"]] += 1
@@ -263,6 +271,36 @@ async def options_sentiment(db: AsyncSession = Depends(get_db)) -> dict:
         }
     except (httpx.HTTPError, KeyError, ValueError, TypeError):
         return {"error": "unavailable"}
+
+
+@router.get("/retail-sentiment")
+async def retail_sentiment(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
+    name = sentiment.RETAIL_NAMES.get(symbol)
+    if name is None:
+        return {"symbol": symbol, "error": "unavailable"}
+    try:
+        raw = await get_cached(db, "retail:all", 900, sentiment.fetch_retail)
+        result = sentiment.parse_retail(raw, name)
+        if result is None:
+            return {"symbol": symbol, "error": "unavailable"}
+        return {"symbol": symbol, **result}
+    except (httpx.HTTPError, KeyError, ValueError, TypeError):
+        return {"symbol": symbol, "error": "unavailable"}
+
+
+@router.get("/cot")
+async def cot_positioning(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
+    market = cot.SYMBOL_MARKETS.get(symbol)
+    if market is None:
+        return {"symbol": symbol, "error": "unavailable"}
+    try:
+        rows = await get_cached(db, f"cot:{symbol}", 21_600, lambda: cot.fetch_cot(market))
+        result = cot.parse_cot(rows)
+        if result is None:
+            return {"symbol": symbol, "error": "unavailable"}
+        return {"symbol": symbol, **result}
+    except (httpx.HTTPError, KeyError, ValueError, TypeError):
+        return {"symbol": symbol, "error": "unavailable"}
 
 
 @router.get("/etf-flow")

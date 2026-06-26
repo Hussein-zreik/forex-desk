@@ -1,6 +1,6 @@
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { Gauge } from '@/components/widget/Gauge'
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 
@@ -25,43 +25,43 @@ export function BiasWidget({
   editMode,
   onRemove,
 }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<BiasData>(
+  const query = useWidgetData<BiasData>(
     () => api<BiasData>(`/api/indicators/bias?symbol=${encodeURIComponent(symbol)}`),
     [symbol],
     { pollMs: 300_000 },
   )
 
-  const score = data?.score ?? 0
-  const color = score > 20 ? 'var(--up)' : score < -20 ? 'var(--down)' : 'var(--muted-foreground)'
-
   return (
-    <WidgetFrame
+    <AsyncWidget
       title={title}
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={data?.error ? 'Indicator data unavailable' : error}
+      query={query}
+      isEmpty={(d) => !!d.error || !d.label}
+      empty={<EmptyState compact title="Indicator data unavailable" />}
     >
-      {data && !data.error && data.label ? (
-        <div className="flex h-full flex-col items-center justify-center">
-          <Gauge
-            value={score}
-            min={-100}
-            max={100}
-            color={color}
-            centerLabel={String(score)}
-            centerSub={data.label}
-          />
-          <div className="mt-1 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-            {data.components?.rsi != null && <span>RSI {data.components.rsi}</span>}
-            {data.components?.maCross && <span>MA {data.components.maCross}</span>}
-            {data.components?.priceVsMa && <span>Px {data.components.priceVsMa} MA</span>}
+      {(data) => {
+        const score = data.score ?? 0
+        const color =
+          score > 20 ? 'var(--up)' : score < -20 ? 'var(--down)' : 'var(--muted-foreground)'
+        return (
+          <div className="flex h-full flex-col items-center justify-center">
+            <Gauge
+              value={score}
+              min={-100}
+              max={100}
+              color={color}
+              centerLabel={String(score)}
+              centerSub={data.label}
+            />
+            <div className="mt-1 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+              {data.components?.rsi != null && <span>RSI {data.components.rsi}</span>}
+              {data.components?.maCross && <span>MA {data.components.maCross}</span>}
+              {data.components?.priceVsMa && <span>Px {data.components.priceVsMa} MA</span>}
+            </div>
           </div>
-        </div>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+        )
+      }}
+    </AsyncWidget>
   )
 }

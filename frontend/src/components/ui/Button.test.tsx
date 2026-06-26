@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { Button } from './Button'
 
 test('renders its children', () => {
@@ -18,4 +18,12 @@ test('honors disabled and variant', () => {
     </Button>,
   )
   expect(screen.getByRole('button', { name: 'Disabled' })).toBeDisabled()
+})
+
+test('loading disables the button, sets aria-busy, and shows a spinner', () => {
+  render(<Button loading>Save</Button>)
+  const btn = screen.getByRole('button', { name: 'Save' })
+  expect(btn).toBeDisabled()
+  expect(btn).toHaveAttribute('aria-busy', 'true')
+  expect(within(btn).getByRole('status')).toBeInTheDocument()
 })

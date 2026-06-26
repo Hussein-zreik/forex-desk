@@ -1,5 +1,5 @@
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -27,31 +27,32 @@ const LABEL: Record<string, string> = {
   'AVAX-USD': 'AVAX',
 }
 
+const withPrice = (quotes: Quote[]) => quotes.filter((q) => q.price != null)
+
 interface Props {
   editMode?: boolean
   onRemove?: () => void
 }
 
 export function CryptoWidget({ editMode, onRemove }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<{ quotes: Quote[] }>(
+  const query = useWidgetData<{ quotes: Quote[] }>(
     () => api(`/api/quotes?symbols=${CRYPTO.join(',')}`),
     [],
     { pollMs: 30_000 },
   )
-  const quotes = (data?.quotes ?? []).filter((q) => q.price != null)
 
   return (
-    <WidgetFrame
+    <AsyncWidget
       title="Crypto"
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={error}
+      query={query}
+      isEmpty={(d) => withPrice(d.quotes).length === 0}
+      empty={<EmptyState compact title="Waiting for prices…" />}
     >
-      {quotes.length > 0 ? (
+      {(d) => (
         <div className="grid grid-cols-2 gap-2">
-          {quotes.map((q) => {
+          {withPrice(d.quotes).map((q) => {
             const up = (q.changePercent ?? 0) >= 0
             return (
               <div
@@ -69,9 +70,7 @@ export function CryptoWidget({ editMode, onRemove }: Props) {
             )
           })}
         </div>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+      )}
+    </AsyncWidget>
   )
 }

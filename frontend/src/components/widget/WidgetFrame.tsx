@@ -1,6 +1,8 @@
 import { GripVertical, RefreshCw, X } from 'lucide-react'
 import { type ReactNode } from 'react'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { cn } from '@/lib/cn'
+import { fmtAgo } from '@/lib/format'
 
 interface Props {
   title: string
@@ -8,6 +10,8 @@ interface Props {
   editMode?: boolean
   loading?: boolean
   error?: string | null
+  /** Epoch ms of the last successful fetch; shows a subtle freshness label. */
+  updatedAt?: number | null
   onRefresh?: () => void
   onRemove?: () => void
   children: ReactNode
@@ -19,10 +23,12 @@ export function WidgetFrame({
   editMode = false,
   loading = false,
   error = null,
+  updatedAt = null,
   onRefresh,
   onRemove,
   children,
 }: Props) {
+  const ago = !editMode && updatedAt ? fmtAgo(updatedAt) : ''
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-surface to-surface/10 shadow-card transition-[transform,box-shadow,border-color] duration-300 ease-expo will-change-transform hover:-translate-y-0.5 hover:border-border-hover hover:shadow-card-hover">
       <div
@@ -35,6 +41,14 @@ export function WidgetFrame({
         {icon}
         <h3 className="truncate text-xs font-semibold tracking-tight">{title}</h3>
         <div className="no-drag ml-auto flex items-center gap-1">
+          {ago && (
+            <span
+              className="mr-0.5 text-[10px] tabular-nums text-muted-foreground/70"
+              title="Last updated"
+            >
+              {ago}
+            </span>
+          )}
           {onRefresh && !editMode && (
             <button
               type="button"
@@ -58,22 +72,7 @@ export function WidgetFrame({
         </div>
       </div>
       <div className="relative min-h-0 flex-1 overflow-auto p-3">
-        {error ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
-            <p className="text-xs text-muted-foreground">{error}</p>
-            {onRefresh && (
-              <button
-                type="button"
-                onClick={onRefresh}
-                className="text-xs text-primary hover:text-accent-bright"
-              >
-                Retry
-              </button>
-            )}
-          </div>
-        ) : (
-          children
-        )}
+        {error ? <ErrorState message={error} onRetry={onRefresh} compact /> : children}
       </div>
     </div>
   )

@@ -38,7 +38,17 @@ export function DashboardGrid() {
 
   const bp = breakpointForWidth(width)
   const cols = COLS[bp]
-  const layout = layouts[bp] ?? []
+  // Clamp width/minW to the column count so legacy or narrow-breakpoint layouts
+  // (e.g. a minW:3 widget on the 2-col xxs grid) can't render wider than the
+  // container. Memoized to preserve RGL's stable-`layout` identity contract.
+  const layout = useMemo(() => {
+    const items = layouts[bp] ?? []
+    return items.map((it) => {
+      const minW = it.minW != null ? Math.min(it.minW, cols) : undefined
+      const w = Math.min(it.w, cols)
+      return it.w === w && it.minW === minW ? it : { ...it, w, minW }
+    })
+  }, [layouts, bp, cols])
 
   // Stable config identities (the base GridLayout bundles cols/rowHeight/margin
   // into `gridConfig`).
@@ -62,7 +72,7 @@ export function DashboardGrid() {
           if (!def) return null
           return (
             <div key={inst.id}>
-              {def.render({ editMode, onRemove: () => removeWidget(inst.id) })}
+              {def.render({ editMode, onRemove: () => removeWidget(inst.id) }, inst.config)}
             </div>
           )
         })

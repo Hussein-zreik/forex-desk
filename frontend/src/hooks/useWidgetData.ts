@@ -10,6 +10,8 @@ interface Result<T> {
   data: T | null
   loading: boolean
   error: string | null
+  /** Epoch ms of the last successful fetch, or null before the first one. */
+  updatedAt: number | null
   refresh: () => Promise<void>
 }
 
@@ -23,6 +25,7 @@ export function useWidgetData<T>(
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [updatedAt, setUpdatedAt] = useState<number | null>(null)
 
   const fetcherRef = useRef(fetcher)
   useEffect(() => {
@@ -37,6 +40,7 @@ export function useWidgetData<T>(
     setError(null)
     try {
       setData(await fetcherRef.current())
+      setUpdatedAt(Date.now())
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load')
     } finally {
@@ -63,5 +67,5 @@ export function useWidgetData<T>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh, pollMs, enabled, nonce, ...deps])
 
-  return { data, loading, error, refresh }
+  return { data, loading, error, updatedAt, refresh }
 }

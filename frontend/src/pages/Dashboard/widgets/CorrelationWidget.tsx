@@ -1,5 +1,4 @@
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 
@@ -29,22 +28,21 @@ interface Props {
 }
 
 export function CorrelationWidget({ editMode, onRemove }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<CorrData>(
+  const query = useWidgetData<CorrData>(
     () => api(`/api/correlation?symbols=${SYMS.join(',')}`),
     [],
     { pollMs: 300_000 },
   )
 
   return (
-    <WidgetFrame
+    <AsyncWidget
       title="Correlation Matrix"
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={error}
+      query={query}
+      isEmpty={(d) => !d.matrix}
     >
-      {data?.matrix ? (
+      {(data) => (
         <div className="flex h-full items-center justify-center overflow-auto">
           <table className="border-separate border-spacing-0.5 text-[10px]">
             <thead>
@@ -78,9 +76,7 @@ export function CorrelationWidget({ editMode, onRemove }: Props) {
             </tbody>
           </table>
         </div>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+      )}
+    </AsyncWidget>
   )
 }

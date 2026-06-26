@@ -2,8 +2,12 @@ import { ArrowLeft, BookOpen, Clock3, GraduationCap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { cn } from '@/lib/cn'
 import { CATEGORIES, GLOSSARY, LESSONS, type Lesson, type Level } from '@/lib/learnContent'
+
+const FILTER_OPTIONS = ['All', ...CATEGORIES].map((c) => ({ value: c, label: c }))
 
 const LEVEL_STYLE: Record<Level, string> = {
   Beginner: 'text-up',
@@ -122,29 +126,26 @@ export default function Learning() {
         </p>
       </header>
 
-      <div className="flex flex-wrap gap-2">
-        {['All', ...CATEGORIES].map((c) => (
-          <button
-            key={c}
-            type="button"
-            onClick={() => setFilter(c)}
-            className={cn(
-              'rounded-lg px-3 py-1.5 text-sm transition-colors',
-              filter === c
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-surface text-muted-foreground hover:bg-surface-hover',
-            )}
-          >
-            {c}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        label="Lesson category"
+        options={FILTER_OPTIONS}
+        value={filter}
+        onChange={setFilter}
+      />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {visible.map((lesson) => (
-          <LessonCard key={lesson.id} lesson={lesson} onOpen={() => setOpenId(lesson.id)} />
-        ))}
-      </div>
+      {visible.length === 0 ? (
+        <EmptyState
+          icon={BookOpen}
+          title="No lessons in this category yet"
+          description="Pick a different category to keep learning."
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((lesson) => (
+            <LessonCard key={lesson.id} lesson={lesson} onOpen={() => setOpenId(lesson.id)} />
+          ))}
+        </div>
+      )}
 
       <section>
         <h2 className="text-xl font-semibold tracking-tight">Glossary</h2>

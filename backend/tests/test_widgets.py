@@ -349,3 +349,85 @@ def test_macro_regime_risk_on(client, monkeypatch):
     assert body["vix"] == 12.5
     assert body["regime"] == "RISK-ON"
     assert body["realYield"] == 2.10
+
+
+def test_cot_net_positioning(client, monkeypatch):
+    rows = [
+        {
+            "report_date_as_yyyy_mm_dd": "2026-06-17T00:00:00.000",
+            "noncomm_positions_long_all": "200000",
+            "noncomm_positions_short_all": "120000",
+        },
+        {
+            "report_date_as_yyyy_mm_dd": "2026-06-10T00:00:00.000",
+            "noncomm_positions_long_all": "190000",
+            "noncomm_positions_short_all": "125000",
+        },
+    ]
+
+    async def fake_cot(market):
+        return rows
+
+    monkeypatch.setattr("app.services.cot.fetch_cot", fake_cot)
+    body = client.get("/api/cot", params={"symbol": "XAU=F"}).json()
+    assert body["symbol"] == "XAU=F"
+    assert body["net"] == 80000  # 200k long - 120k short
+    assert body["change"] == 15000  # 80000 - (190000-125000=65000)
+    assert body["longPct"] == 62.5
+    assert body["date"] == "2026-06-17"
+
+
+def test_cot_unknown_symbol_is_unavailable(client):
+    body = client.get("/api/cot", params={"symbol": "ZZZ"}).json()
+    assert body["error"] == "unavailable"
+
+
+def test_news_fx_aggregates_dedupes_and_tags(client, monkeypatch):
+    feed_a = {
+        "feed": {"title": "ForexLive"},
+        "items": [
+            {"title": "Dollar rises as Fed holds", "link": "a1"},
+            {"title": "ECB keeps euro steady", "link": "a2"},
+        ],
+    }
+    feed_b = {
+        "feed": {"title": "FXStreet"},
+        "items": [
+            {"title": "Dollar rises as Fed holds", "link": "dup"},  # duplicate title
+            {"title": "Gold climbs on demand", "link": "b1"},
+        ],
+    }
+    calls = iter([feed_a, feed_b, feed_b])
+
+    async def fake_fetch(url):
+        return next(calls)
+
+    monkeypatch.setattr("app.services.news.fetch_feed", fake_fetch)
+    body = client.get("/api/news", params={"feed": "fx"}).json()
+    titles = [a["title"] for a in body["articles"]]
+    assert titles.count("Dollar rises as Fed holds") == 1  # deduped
+    usd = next(a for a in body["articles"] if "Dollar" in a["title"])
+    assert "USD" in usd["tags"]
+    eur = next(a for a in body["articles"] if "ECB" in a["title"])
+    assert "EUR" in eur["tags"]
+
+
+def test_retail_sentiment_parses_and_flags_contrarian(client, monkeypatch):
+    payload = {
+        "symbols": [
+            {"name": "EURUSD", "longPercentage": 72, "shortPercentage": 28},
+            {"name": "XAUUSD", "longPercentage": 45, "shortPercentage": 55},
+        ]
+    }
+
+    async def fake_fetch():
+        return payload
+
+    monkeypatch.setattr("app.services.sentiment.fetch_retail", fake_fetch)
+    body = client.get("/api/retail-sentiment", params={"symbol": "EURUSD=X"}).json()
+    assert body["longPct"] == 72
+    assert body["shortPct"] == 28
+    assert body["contrarian"] == "bearish"  # crowd long → contrarian short
+
+    body2 = client.get("/api/retail-sentiment", params={"symbol": "XAU=F"}).json()
+    assert body2["contrarian"] == "neutral"

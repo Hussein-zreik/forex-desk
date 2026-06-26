@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { WidgetFrame } from '@/components/widget/WidgetFrame'
 import { Input } from '@/components/ui/Input'
 import { cn } from '@/lib/cn'
+import { signClass } from '@/lib/format'
 
 interface Props {
   editMode?: boolean
@@ -53,7 +54,7 @@ export function GoldCalculatorWidget({ editMode, onRemove }: Props) {
         <Field label="Exit" value={exit} onChange={setExit} />
         <div className="mt-1 flex items-center justify-between border-t border-border pt-2 text-sm">
           <span className="text-muted-foreground">P&amp;L</span>
-          <span className={cn('font-semibold tabular-nums', pnl >= 0 ? 'text-up' : 'text-down')}>
+          <span className={cn('font-semibold tabular-nums', signClass(pnl))}>
             ${pnl.toFixed(2)}
           </span>
         </div>

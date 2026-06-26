@@ -24,6 +24,7 @@ export const SYMBOL_LABELS: Record<string, string> = {
   'USDJPY=X': 'USD/JPY',
   'USDCHF=X': 'USD/CHF',
   'AUDUSD=X': 'AUD/USD',
+  'NZDUSD=X': 'NZD/USD',
   'USDCAD=X': 'USD/CAD',
   'DX-Y.NYB': 'DXY',
   'BTC-USD': 'BTC/USD',

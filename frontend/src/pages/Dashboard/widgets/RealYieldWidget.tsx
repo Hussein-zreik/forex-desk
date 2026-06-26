@@ -1,6 +1,6 @@
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { Sparkline } from '@/components/widget/Sparkline'
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 
@@ -18,24 +18,22 @@ interface Props {
 }
 
 export function RealYieldWidget({ editMode, onRemove }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<RealYieldData>(
-    () => api('/api/real-yield'),
-    [],
-    { pollMs: 3_600_000 },
-  )
+  const query = useWidgetData<RealYieldData>(() => api('/api/real-yield'), [], {
+    pollMs: 3_600_000,
+  })
 
   return (
-    <WidgetFrame
+    <AsyncWidget
       title="10Y Real Yield"
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={data?.error ? 'FRED data unavailable' : error}
+      query={query}
+      isEmpty={(d) => !!d.error || d.value == null}
+      empty={<EmptyState compact title="FRED data unavailable" />}
     >
-      {data && data.value != null ? (
+      {(data) => (
         <div className="flex h-full flex-col items-center justify-center">
-          <div className="text-3xl font-semibold tabular-nums">{data.value.toFixed(2)}%</div>
+          <div className="text-3xl font-semibold tabular-nums">{data.value!.toFixed(2)}%</div>
           <div className="mt-1 text-xs text-muted-foreground">10Y TIPS (DFII10) · {data.trend}</div>
           {data.history && data.history.length > 1 && (
             <Sparkline
@@ -45,9 +43,7 @@ export function RealYieldWidget({ editMode, onRemove }: Props) {
             />
           )}
         </div>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+      )}
+    </AsyncWidget>
   )
 }

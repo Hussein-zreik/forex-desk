@@ -1,11 +1,25 @@
+import re
+
 import httpx
 
 CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 _HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; ForexDesk/1.0)"}
 
+# Tickers only ever use these characters (e.g. XAU=F, DX-Y.NYB, ^GSPC, BTC-USD).
+# Reject anything else so user-supplied symbols can't shape the outbound request
+# or pollute the cache with arbitrary keys.
+_SYMBOL_RE = re.compile(r"^[A-Za-z0-9.=^-]{1,15}$")
+
+
+def validate_symbol(symbol: str) -> str:
+    if not _SYMBOL_RE.match(symbol):
+        raise ValueError(f"invalid symbol: {symbol!r}")
+    return symbol
+
 
 async def fetch_chart(symbol: str) -> dict:
     """Fetch the raw Yahoo Finance chart payload for a symbol."""
+    validate_symbol(symbol)
     async with httpx.AsyncClient(timeout=10, headers=_HEADERS) as client:
         resp = await client.get(CHART_URL.format(symbol=symbol))
         resp.raise_for_status()
@@ -14,6 +28,7 @@ async def fetch_chart(symbol: str) -> dict:
 
 async def fetch_ohlc(symbol: str, interval: str = "1d", range_: str = "6mo") -> dict:
     """Fetch a historical OHLC series for a symbol."""
+    validate_symbol(symbol)
     async with httpx.AsyncClient(timeout=10, headers=_HEADERS) as client:
         resp = await client.get(
             CHART_URL.format(symbol=symbol),

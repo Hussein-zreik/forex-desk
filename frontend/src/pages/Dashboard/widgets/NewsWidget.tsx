@@ -1,5 +1,5 @@
-import { WidgetFrame } from '@/components/widget/WidgetFrame'
-import { WidgetLoading } from '@/components/widget/WidgetLoading'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -10,6 +10,7 @@ export interface Article {
   pubDate?: string
   source?: string
   sentiment: 'positive' | 'negative' | 'neutral'
+  tags?: string[]
 }
 
 export interface NewsData {
@@ -25,28 +26,29 @@ const DOT: Record<string, string> = {
 }
 
 interface Props {
+  feed?: 'gold' | 'fx'
+  title?: string
   editMode?: boolean
   onRemove?: () => void
 }
 
-export function NewsWidget({ editMode, onRemove }: Props) {
-  const { data, loading, error, refresh } = useWidgetData<NewsData>(() => api('/api/news'), [], {
+export function NewsWidget({ feed = 'gold', title, editMode, onRemove }: Props) {
+  const query = useWidgetData<NewsData>(() => api(`/api/news?feed=${feed}`), [feed], {
     pollMs: 600_000,
   })
-  const articles = data?.articles ?? []
 
   return (
-    <WidgetFrame
-      title="Gold News"
+    <AsyncWidget
+      title={title ?? (feed === 'fx' ? 'FX News' : 'Gold News')}
       editMode={editMode}
       onRemove={onRemove}
-      onRefresh={refresh}
-      loading={loading}
-      error={data?.error ? 'News unavailable' : error}
+      query={query}
+      isEmpty={(d) => !!d.error || d.articles.length === 0}
+      empty={<EmptyState compact title={query.data?.error ? 'News unavailable' : 'No headlines'} />}
     >
-      {articles.length > 0 ? (
+      {(d) => (
         <ul className="flex h-full flex-col gap-1 overflow-auto">
-          {articles.map((a, i) => (
+          {d.articles.map((a, i) => (
             <li key={i}>
               <a
                 href={a.link}
@@ -60,16 +62,24 @@ export function NewsWidget({ editMode, onRemove }: Props) {
                   />
                   <span className="text-xs leading-snug">{a.title}</span>
                 </div>
-                {a.source && (
-                  <span className="ml-3.5 text-[10px] text-muted-foreground">{a.source}</span>
-                )}
+                <div className="ml-3.5 mt-0.5 flex flex-wrap items-center gap-1">
+                  {a.source && (
+                    <span className="text-[10px] text-muted-foreground">{a.source}</span>
+                  )}
+                  {a.tags?.map((t) => (
+                    <span
+                      key={t}
+                      className="rounded bg-surface px-1 font-mono text-[9px] tracking-wide text-muted-foreground"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
               </a>
             </li>
           ))}
         </ul>
-      ) : loading ? (
-        <WidgetLoading />
-      ) : null}
-    </WidgetFrame>
+      )}
+    </AsyncWidget>
   )
 }
