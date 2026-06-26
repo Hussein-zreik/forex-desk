@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { symbolLabel } from '@/lib/symbols'
+import { CALC_SYMBOLS } from '@/lib/risk'
 import { BiasWidget } from './BiasWidget'
 import { CBCalendarWidget } from './CBCalendarWidget'
 import { CorrelationWidget } from './CorrelationWidget'
@@ -28,6 +29,7 @@ import { OptionsSentimentWidget } from './OptionsSentimentWidget'
 import { PivotsWidget } from './PivotsWidget'
 import { RealYieldWidget } from './RealYieldWidget'
 import { QuoteCardWidget } from './QuoteCardWidget'
+import { RiskCalcWidget } from './RiskCalcWidget'
 import { RoundNumbersWidget } from './RoundNumbersWidget'
 import { SessionsWidget } from './SessionsWidget'
 import { TradingViewWidget } from './TradingViewWidget'
@@ -206,6 +208,17 @@ export const WIDGETS: Record<string, WidgetDef> = {
     minW: 2,
     minH: 4,
     render: (c) => <GoldCalculatorWidget {...c} />,
+  },
+  riskCalc: {
+    type: 'riskCalc',
+    title: 'Risk / Position Size',
+    category: 'Tools',
+    w: 3,
+    h: 6,
+    minW: 2,
+    minH: 5,
+    symbols: CALC_SYMBOLS,
+    render: (c, cfg) => <RiskCalcWidget symbol={cfg?.symbol} {...c} />,
   },
   tradingView: {
     type: 'tradingView',
