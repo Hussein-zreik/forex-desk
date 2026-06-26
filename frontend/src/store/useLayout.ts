@@ -61,6 +61,23 @@ function findSlot(items: GridItem[], w: number, h: number, cols: number): { x: n
   return { x: 0, y: 0 }
 }
 
+/**
+ * Stretch the widgets sharing a row so their widths sum to the full column
+ * count, then re-flow their x positions left-to-right. Spare columns are handed
+ * out round-robin from the left, so every row spans the full width with no
+ * ragged right-edge gap. Widening only ever grows past `minW`, so it's safe.
+ */
+function justifyRow(rowItems: GridItem[], cols: number): void {
+  const row = [...rowItems].sort((a, b) => a.x - b.x)
+  let free = cols - row.reduce((sum, it) => sum + it.w, 0)
+  for (let i = 0; free > 0; i++, free--) row[i % row.length].w += 1
+  let x = 0
+  for (const it of row) {
+    it.x = x
+    x += it.w
+  }
+}
+
 function buildLayouts(instances: WidgetInstance[]): Layouts {
   const layouts: Layouts = {}
   for (const [bp, cols] of Object.entries(COLS)) {
@@ -88,12 +105,16 @@ function buildLayouts(instances: WidgetInstance[]): Layouts {
       rowH = Math.max(rowH, def.h)
       return item
     })
-    // Equal-height rows: widgets in a row share `y`, so give each the row's
-    // tallest height. Bottoms align for a tidy, symmetrical grid (the row pitch
-    // already used this max, so nothing overlaps).
-    const rowMax: Record<number, number> = {}
-    for (const it of items) rowMax[it.y] = Math.max(rowMax[it.y] ?? 0, it.h)
-    for (const it of items) it.h = rowMax[it.y]
+    // Group items by row (they share `y` from packing above), then make each row
+    // full-width and equal-height so the default grid is gap-free and symmetrical:
+    // every row fills the width and all cards in a row line up top and bottom.
+    const byRow: Record<number, GridItem[]> = {}
+    for (const it of items) (byRow[it.y] ??= []).push(it)
+    for (const row of Object.values(byRow)) {
+      justifyRow(row, cols)
+      const h = Math.max(...row.map((it) => it.h))
+      for (const it of row) it.h = h
+    }
     layouts[bp] = items
   }
   return layouts
