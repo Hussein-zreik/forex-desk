@@ -67,10 +67,16 @@ def parse_retail(data: dict, name: str) -> dict | None:
             return None
         long_pct = float(long_pct) if long_pct is not None else 100 - float(short_pct)
         short_pct = float(short_pct) if short_pct is not None else 100 - long_pct
+        # Contrarian read: a heavily one-sided retail book leans the other way.
+        if long_pct >= 60:
+            contrarian = "bearish"
+        elif short_pct >= 60:
+            contrarian = "bullish"
+        else:
+            contrarian = "neutral"
         return {
             "longPct": round(long_pct, 1),
             "shortPct": round(short_pct, 1),
-            # Contrarian read: a heavily one-sided retail book leans the other way.
-            "contrarian": "bearish" if long_pct >= 60 else "bullish" if short_pct >= 60 else "neutral",
+            "contrarian": contrarian,
         }
     return None

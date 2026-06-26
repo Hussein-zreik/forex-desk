@@ -18,6 +18,6 @@ async def quotes(
     for symbol in requested:
         try:
             results.append(await get_quote(db, symbol))
-        except (httpx.HTTPError, KeyError, IndexError):
+        except (httpx.HTTPError, KeyError, IndexError, ValueError):
             results.append({"symbol": symbol, "error": "unavailable"})
     return {"quotes": results}
