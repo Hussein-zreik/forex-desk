@@ -1,0 +1,21 @@
+# Render blueprint — one free web service running the whole platform
+# (FastAPI API + bundled React app) at a single https://<name>.onrender.com URL.
+#
+# Deploy: push to GitHub → Render dashboard → "New +" → "Blueprint" → pick this
+# repo. Render reads this file, builds the root Dockerfile, and goes live.
+services:
+  - type: web
+    name: forex-desk
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # Non-dev environment ⇒ a real JWT secret is required (Render generates one).
+      - key: ENVIRONMENT
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      # Background poller fetches live prices/feeds — Render has outbound internet.
+      - key: POLLER_ENABLED
+        value: "true"
