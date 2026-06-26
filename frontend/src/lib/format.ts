@@ -13,6 +13,11 @@ export function fmtSigned(value: number | null | undefined, digits = 2): string 
   return `${sign}${value.toFixed(digits)}`
 }
 
+/** Tailwind class coloring a number by sign: >= 0 → up (green), < 0 → down (red). */
+export function signClass(n: number): string {
+  return n >= 0 ? 'text-up' : 'text-down'
+}
+
 /** Compact "time ago" for data-freshness labels: "now", "5s", "3m", "2h", "1d". */
 export function fmtAgo(ts: number | null | undefined, now: number = Date.now()): string {
   if (ts == null) return ''

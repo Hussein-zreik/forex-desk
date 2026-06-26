@@ -3,6 +3,7 @@ import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
+import { signClass } from '@/lib/format'
 import { type Quote } from '@/store/useMarketData'
 
 const PAIRS = ['EURUSD=X', 'GBPUSD=X', 'USDJPY=X', 'USDCHF=X', 'AUDUSD=X', 'USDCAD=X', 'NZDUSD=X']
@@ -65,10 +66,7 @@ export function CurrencyStrengthWidget({ editMode, onRemove }: Props) {
                   />
                 </div>
                 <span
-                  className={cn(
-                    'w-12 text-right text-[11px] tabular-nums',
-                    s.value >= 0 ? 'text-up' : 'text-down',
-                  )}
+                  className={cn('w-12 text-right text-[11px] tabular-nums', signClass(s.value))}
                 >
                   {s.value >= 0 ? '+' : ''}
                   {s.value.toFixed(2)}

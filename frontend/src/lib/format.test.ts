@@ -1,4 +1,10 @@
-import { fmtAgo, fmtPrice, fmtSigned } from './format'
+import { fmtAgo, fmtPrice, fmtSigned, signClass } from './format'
+
+test('signClass colors by sign (0 counts as up)', () => {
+  expect(signClass(1)).toBe('text-up')
+  expect(signClass(0)).toBe('text-up')
+  expect(signClass(-1)).toBe('text-down')
+})
 
 test('fmtPrice uses 4 decimals under 10 and 2 above, dash for null', () => {
   expect(fmtPrice(1.2345)).toBe('1.2345')

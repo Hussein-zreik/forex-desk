@@ -3,6 +3,7 @@ import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
+import { signClass } from '@/lib/format'
 import { symbolLabel } from '@/lib/symbols'
 
 interface CotData {
@@ -58,12 +59,7 @@ export function COTWidget({ symbol = 'XAU=F', title, editMode, onRemove }: Props
                 {net.toLocaleString()}
               </div>
               {d.change != null && (
-                <div
-                  className={cn(
-                    'text-[11px] tabular-nums',
-                    d.change >= 0 ? 'text-up' : 'text-down',
-                  )}
-                >
+                <div className={cn('text-[11px] tabular-nums', signClass(d.change))}>
                   {d.change >= 0 ? '▲' : '▼'} {Math.abs(d.change).toLocaleString()} wk
                 </div>
               )}
