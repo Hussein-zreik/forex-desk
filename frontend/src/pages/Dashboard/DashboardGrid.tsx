@@ -53,10 +53,10 @@ export function DashboardGrid() {
   // Stable config identities (the base GridLayout bundles cols/rowHeight/margin
   // into `gridConfig`).
   const gridConfig = useMemo(() => ({ cols, rowHeight: 64, margin: MARGIN }), [cols])
-  const dragConfig = useMemo(
-    () => ({ enabled: editMode, handle: '.widget-drag-handle', cancel: '.no-drag' }),
-    [editMode],
-  )
+  // Drag from anywhere on the card (not just the header grip) so moving a widget
+  // is discoverable; `.no-drag` still shields interactive controls (inputs,
+  // remove/refresh buttons, links).
+  const dragConfig = useMemo(() => ({ enabled: editMode, cancel: '.no-drag' }), [editMode])
   const resizeConfig = useMemo(
     () => ({ enabled: editMode, handles: ['se', 's', 'e'] as const }),
     [editMode],

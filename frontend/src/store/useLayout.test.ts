@@ -46,6 +46,17 @@ test('default layouts give every widget in a row the same height', () => {
   }
 })
 
+test('default layouts justify every row to span the full column width', () => {
+  useLayout.getState().reset()
+  const { layouts } = useLayout.getState()
+  const COLS: Record<string, number> = { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }
+  for (const [bp, cols] of Object.entries(COLS)) {
+    const byRow: Record<number, number> = {}
+    for (const it of layouts[bp]) byRow[it.y] = (byRow[it.y] ?? 0) + it.w
+    for (const used of Object.values(byRow)) expect(used).toBe(cols) // no right-edge gap
+  }
+})
+
 test('addWidget adds an instance with a unique id and a layout item', () => {
   useLayout.setState({ widgets: [], layouts: { lg: [] } })
   useLayout.getState().addWidget('gold')

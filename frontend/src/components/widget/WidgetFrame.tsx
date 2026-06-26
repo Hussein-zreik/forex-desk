@@ -30,7 +30,12 @@ export function WidgetFrame({
 }: Props) {
   const ago = !editMode && updatedAt ? fmtAgo(updatedAt) : ''
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-surface to-surface/10 shadow-card transition-[transform,box-shadow,border-color] duration-300 ease-expo will-change-transform hover:-translate-y-0.5 hover:border-border-hover hover:shadow-card-hover">
+    <div
+      className={cn(
+        'flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-surface to-surface/10 shadow-card transition-[transform,box-shadow,border-color] duration-300 ease-expo will-change-transform hover:-translate-y-0.5 hover:border-border-hover hover:shadow-card-hover',
+        editMode && 'cursor-move',
+      )}
+    >
       <div
         className={cn(
           'widget-drag-handle flex items-center gap-1.5 border-b border-border px-3 py-2',
