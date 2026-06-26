@@ -3,6 +3,7 @@ import { symbolLabel } from '@/lib/symbols'
 import { CALC_SYMBOLS } from '@/lib/risk'
 import { BiasWidget } from './BiasWidget'
 import { CBCalendarWidget } from './CBCalendarWidget'
+import { CBRatesWidget } from './CBRatesWidget'
 import { COTWidget } from './COTWidget'
 import { CorrelationWidget } from './CorrelationWidget'
 import { EconomicCalendarWidget } from './EconomicCalendarWidget'
@@ -29,6 +30,7 @@ import { NewsWidget } from './NewsWidget'
 import { OptionsSentimentWidget } from './OptionsSentimentWidget'
 import { PivotsWidget } from './PivotsWidget'
 import { RealYieldWidget } from './RealYieldWidget'
+import { RetailSentimentWidget } from './RetailSentimentWidget'
 import { QuoteCardWidget } from './QuoteCardWidget'
 import { RiskCalcWidget } from './RiskCalcWidget'
 import { RoundNumbersWidget } from './RoundNumbersWidget'
@@ -222,6 +224,17 @@ export const WIDGETS: Record<string, WidgetDef> = {
     minH: 4,
     render: (c) => <GoldCalculatorWidget {...c} />,
   },
+  retailSentiment: {
+    type: 'retailSentiment',
+    title: 'Retail Sentiment',
+    category: 'Positioning',
+    w: 3,
+    h: 4,
+    minW: 2,
+    minH: 3,
+    symbols: COT_SYMBOLS,
+    render: (c, cfg) => <RetailSentimentWidget symbol={cfg?.symbol} {...c} />,
+  },
   cot: {
     type: 'cot',
     title: 'COT Positioning',
@@ -293,6 +306,16 @@ export const WIDGETS: Record<string, WidgetDef> = {
     minW: 2,
     minH: 4,
     render: (c) => <RealYieldWidget {...c} />,
+  },
+  cbRates: {
+    type: 'cbRates',
+    title: 'Central Bank Rates',
+    category: 'Macro',
+    w: 4,
+    h: 5,
+    minW: 3,
+    minH: 4,
+    render: (c) => <CBRatesWidget {...c} />,
   },
   macroRegime: {
     type: 'macroRegime',

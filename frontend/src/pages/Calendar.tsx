@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
+import { Select } from '@/components/ui/Select'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -67,6 +68,7 @@ export default function Calendar() {
     pollMs: 600_000,
   })
   const [filter, setFilter] = useState<Filter>('all')
+  const [ccy, setCcy] = useState('all')
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
@@ -75,6 +77,9 @@ export default function Calendar() {
   }, [])
 
   const events = (query.data?.events ?? []).filter((e) => e.date)
+  const currencies = [...new Set(events.map((e) => e.currency).filter(Boolean))].sort()
+  const matches = (e: CalEvent) =>
+    (filter === 'all' || e.impact === filter) && (ccy === 'all' || e.currency === ccy)
   const nextHigh = events
     .filter((e) => e.impact === 'high' && new Date(e.date).getTime() > now)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]
@@ -105,22 +110,37 @@ export default function Calendar() {
           )
         })()}
 
-      <SegmentedControl
-        label="Impact filter"
-        options={FILTER_OPTIONS}
-        value={filter}
-        onChange={setFilter}
-      />
+      <div className="flex flex-wrap items-center gap-3">
+        <SegmentedControl
+          label="Impact filter"
+          options={FILTER_OPTIONS}
+          value={filter}
+          onChange={setFilter}
+        />
+        {currencies.length > 0 && (
+          <Select
+            aria-label="Currency filter"
+            wrapperClassName="w-auto"
+            className="h-9 text-sm"
+            value={ccy}
+            onChange={(e) => setCcy(e.target.value)}
+          >
+            <option value="all">All currencies</option>
+            {currencies.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </Select>
+        )}
+      </div>
 
       <AsyncBoundary
         data={query.data}
         loading={query.loading}
         error={query.error}
         onRetry={query.refresh}
-        isEmpty={(d) =>
-          !!d.error ||
-          (filter === 'all' ? events : events.filter((e) => e.impact === filter)).length === 0
-        }
+        isEmpty={(d) => !!d.error || !events.some(matches)}
         empty={
           <Card className="p-0">
             <EmptyState
@@ -135,10 +155,7 @@ export default function Calendar() {
         }
       >
         {(d) => {
-          const filtered =
-            filter === 'all'
-              ? d.events.filter((e) => e.date)
-              : d.events.filter((e) => e.date && e.impact === filter)
+          const filtered = d.events.filter((e) => e.date && matches(e))
           return (
             <div className="space-y-6">
               {groupByDay(filtered).map((g) => (

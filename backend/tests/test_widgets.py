@@ -410,3 +410,24 @@ def test_news_fx_aggregates_dedupes_and_tags(client, monkeypatch):
     assert "USD" in usd["tags"]
     eur = next(a for a in body["articles"] if "ECB" in a["title"])
     assert "EUR" in eur["tags"]
+
+
+def test_retail_sentiment_parses_and_flags_contrarian(client, monkeypatch):
+    payload = {
+        "symbols": [
+            {"name": "EURUSD", "longPercentage": 72, "shortPercentage": 28},
+            {"name": "XAUUSD", "longPercentage": 45, "shortPercentage": 55},
+        ]
+    }
+
+    async def fake_fetch():
+        return payload
+
+    monkeypatch.setattr("app.services.sentiment.fetch_retail", fake_fetch)
+    body = client.get("/api/retail-sentiment", params={"symbol": "EURUSD=X"}).json()
+    assert body["longPct"] == 72
+    assert body["shortPct"] == 28
+    assert body["contrarian"] == "bearish"  # crowd long → contrarian short
+
+    body2 = client.get("/api/retail-sentiment", params={"symbol": "XAU=F"}).json()
+    assert body2["contrarian"] == "neutral"

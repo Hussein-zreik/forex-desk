@@ -273,6 +273,21 @@ async def options_sentiment(db: AsyncSession = Depends(get_db)) -> dict:
         return {"error": "unavailable"}
 
 
+@router.get("/retail-sentiment")
+async def retail_sentiment(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
+    name = sentiment.RETAIL_NAMES.get(symbol)
+    if name is None:
+        return {"symbol": symbol, "error": "unavailable"}
+    try:
+        raw = await get_cached(db, "retail:all", 900, sentiment.fetch_retail)
+        result = sentiment.parse_retail(raw, name)
+        if result is None:
+            return {"symbol": symbol, "error": "unavailable"}
+        return {"symbol": symbol, **result}
+    except (httpx.HTTPError, KeyError, ValueError, TypeError):
+        return {"symbol": symbol, "error": "unavailable"}
+
+
 @router.get("/cot")
 async def cot_positioning(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
     market = cot.SYMBOL_MARKETS.get(symbol)
