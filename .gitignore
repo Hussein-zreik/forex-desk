@@ -33,3 +33,6 @@ htmlcov/
 *.log
 .idea/
 .vscode/
+
+# Single-service deploy: built frontend bundled into the backend image
+backend/static/

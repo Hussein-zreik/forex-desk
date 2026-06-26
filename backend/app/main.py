@@ -1,8 +1,11 @@
 import asyncio
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.db.session import init_db
@@ -47,3 +50,24 @@ app.include_router(ws.router)
 def health() -> dict[str, str]:
     """Liveness probe."""
     return {"status": "ok"}
+
+
+# Serve the built single-page app from the same origin as the API, so the whole
+# platform runs as one service behind one URL (no separate frontend host, no
+# CORS). Enabled only when a build is present (the Docker image copies the
+# frontend's `dist` here); local dev keeps using the Vite server untouched.
+_FRONTEND_DIST = Path(__file__).resolve().parent.parent / "static"
+
+if (_FRONTEND_DIST / "index.html").is_file():
+    _ASSETS = _FRONTEND_DIST / "assets"
+    if _ASSETS.is_dir():
+        app.mount("/assets", StaticFiles(directory=_ASSETS), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa(full_path: str) -> FileResponse:
+        """Return real static files (icons, manifest, sw.js) when they exist,
+        otherwise index.html so client-side routes (e.g. /dashboard) resolve."""
+        candidate = _FRONTEND_DIST / full_path
+        if full_path and candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(_FRONTEND_DIST / "index.html")

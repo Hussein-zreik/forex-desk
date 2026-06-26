@@ -2,7 +2,21 @@ import { API_BASE_URL } from '@/lib/api'
 
 type Listener = (data: unknown) => void
 
-const WS_URL = `${API_BASE_URL.replace(/^http/, 'ws')}/ws/prices`
+/**
+ * WebSocket endpoint. With an absolute API base (separate frontend/backend) we
+ * derive it from that; with an empty base (single-origin deploy where the API
+ * serves the app) we build it from the page's own host so http→ws / https→wss.
+ */
+function priceSocketUrl(): string {
+  if (API_BASE_URL) return `${API_BASE_URL.replace(/^http/, 'ws')}/ws/prices`
+  if (typeof window !== 'undefined') {
+    const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
+    return `${proto}://${window.location.host}/ws/prices`
+  }
+  return '/ws/prices'
+}
+
+const WS_URL = priceSocketUrl()
 
 /** Resilient WebSocket client with exponential-backoff reconnect. */
 export class PriceSocket {
