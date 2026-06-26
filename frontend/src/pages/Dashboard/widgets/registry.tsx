@@ -3,6 +3,7 @@ import { symbolLabel } from '@/lib/symbols'
 import { CALC_SYMBOLS } from '@/lib/risk'
 import { BiasWidget } from './BiasWidget'
 import { CBCalendarWidget } from './CBCalendarWidget'
+import { COTWidget } from './COTWidget'
 import { CorrelationWidget } from './CorrelationWidget'
 import { EconomicCalendarWidget } from './EconomicCalendarWidget'
 import { EcoSurprisesWidget } from './EcoSurprisesWidget'
@@ -58,6 +59,18 @@ export interface WidgetDef {
   symbols?: string[]
   render: (ctx: WidgetCtx, config?: WidgetConfig) => ReactNode
 }
+
+/** Symbols with a CFTC COT market mapping on the backend. */
+const COT_SYMBOLS = [
+  'EURUSD=X',
+  'GBPUSD=X',
+  'USDJPY=X',
+  'AUDUSD=X',
+  'USDCAD=X',
+  'USDCHF=X',
+  'NZDUSD=X',
+  'XAU=F',
+]
 
 /** Symbols offered for configurable indicator widgets. */
 export const INDICATOR_SYMBOLS = [
@@ -208,6 +221,17 @@ export const WIDGETS: Record<string, WidgetDef> = {
     minW: 2,
     minH: 4,
     render: (c) => <GoldCalculatorWidget {...c} />,
+  },
+  cot: {
+    type: 'cot',
+    title: 'COT Positioning',
+    category: 'Positioning',
+    w: 3,
+    h: 5,
+    minW: 2,
+    minH: 4,
+    symbols: COT_SYMBOLS,
+    render: (c, cfg) => <COTWidget symbol={cfg?.symbol} {...c} />,
   },
   riskCalc: {
     type: 'riskCalc',

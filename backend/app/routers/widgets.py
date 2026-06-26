@@ -7,7 +7,7 @@ from app.indicators.bias import composite_bias
 from app.indicators.smc import smc
 from app.indicators.technical import atr, key_levels, pearson, pivot_points, returns
 from app.services import calendar as cal_svc
-from app.services import cboe, fred, news, sentiment, yahoo
+from app.services import cboe, cot, fred, news, sentiment, yahoo
 from app.services.cache import get_cached
 from app.services.market import get_quote
 
@@ -263,6 +263,21 @@ async def options_sentiment(db: AsyncSession = Depends(get_db)) -> dict:
         }
     except (httpx.HTTPError, KeyError, ValueError, TypeError):
         return {"error": "unavailable"}
+
+
+@router.get("/cot")
+async def cot_positioning(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
+    market = cot.SYMBOL_MARKETS.get(symbol)
+    if market is None:
+        return {"symbol": symbol, "error": "unavailable"}
+    try:
+        rows = await get_cached(db, f"cot:{symbol}", 21_600, lambda: cot.fetch_cot(market))
+        result = cot.parse_cot(rows)
+        if result is None:
+            return {"symbol": symbol, "error": "unavailable"}
+        return {"symbol": symbol, **result}
+    except (httpx.HTTPError, KeyError, ValueError, TypeError):
+        return {"symbol": symbol, "error": "unavailable"}
 
 
 @router.get("/etf-flow")
