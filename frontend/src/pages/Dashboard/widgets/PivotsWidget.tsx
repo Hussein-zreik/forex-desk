@@ -42,27 +42,53 @@ export function PivotsWidget({
       isEmpty={(d) => !!d.error || !d.levels}
       empty={<EmptyState compact title="Levels unavailable" />}
     >
-      {(data) => (
-        <ul className="flex h-full flex-col justify-center gap-1 text-sm">
-          {ROWS.map((k) => {
-            const isPivot = k === 'pp'
-            const isResistance = k.startsWith('r')
-            return (
-              <li key={k} className="flex items-center justify-between">
-                <span
+      {(data) => {
+        const levels = data.levels!
+        const price = data.price
+        // Nearest level to current price, for highlighting.
+        const nearest =
+          price != null
+            ? ROWS.reduce((best, k) =>
+                Math.abs(levels[k] - price) < Math.abs(levels[best] - price) ? k : best,
+              )
+            : null
+        return (
+          <ul className="flex h-full flex-col justify-center gap-0.5 text-sm">
+            {ROWS.map((k) => {
+              const isPivot = k === 'pp'
+              const isResistance = k.startsWith('r')
+              const delta = price != null ? levels[k] - price : null
+              return (
+                <li
+                  key={k}
                   className={cn(
-                    'font-mono text-xs uppercase',
-                    isPivot ? 'text-primary' : isResistance ? 'text-up' : 'text-down',
+                    'flex items-center justify-between rounded px-1.5 py-0.5',
+                    k === nearest && 'bg-surface',
                   )}
                 >
-                  {k}
-                </span>
-                <span className="tabular-nums">{fmtPrice(data.levels![k])}</span>
-              </li>
-            )
-          })}
-        </ul>
-      )}
+                  <span
+                    className={cn(
+                      'font-mono text-xs uppercase',
+                      isPivot ? 'text-primary' : isResistance ? 'text-up' : 'text-down',
+                    )}
+                  >
+                    {k}
+                  </span>
+                  <span className="flex items-baseline gap-2">
+                    {delta != null && (
+                      <span className="text-[10px] tabular-nums text-muted-foreground">
+                        {delta >= 0 ? '+' : ''}
+                        {fmtPrice(delta)}
+                      </span>
+                    )}
+                    <span className="tabular-nums">{fmtPrice(levels[k])}</span>
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        )
+      }}
     </AsyncWidget>
   )
 }

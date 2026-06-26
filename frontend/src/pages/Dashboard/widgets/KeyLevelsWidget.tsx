@@ -4,6 +4,16 @@ import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { fmtPrice } from '@/lib/format'
 
+function Delta({ from, to }: { from: number; to: number }) {
+  const d = to - from
+  return (
+    <span className="text-[10px] tabular-nums text-muted-foreground">
+      {d >= 0 ? '+' : ''}
+      {fmtPrice(d)}
+    </span>
+  )
+}
+
 interface KLData {
   symbol: string
   price?: number
@@ -48,7 +58,10 @@ export function KeyLevelsWidget({
             {resistance.map((r) => (
               <li key={`r${r}`} className="flex items-center justify-between text-up">
                 <span className="text-[10px] uppercase opacity-70">R</span>
-                <span className="tabular-nums">{fmtPrice(r)}</span>
+                <span className="flex items-baseline gap-2">
+                  <Delta from={data.price!} to={r} />
+                  <span className="tabular-nums">{fmtPrice(r)}</span>
+                </span>
               </li>
             ))}
             <li className="flex items-center justify-between border-y border-border py-1 font-semibold text-primary">
@@ -58,7 +71,10 @@ export function KeyLevelsWidget({
             {support.map((s) => (
               <li key={`s${s}`} className="flex items-center justify-between text-down">
                 <span className="text-[10px] uppercase opacity-70">S</span>
-                <span className="tabular-nums">{fmtPrice(s)}</span>
+                <span className="flex items-baseline gap-2">
+                  <Delta from={data.price!} to={s} />
+                  <span className="tabular-nums">{fmtPrice(s)}</span>
+                </span>
               </li>
             ))}
           </ul>

@@ -7,6 +7,7 @@ export interface WidgetQuery<T> {
   data: T | null | undefined
   loading: boolean
   error: string | null
+  updatedAt?: number | null
   refresh: () => void
 }
 
@@ -51,6 +52,7 @@ export function AsyncWidget<T>({
       onRemove={onRemove}
       onRefresh={query.refresh}
       loading={query.loading}
+      updatedAt={query.updatedAt}
     >
       <AsyncBoundary
         data={query.data}
