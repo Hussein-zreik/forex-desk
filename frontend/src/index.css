@@ -29,11 +29,15 @@
   --muted-foreground: #5c616b;
   --foreground-subtle: rgba(0, 0, 0, 0.55);
 
-  /* Brand indigo accent (shared across themes) */
-  --primary: #5e6ad2;
+  /* Brand azure accent + violet / amber companions (match the dashboard theme) */
+  --primary: #3a63e0;
   --primary-foreground: #ffffff;
-  --accent-bright: #6872d9;
-  --accent-glow: rgba(94, 106, 210, 0.22);
+  --accent-bright: #4f7cff;
+  --accent-glow: rgba(79, 124, 255, 0.2);
+  --accent-violet: #8b5cf6;
+  --accent-violet-glow: rgba(139, 92, 246, 0.22);
+  --accent-amber: #f59e0b;
+  --accent-amber-glow: rgba(245, 158, 11, 0.22);
 
   /* shadcn "accent" = subtle hover surface (not the brand color) */
   --accent: rgba(0, 0, 0, 0.04);
@@ -49,14 +53,14 @@
 
   --border: rgba(0, 0, 0, 0.08);
   --border-hover: rgba(0, 0, 0, 0.12);
-  --border-accent: rgba(94, 106, 210, 0.35);
+  --border-accent: rgba(79, 124, 255, 0.35);
   --input: rgba(0, 0, 0, 0.12);
-  --ring: #5e6ad2;
+  --ring: #3a63e0;
 
-  /* Ambient background */
-  --blob-1: rgba(94, 106, 210, 0.14);
-  --blob-2: rgba(94, 106, 210, 0.08);
-  --blob-3: rgba(94, 106, 210, 0.06);
+  /* Ambient background — azure / violet / warm amber light pools */
+  --blob-1: rgba(79, 124, 255, 0.14);
+  --blob-2: rgba(139, 92, 246, 0.09);
+  --blob-3: rgba(245, 158, 11, 0.08);
   --grid-line: rgba(0, 0, 0, 0.04);
   --noise-opacity: 0.02;
 
@@ -65,10 +69,10 @@
     0 0 0 1px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.08), 0 14px 32px rgba(0, 0, 0, 0.09),
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
   --shadow-card-hover-raw:
-    0 0 0 1px rgba(94, 106, 210, 0.28), 0 14px 36px rgba(0, 0, 0, 0.14),
-    0 0 50px rgba(94, 106, 210, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    0 0 0 1px rgba(79, 124, 255, 0.28), 0 14px 36px rgba(0, 0, 0, 0.14),
+    0 0 50px rgba(79, 124, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --shadow-cta-raw:
-    0 0 0 1px rgba(94, 106, 210, 0.5), 0 4px 12px rgba(94, 106, 210, 0.3),
+    0 0 0 1px rgba(79, 124, 255, 0.5), 0 4px 12px rgba(79, 124, 255, 0.3),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
   --shadow-inner-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
 
@@ -79,49 +83,54 @@
  * DARK THEME (.dark) — the deep-space signature
  * ------------------------------------------------------------------------ */
 .dark {
-  --bg-deep: #020203;
-  --background: #050506;
-  --bg-elevated: #0a0a0c;
+  --bg-deep: #05080f;
+  --background: #090d17;
+  --bg-elevated: #0f1524;
 
-  --surface: rgba(255, 255, 255, 0.05);
-  --surface-hover: rgba(255, 255, 255, 0.08);
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.07);
 
-  --card: #0a0a0c;
-  --card-foreground: #ededef;
-  --popover: #0a0a0c;
-  --popover-foreground: #ededef;
+  --card: #0e1320;
+  --card-foreground: #eef2f8;
+  --popover: #0e1320;
+  --popover-foreground: #eef2f8;
 
-  --foreground: #ededef;
-  --muted: #14141a;
-  --muted-foreground: #8a8f98;
-  --foreground-subtle: rgba(255, 255, 255, 0.6);
+  --foreground: #f2f6fc;
+  --muted: #131a28;
+  --muted-foreground: #8b95a7;
+  --foreground-subtle: rgba(255, 255, 255, 0.58);
 
-  --primary: #5e6ad2;
+  /* Azure primary with violet + warm amber companions (from the reference UI) */
+  --primary: #4f7cff;
   --primary-foreground: #ffffff;
-  --accent-bright: #6872d9;
-  --accent-glow: rgba(94, 106, 210, 0.3);
+  --accent-bright: #6e97ff;
+  --accent-glow: rgba(79, 124, 255, 0.3);
+  --accent-violet: #8b5cf6;
+  --accent-violet-glow: rgba(139, 92, 246, 0.3);
+  --accent-amber: #f59e0b;
+  --accent-amber-glow: rgba(245, 158, 11, 0.28);
 
   --accent: rgba(255, 255, 255, 0.05);
-  --accent-foreground: #ededef;
+  --accent-foreground: #eef2f8;
   --secondary: rgba(255, 255, 255, 0.05);
-  --secondary-foreground: #ededef;
+  --secondary-foreground: #eef2f8;
 
-  --destructive: #ef4444;
+  --destructive: #f43f5e;
   --destructive-foreground: #ffffff;
-  --up: #22c55e;
-  --down: #ef4444;
+  --up: #34d399;
+  --down: #f4626f;
 
-  --border: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.1);
-  --border-accent: rgba(94, 106, 210, 0.3);
+  --border: rgba(255, 255, 255, 0.07);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --border-accent: rgba(79, 124, 255, 0.3);
   --input: rgba(255, 255, 255, 0.1);
-  --ring: #5e6ad2;
+  --ring: #4f7cff;
 
-  /* Faint indigo accent pools only — keeps the canvas predominantly black */
-  --blob-1: rgba(94, 106, 210, 0.1);
-  --blob-2: rgba(94, 106, 210, 0.06);
-  --blob-3: rgba(94, 106, 210, 0.05);
-  --grid-line: rgba(255, 255, 255, 0.02);
+  /* Navy canvas with azure + violet pools and a warm amber glow (bottom-right) */
+  --blob-1: rgba(79, 124, 255, 0.12);
+  --blob-2: rgba(139, 92, 246, 0.1);
+  --blob-3: rgba(245, 158, 11, 0.1);
+  --grid-line: rgba(255, 255, 255, 0.025);
   --noise-opacity: 0.015;
 
   --shadow-card-raw:
@@ -129,9 +138,9 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.07);
   --shadow-card-hover-raw:
     0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 32px rgba(0, 0, 0, 0.6),
-    0 0 64px rgba(94, 106, 210, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 0 64px rgba(79, 124, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   --shadow-cta-raw:
-    0 0 0 1px rgba(94, 106, 210, 0.5), 0 4px 12px rgba(94, 106, 210, 0.3),
+    0 0 0 1px rgba(79, 124, 255, 0.5), 0 4px 12px rgba(79, 124, 255, 0.3),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
   --shadow-inner-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
@@ -157,6 +166,10 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-accent-bright: var(--accent-bright);
   --color-accent-glow: var(--accent-glow);
+  --color-accent-violet: var(--accent-violet);
+  --color-accent-violet-glow: var(--accent-violet-glow);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-amber-glow: var(--accent-amber-glow);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-secondary: var(--secondary);
