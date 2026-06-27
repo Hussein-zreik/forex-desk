@@ -7,6 +7,8 @@ CHART = {
                     "chartPreviousClose": 1.0,
                     "currency": "USD",
                     "regularMarketTime": 1718000000,
+                    "regularMarketDayHigh": 1.15,
+                    "regularMarketDayLow": 1.05,
                 }
             }
         ]
@@ -26,6 +28,8 @@ def test_quotes_normalizes(client, monkeypatch):
     assert quote["symbol"] == "EURUSD=X"
     assert quote["price"] == 1.1
     assert round(quote["changePercent"], 2) == 10.0
+    assert quote["dayHigh"] == 1.15
+    assert quote["dayLow"] == 1.05
 
 
 def test_quotes_uses_cache(client, monkeypatch):

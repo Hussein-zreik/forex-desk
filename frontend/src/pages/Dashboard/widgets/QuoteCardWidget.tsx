@@ -37,7 +37,7 @@ export function QuoteCardWidget({ symbol, title, editMode, onRemove }: Props) {
 
   const hasQuote = quote && quote.price != null
   const up = (quote?.changePercent ?? 0) >= 0
-  const signal = quoteSignal(quote?.changePercent)
+  const signal = quoteSignal(quote)
   const hasDetail =
     quote &&
     (quote.dayHigh != null || quote.dayLow != null || quote.bid != null || quote.ask != null)
@@ -94,12 +94,23 @@ export function QuoteCardWidget({ symbol, title, editMode, onRemove }: Props) {
   )
 }
 
-/** A directional read derived from the day's % change. */
-function quoteSignal(cp: number | null | undefined) {
-  if (cp == null) return null
-  if (cp > 0.1) return { label: 'BUY SIGNAL', cls: 'border-up/30 bg-up/10 text-up' }
-  if (cp < -0.1) return { label: 'SELL SIGNAL', cls: 'border-down/30 bg-down/10 text-down' }
-  return { label: 'FLAT SIGNAL', cls: 'border-warning/30 bg-warning/10 text-warning' }
+const BUY = { label: 'BUY SIGNAL', cls: 'border-up/30 bg-up/10 text-up' }
+const SELL = { label: 'SELL SIGNAL', cls: 'border-down/30 bg-down/10 text-down' }
+const FLAT = { label: 'FLAT SIGNAL', cls: 'border-warning/30 bg-warning/10 text-warning' }
+
+/**
+ * Directional read: prefer the price's position within the day's range
+ * (near the high = bullish, near the low = bearish), falling back to the day's
+ * % change when the range isn't available.
+ */
+function quoteSignal(q?: Quote) {
+  if (!q || q.price == null) return null
+  if (q.dayHigh != null && q.dayLow != null && q.dayHigh > q.dayLow) {
+    const pos = (q.price - q.dayLow) / (q.dayHigh - q.dayLow)
+    return pos >= 0.66 ? BUY : pos <= 0.34 ? SELL : FLAT
+  }
+  if (q.changePercent == null) return null
+  return q.changePercent > 0.1 ? BUY : q.changePercent < -0.1 ? SELL : FLAT
 }
 
 function Row({ label, value }: { label: string; value: string }) {

@@ -55,6 +55,10 @@ def normalize_quote(symbol: str, data: dict) -> dict:
         "changePercent": change_pct,
         "currency": meta.get("currency"),
         "marketTime": meta.get("regularMarketTime"),
+        # Intraday range (present in the chart meta) — powers the quote card's
+        # High/Low rows and the range-aware signal.
+        "dayHigh": meta.get("regularMarketDayHigh"),
+        "dayLow": meta.get("regularMarketDayLow"),
     }
 
 
