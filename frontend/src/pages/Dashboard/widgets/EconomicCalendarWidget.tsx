@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { AsyncWidget } from '@/components/widget/AsyncWidget'
+import { SourceLink } from '@/components/widget/SourceLink'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -71,7 +72,8 @@ export function EconomicCalendarWidget({ editMode, onRemove }: Props) {
       }
     >
       {(d) => (
-        <ul className="flex h-full flex-col gap-1.5 overflow-auto text-sm">
+        <div className="flex h-full flex-col">
+          <ul className="flex flex-1 flex-col gap-1.5 overflow-auto text-sm">
           {upcomingEvents(d, now).map((e, i) => (
             <li key={i} className="flex items-center gap-2">
               <span
@@ -89,7 +91,9 @@ export function EconomicCalendarWidget({ editMode, onRemove }: Props) {
               <span className="min-w-0 flex-1 truncate text-xs">{e.title}</span>
             </li>
           ))}
-        </ul>
+          </ul>
+          <SourceLink name="Forex Factory" href="https://www.forexfactory.com/calendar" />
+        </div>
       )}
     </AsyncWidget>
   )

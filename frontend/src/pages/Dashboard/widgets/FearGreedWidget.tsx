@@ -1,6 +1,7 @@
 import { EmptyState } from '@/components/ui/EmptyState'
 import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { Gauge } from '@/components/widget/Gauge'
+import { SourceLink } from '@/components/widget/SourceLink'
 import { Sparkline } from '@/components/widget/Sparkline'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
@@ -106,6 +107,7 @@ export function FearGreedWidget({ editMode, onRemove }: Props) {
             <p className="text-center text-[10px] leading-snug text-muted-foreground">
               0 = extreme fear · 100 = extreme greed.
             </p>
+            <SourceLink name="alternative.me" href="https://alternative.me/crypto/fear-and-greed-index/" />
           </div>
         )
       }}

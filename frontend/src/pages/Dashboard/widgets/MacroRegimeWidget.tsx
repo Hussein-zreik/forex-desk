@@ -1,5 +1,6 @@
 import { EmptyState } from '@/components/ui/EmptyState'
 import { AsyncWidget } from '@/components/widget/AsyncWidget'
+import { SourceLink } from '@/components/widget/SourceLink'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -50,6 +51,7 @@ export function MacroRegimeWidget({ editMode, onRemove }: Props) {
                 </div>
               </div>
             </div>
+            <SourceLink name="Yahoo · FRED" href="https://fred.stlouisfed.org/series/DFII10" />
           </div>
         )
       }}

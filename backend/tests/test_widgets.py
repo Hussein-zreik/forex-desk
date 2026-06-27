@@ -116,15 +116,17 @@ def test_news_classifies_sentiment(client, monkeypatch):
 
 
 def test_real_yield(client, monkeypatch):
-    csv_text = "DATE,DFII10\n2026-06-19,2.10\n2026-06-20,2.15\n2026-06-21,2.18\n"
+    dfii = "DATE,DFII10\n2026-06-19,2.10\n2026-06-20,2.15\n2026-06-21,2.18\n"
+    t10yie = "DATE,T10YIE\n2026-06-20,2.30\n2026-06-21,2.34\n"
 
     async def fake_series(series_id):
-        return csv_text
+        return t10yie if series_id == "T10YIE" else dfii
 
     monkeypatch.setattr("app.services.fred.fetch_series", fake_series)
     body = client.get("/api/real-yield").json()
     assert body["value"] == 2.18
     assert body["trend"] == "up"
+    assert body["breakeven"] == 2.34  # T10YIE breakeven inflation
     assert len(body["history"]) == 3
 
 

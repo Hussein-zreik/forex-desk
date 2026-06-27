@@ -6,6 +6,7 @@ GOLD_FEEDS = [
     "https://www.kitco.com/rss/kitco-news.rss",
     "https://www.fxstreet.com/markets/commodities/metals/gold/rss",
     "https://www.investing.com/rss/commodities_Gold.rss",
+    "https://www.dailyfx.com/feeds/gold",
 ]
 
 # General FX desk feeds — the staples a forex trader keeps open.
