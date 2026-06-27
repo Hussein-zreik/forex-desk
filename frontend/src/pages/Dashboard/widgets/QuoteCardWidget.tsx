@@ -37,6 +37,10 @@ export function QuoteCardWidget({ symbol, title, editMode, onRemove }: Props) {
 
   const hasQuote = quote && quote.price != null
   const up = (quote?.changePercent ?? 0) >= 0
+  const signal = quoteSignal(quote?.changePercent)
+  const hasDetail =
+    quote &&
+    (quote.dayHigh != null || quote.dayLow != null || quote.bid != null || quote.ask != null)
 
   return (
     <WidgetFrame
@@ -50,19 +54,59 @@ export function QuoteCardWidget({ symbol, title, editMode, onRemove }: Props) {
       {!hasQuote ? (
         <EmptyState compact title="Waiting for price…" />
       ) : (
-        <div className="flex h-full flex-col justify-center">
-          <div className="text-2xl font-semibold tabular-nums">{fmtPrice(quote.price)}</div>
-          <div
-            className={cn(
-              'mt-1 flex items-center gap-2 text-sm tabular-nums',
-              up ? 'text-up' : 'text-down',
-            )}
-          >
-            <span>{fmtSigned(quote.change, Math.abs(quote.price!) < 10 ? 4 : 2)}</span>
-            {quote.changePercent != null && <span>({fmtSigned(quote.changePercent)}%)</span>}
+        <div className="flex h-full flex-col gap-3">
+          <div>
+            <div className="text-2xl font-semibold tabular-nums">{fmtPrice(quote.price)}</div>
+            <div
+              className={cn(
+                'mt-1 flex items-center gap-2 text-sm tabular-nums',
+                up ? 'text-up' : 'text-down',
+              )}
+            >
+              <span>{fmtSigned(quote.change, Math.abs(quote.price!) < 10 ? 4 : 2)}</span>
+              {quote.changePercent != null && <span>({fmtSigned(quote.changePercent)}%)</span>}
+            </div>
           </div>
+
+          {hasDetail && (
+            <dl className="space-y-1 border-t border-border pt-2 text-xs">
+              {quote.dayHigh != null && <Row label="High" value={fmtPrice(quote.dayHigh)} />}
+              {quote.dayLow != null && <Row label="Low" value={fmtPrice(quote.dayLow)} />}
+              {(quote.bid != null || quote.ask != null) && (
+                <Row label="Bid/Ask" value={`${fmtPrice(quote.bid)} / ${fmtPrice(quote.ask)}`} />
+              )}
+            </dl>
+          )}
+
+          {signal && (
+            <div
+              className={cn(
+                'mt-auto rounded-lg border py-2 text-center text-xs font-semibold tracking-wide',
+                signal.cls,
+              )}
+            >
+              {signal.label}
+            </div>
+          )}
         </div>
       )}
     </WidgetFrame>
+  )
+}
+
+/** A directional read derived from the day's % change. */
+function quoteSignal(cp: number | null | undefined) {
+  if (cp == null) return null
+  if (cp > 0.1) return { label: 'BUY SIGNAL', cls: 'border-up/30 bg-up/10 text-up' }
+  if (cp < -0.1) return { label: 'SELL SIGNAL', cls: 'border-down/30 bg-down/10 text-down' }
+  return { label: 'FLAT SIGNAL', cls: 'border-warning/30 bg-warning/10 text-warning' }
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-medium tabular-nums">{value}</dd>
+    </div>
   )
 }

@@ -7,6 +7,11 @@ export interface Quote {
   change: number | null
   changePercent: number | null
   currency?: string | null
+  /** Optional detail fields — rendered when the API provides them. */
+  dayHigh?: number | null
+  dayLow?: number | null
+  bid?: number | null
+  ask?: number | null
   error?: string
 }
 
