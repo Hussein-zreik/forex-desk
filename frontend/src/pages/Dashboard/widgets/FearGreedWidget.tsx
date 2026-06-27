@@ -18,10 +18,10 @@ interface FngData {
 
 function fngColor(value: number): string {
   if (value < 25) return '#f4626f' // coral (down)
-  if (value < 45) return '#f59e0b' // amber
+  if (value < 45) return '#f5a623' // warning amber
   if (value < 55) return '#eab308' // yellow
   if (value < 75) return '#a3e635' // lime
-  return '#34d399' // emerald (up)
+  return '#4ade80' // success green
 }
 
 interface Props {

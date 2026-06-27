@@ -33,15 +33,22 @@
   --muted-foreground: #5c616b;
   --foreground-subtle: rgba(0, 0, 0, 0.55);
 
-  /* Brand azure accent + violet / amber companions (match the dashboard theme) */
+  /* Brand blue accent + violet / warm companions (glass-theme palette) */
   --primary: #3a63e0;
   --primary-foreground: #ffffff;
-  --accent-bright: #4f7cff;
-  --accent-glow: rgba(79, 124, 255, 0.2);
-  --accent-violet: #8b5cf6;
-  --accent-violet-glow: rgba(139, 92, 246, 0.22);
-  --accent-amber: #f59e0b;
-  --accent-amber-glow: rgba(245, 158, 11, 0.22);
+  --accent-bright: #5b9dff;
+  --accent-glow: rgba(91, 157, 255, 0.2);
+  --accent-violet: #9b6cf0;
+  --accent-violet-glow: rgba(155, 108, 240, 0.22);
+  --accent-amber: #ff9c52;
+  --accent-amber-glow: rgba(255, 156, 82, 0.22);
+  --warning: #f5a623;
+  --warning-glow: rgba(245, 166, 35, 0.22);
+
+  /* Differentiate data families */
+  --grad-blue-violet: linear-gradient(135deg, #57b7ff, #9b6cf0);
+  --grad-warm: linear-gradient(135deg, #ffdca8, #ff9c52);
+  --grad-cool: linear-gradient(135deg, #57c8ff, #5b8def);
 
   /* shadcn "accent" = subtle hover surface (not the brand color) */
   --accent: rgba(0, 0, 0, 0.04);
@@ -87,58 +94,66 @@
  * DARK THEME (.dark) — the deep-space signature
  * ------------------------------------------------------------------------ */
 .dark {
-  --bg-deep: #05080f;
-  --background: #090d17;
-  --bg-elevated: #0f1524;
+  /* Canvas — near-black neutral; the glows below provide the two-tone wash */
+  --bg-deep: #050609;
+  --background: #07080c;
+  --bg-elevated: #0e1018;
 
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-hover: rgba(255, 255, 255, 0.07);
+  /* Nested-control fill + hover surface */
+  --surface: rgba(255, 255, 255, 0.05);
+  --surface-hover: rgba(255, 255, 255, 0.08);
 
-  /* Frosted-glass card (ported from the reference dashboard) */
+  /* Frosted-glass card */
   --card-grad: linear-gradient(165deg, rgba(26, 29, 40, 0.62), rgba(14, 16, 23, 0.62));
   --card-blur: 18px;
 
-  --card: #0e1320;
-  --card-foreground: #eef2f8;
-  --popover: #0e1320;
-  --popover-foreground: #eef2f8;
+  --card: #0e1018;
+  --card-foreground: #eef1f7;
+  --popover: #0e1018;
+  --popover-foreground: #eef1f7;
 
-  --foreground: #f2f6fc;
-  --muted: #131a28;
-  --muted-foreground: #8b95a7;
+  --foreground: #eef1f7;
+  --muted: #131722;
+  --muted-foreground: #8b94a6;
   --foreground-subtle: rgba(255, 255, 255, 0.58);
 
-  /* Azure primary with violet + warm amber companions (from the reference UI) */
-  --primary: #4f7cff;
+  /* Accents: primary blue, violet, warm orange (the glass-theme palette) */
+  --primary: #5b9dff;
   --primary-foreground: #ffffff;
-  --accent-bright: #6e97ff;
-  --accent-glow: rgba(79, 124, 255, 0.3);
-  --accent-violet: #8b5cf6;
-  --accent-violet-glow: rgba(139, 92, 246, 0.3);
-  --accent-amber: #f59e0b;
-  --accent-amber-glow: rgba(245, 158, 11, 0.28);
+  --accent-bright: #7ab0ff;
+  --accent-glow: rgba(91, 157, 255, 0.3);
+  --accent-violet: #9b6cf0;
+  --accent-violet-glow: rgba(155, 108, 240, 0.3);
+  --accent-amber: #ff9c52;
+  --accent-amber-glow: rgba(255, 156, 82, 0.28);
+  --warning: #f5a623;
+  --warning-glow: rgba(245, 166, 35, 0.28);
+
+  /* Differentiate data families */
+  --grad-blue-violet: linear-gradient(135deg, #57b7ff, #9b6cf0);
+  --grad-warm: linear-gradient(135deg, #ffdca8, #ff9c52);
+  --grad-cool: linear-gradient(135deg, #57c8ff, #5b8def);
 
   --accent: rgba(255, 255, 255, 0.05);
-  --accent-foreground: #eef2f8;
+  --accent-foreground: #eef1f7;
   --secondary: rgba(255, 255, 255, 0.05);
-  --secondary-foreground: #eef2f8;
+  --secondary-foreground: #eef1f7;
 
   --destructive: #f43f5e;
   --destructive-foreground: #ffffff;
-  --up: #34d399;
+  --up: #4ade80;
   --down: #f4626f;
 
   --border: rgba(255, 255, 255, 0.07);
-  --border-hover: rgba(255, 255, 255, 0.12);
-  --border-accent: rgba(79, 124, 255, 0.3);
+  --border-hover: rgba(255, 255, 255, 0.13);
+  --border-accent: rgba(91, 157, 255, 0.3);
   --input: rgba(255, 255, 255, 0.1);
-  --ring: #4f7cff;
+  --ring: #5b9dff;
 
-  /* Navy canvas with a cool top-left pool, a warm right-center glow, and a
-     violet accent below (ported from the reference dashboard atmosphere) */
-  --blob-1: rgba(46, 76, 150, 0.18);
-  --blob-2: rgba(139, 92, 246, 0.1);
-  --blob-3: rgba(255, 140, 72, 0.18);
+  /* Two-tone wash: warm orange right-of-center, cool blue top-left, violet below */
+  --blob-1: rgba(46, 76, 150, 0.16);
+  --blob-2: rgba(155, 108, 240, 0.1);
+  --blob-3: rgba(255, 140, 72, 0.2);
   --grid-line: rgba(255, 255, 255, 0.025);
   --noise-opacity: 0.015;
 
@@ -147,9 +162,9 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.07);
   --shadow-card-hover-raw:
     0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 32px rgba(0, 0, 0, 0.6),
-    0 0 64px rgba(79, 124, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 0 64px rgba(91, 157, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   --shadow-cta-raw:
-    0 0 0 1px rgba(79, 124, 255, 0.5), 0 4px 12px rgba(79, 124, 255, 0.3),
+    0 0 0 1px rgba(91, 157, 255, 0.5), 0 4px 12px rgba(91, 157, 255, 0.3),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
   --shadow-inner-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
@@ -179,6 +194,8 @@
   --color-accent-violet-glow: var(--accent-violet-glow);
   --color-accent-amber: var(--accent-amber);
   --color-accent-amber-glow: var(--accent-amber-glow);
+  --color-warning: var(--warning);
+  --color-warning-glow: var(--warning-glow);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-secondary: var(--secondary);
