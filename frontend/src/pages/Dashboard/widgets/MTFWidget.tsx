@@ -17,11 +17,11 @@ interface MtfData {
   error?: string
 }
 
-const SIG: Record<string, { c: string; a: string }> = {
-  BULLISH: { c: 'text-up', a: '↑' },
-  BEARISH: { c: 'text-down', a: '↓' },
-  NEUTRAL: { c: 'text-muted-foreground', a: '→' },
-  'N/A': { c: 'text-muted-foreground', a: '·' },
+const SIG: Record<string, { c: string; a: string; cell: string }> = {
+  BULLISH: { c: 'text-up', a: '↑', cell: 'border-up/30 bg-up/10' },
+  BEARISH: { c: 'text-down', a: '↓', cell: 'border-down/30 bg-down/10' },
+  NEUTRAL: { c: 'text-primary', a: '→', cell: 'border-primary/30 bg-primary/10' },
+  'N/A': { c: 'text-muted-foreground', a: '·', cell: 'border-border bg-surface' },
 }
 
 interface Props {
@@ -58,10 +58,7 @@ export function MTFWidget({
             {data.timeframes.map((t) => {
               const s = SIG[t.label] ?? SIG['N/A']
               return (
-                <div
-                  key={t.tf}
-                  className="rounded-lg border border-border bg-surface p-2 text-center"
-                >
+                <div key={t.tf} className={cn('rounded-lg border p-2 text-center', s.cell)}>
                   <div className="text-[11px] text-muted-foreground">{t.tf}</div>
                   <div className={cn('text-xl font-semibold', s.c)}>{s.a}</div>
                 </div>
