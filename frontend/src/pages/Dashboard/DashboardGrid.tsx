@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { GridLayout, noCompactor, useContainerWidth } from 'react-grid-layout'
+import { GridLayout, useContainerWidth, verticalCompactor } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import { cn } from '@/lib/cn'
@@ -89,7 +89,7 @@ export function DashboardGrid() {
           width={width}
           layout={layout}
           gridConfig={gridConfig}
-          compactor={noCompactor}
+          compactor={verticalCompactor}
           dragConfig={dragConfig}
           resizeConfig={resizeConfig}
           onDragStop={(l) => persist(l as unknown as GridItem[])}
