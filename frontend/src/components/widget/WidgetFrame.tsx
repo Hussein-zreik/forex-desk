@@ -32,9 +32,14 @@ export function WidgetFrame({
   return (
     <div
       className={cn(
-        'flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-surface to-surface/10 shadow-card transition-[transform,box-shadow,border-color] duration-300 ease-expo will-change-transform hover:-translate-y-0.5 hover:border-border-hover hover:shadow-card-hover',
+        'flex h-full flex-col overflow-hidden rounded-[22px] border border-border shadow-card transition-[transform,box-shadow,border-color] duration-300 ease-expo will-change-transform hover:-translate-y-[3px] hover:border-border-hover hover:shadow-card-hover',
         editMode && 'cursor-move',
       )}
+      style={{
+        backgroundImage: 'var(--card-grad)',
+        backdropFilter: 'blur(var(--card-blur))',
+        WebkitBackdropFilter: 'blur(var(--card-blur))',
+      }}
     >
       <div
         className={cn(

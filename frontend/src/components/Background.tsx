@@ -33,18 +33,19 @@ export function Background() {
         style={{ opacity: 'var(--noise-opacity)', backgroundImage: NOISE }}
       />
 
-      {/* Layer 3 — animated ambient blobs */}
+      {/* Layer 3 — ambient light pools (reference atmosphere: cool top-left,
+          warm right-center, violet accent below) */}
       <div
-        className="absolute -top-1/4 left-1/2 h-[1400px] w-[900px] -translate-x-1/2 animate-float rounded-full blur-[150px]"
+        className="absolute -top-40 -left-40 h-[1000px] w-[800px] animate-float-slow rounded-full blur-[150px]"
         style={{ background: 'var(--blob-1)' }}
       />
       <div
-        className="absolute top-1/4 -left-40 h-[800px] w-[600px] animate-float-slow rounded-full blur-[120px]"
-        style={{ background: 'var(--blob-2)' }}
+        className="absolute top-[34%] -right-40 h-[1100px] w-[760px] -translate-y-1/3 animate-float rounded-full blur-[150px]"
+        style={{ background: 'var(--blob-3)' }}
       />
       <div
-        className="absolute -right-40 bottom-0 h-[700px] w-[500px] animate-float rounded-full blur-[100px]"
-        style={{ background: 'var(--blob-3)' }}
+        className="absolute bottom-0 left-1/4 h-[700px] w-[560px] animate-float rounded-full blur-[130px]"
+        style={{ background: 'var(--blob-2)' }}
       />
     </div>
   )
