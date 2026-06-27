@@ -1,5 +1,6 @@
 import { EmptyState } from '@/components/ui/EmptyState'
 import { AsyncWidget } from '@/components/widget/AsyncWidget'
+import { SourceLink } from '@/components/widget/SourceLink'
 import { Sparkline } from '@/components/widget/Sparkline'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
@@ -65,6 +66,10 @@ export function OptionsSentimentWidget({ editMode, onRemove }: Props) {
               className="mt-3 h-7 w-full"
             />
           )}
+          <SourceLink
+            name="CBOE"
+            href="https://www.cboe.com/us/options/market_statistics/daily/"
+          />
         </div>
       )}
     </AsyncWidget>

@@ -1,5 +1,6 @@
 import { EmptyState } from '@/components/ui/EmptyState'
 import { AsyncWidget } from '@/components/widget/AsyncWidget'
+import { SourceLink } from '@/components/widget/SourceLink'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -63,6 +64,7 @@ export function RetailSentimentWidget({ symbol = 'EURUSD=X', title, editMode, on
                 </span>
               </div>
             )}
+            <SourceLink name="MyFXBook" href="https://www.myfxbook.com/community/outlook" />
           </div>
         )
       }}

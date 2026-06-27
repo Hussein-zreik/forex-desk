@@ -1,5 +1,6 @@
 import { EmptyState } from '@/components/ui/EmptyState'
 import { AsyncWidget } from '@/components/widget/AsyncWidget'
+import { SourceLink } from '@/components/widget/SourceLink'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -78,6 +79,7 @@ export function COTWidget({ symbol = 'XAU=F', title, editMode, onRemove }: Props
             {d.date && (
               <div className="text-center text-[10px] text-muted-foreground">As of {d.date}</div>
             )}
+            <SourceLink name="CFTC" href="https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm" />
           </div>
         )
       }}

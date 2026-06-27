@@ -110,10 +110,19 @@ async def real_yield(db: AsyncSession = Depends(get_db)) -> dict:
             trend = "flat"
         else:
             trend = "up" if latest["value"] > prev["value"] else "down"
+        # 10Y breakeven inflation (T10YIE) — best-effort, never fails the widget.
+        breakeven = None
+        try:
+            btext = await get_cached(db, "fred:T10YIE", 3600, lambda: fred.fetch_series("T10YIE"))
+            bseries = fred.parse_series(btext)
+            breakeven = bseries[-1]["value"] if bseries else None
+        except (httpx.HTTPError, KeyError, ValueError, TypeError):
+            breakeven = None
         return {
             "value": latest["value"],
             "date": latest["date"],
             "trend": trend,
+            "breakeven": breakeven,
             "history": [s["value"] for s in series[-35:]],
         }
     except (httpx.HTTPError, KeyError, ValueError, TypeError):
