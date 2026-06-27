@@ -1,8 +1,12 @@
+import { useId } from 'react'
+
 interface GaugeProps {
   value: number
   min: number
   max: number
   color: string
+  /** Optional second hue for a two-tone arc (e.g. blue→violet); defaults to `color`. */
+  colorTo?: string
   centerLabel: string
   centerSub?: string
 }
@@ -12,8 +16,9 @@ const CX = 100
 const CY = 100
 const CIRC = Math.PI * R
 
-/** Semicircular gauge with a colored value arc + needle. */
-export function Gauge({ value, min, max, color, centerLabel, centerSub }: GaugeProps) {
+/** Semicircular gauge with a gradient value arc + needle. */
+export function Gauge({ value, min, max, color, colorTo, centerLabel, centerSub }: GaugeProps) {
+  const gid = useId().replace(/:/g, '')
   const clamped = Math.max(min, Math.min(max, value))
   const pct = (clamped - min) / (max - min)
 
@@ -25,6 +30,13 @@ export function Gauge({ value, min, max, color, centerLabel, centerSub }: GaugeP
 
   return (
     <svg viewBox="0 0 200 118" className="w-full" role="img" aria-label={centerLabel}>
+      <defs>
+        {/* Sheen along the arc: translucent → solid (two-tone when colorTo is set). */}
+        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor={color} stopOpacity="0.55" />
+          <stop offset="100%" stopColor={colorTo ?? color} stopOpacity="1" />
+        </linearGradient>
+      </defs>
       <path
         d={arcPath}
         fill="none"
@@ -35,7 +47,7 @@ export function Gauge({ value, min, max, color, centerLabel, centerSub }: GaugeP
       <path
         d={arcPath}
         fill="none"
-        stroke={color}
+        stroke={`url(#${gid})`}
         strokeWidth={12}
         strokeLinecap="round"
         strokeDasharray={`${pct * CIRC} ${CIRC}`}
