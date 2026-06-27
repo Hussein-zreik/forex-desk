@@ -28,7 +28,8 @@ export function AddWidgetMenu() {
     } else {
       addWidget(d.type)
     }
-    close()
+    // Keep the menu open so you can add several widgets in a row; every entry
+    // stays in the list (widgets are multi-instance). Dismiss via the backdrop.
   }
 
   return (
