@@ -42,8 +42,14 @@ export function BiasWidget({
     >
       {(data) => {
         const score = data.score ?? 0
-        const color =
-          score > 20 ? 'var(--up)' : score < -20 ? 'var(--down)' : 'var(--muted-foreground)'
+        // Vibrant gradient arc in every state (no dull gray): bullish = emerald→
+        // cyan, bearish = coral→amber, neutral = the signature blue→violet ring.
+        const [color, colorTo] =
+          score > 20
+            ? ['var(--up)', '#22d3ee']
+            : score < -20
+              ? ['var(--down)', 'var(--accent-amber)']
+              : ['var(--primary)', 'var(--accent-violet)']
         return (
           <div className="flex h-full flex-col items-center justify-center">
             <Gauge
@@ -51,6 +57,7 @@ export function BiasWidget({
               min={-100}
               max={100}
               color={color}
+              colorTo={colorTo}
               centerLabel={String(score)}
               centerSub={data.label}
             />
