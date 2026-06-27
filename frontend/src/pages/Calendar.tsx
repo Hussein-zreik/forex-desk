@@ -25,7 +25,7 @@ interface CalData {
 
 const IMPACT_DOT: Record<string, string> = {
   high: 'bg-down',
-  medium: 'bg-[#f59e0b]',
+  medium: 'bg-warning',
   low: 'bg-muted-foreground/60',
   holiday: 'bg-muted-foreground/30',
 }

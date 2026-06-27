@@ -11,7 +11,7 @@ const FILTER_OPTIONS = ['All', ...CATEGORIES].map((c) => ({ value: c, label: c }
 
 const LEVEL_STYLE: Record<Level, string> = {
   Beginner: 'text-up',
-  Intermediate: 'text-[#f59e0b]',
+  Intermediate: 'text-warning',
   Advanced: 'text-down',
 }
 
