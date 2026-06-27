@@ -17,9 +17,9 @@ const NAV_ITEMS = [
 
 function navLinkClass({ isActive }: { isActive: boolean }) {
   return cn(
-    'rounded-lg px-3 py-2 text-sm transition-colors duration-200',
+    'rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200',
     isActive
-      ? 'bg-surface text-foreground'
+      ? 'bg-primary/15 text-primary'
       : 'text-muted-foreground hover:bg-surface hover:text-foreground',
   )
 }
