@@ -447,6 +447,48 @@ def test_news_fx_aggregates_dedupes_and_tags(client, monkeypatch):
     assert "EUR" in eur["tags"]
 
 
+def test_parse_feed_reads_rss_directly():
+    from app.services import news
+
+    rss = """<?xml version="1.0"?>
+    <rss version="2.0"><channel>
+      <title>Kitco News</title>
+      <item><title>Gold rallies to record high</title>
+        <link>http://x/1</link><pubDate>Mon, 01 Jun 2026 10:00:00 GMT</pubDate></item>
+      <item><title>Silver slips on demand</title>
+        <link>http://x/2</link><pubDate>Mon, 01 Jun 2026 09:00:00 GMT</pubDate></item>
+    </channel></rss>"""
+    data = news.parse_feed(rss)
+    assert data["feed"]["title"] == "Kitco News"
+    assert len(data["items"]) == 2
+    assert data["items"][0]["title"] == "Gold rallies to record high"
+    assert data["items"][0]["link"] == "http://x/1"
+
+
+def test_parse_feed_reads_atom_entries():
+    from app.services import news
+
+    atom = """<?xml version="1.0"?>
+    <feed xmlns="http://www.w3.org/2005/Atom">
+      <title>FX Wire</title>
+      <entry><title>Dollar firms ahead of Fed</title>
+        <link href="http://x/a"/><updated>2026-06-01T10:00:00Z</updated></entry>
+    </feed>"""
+    data = news.parse_feed(atom)
+    assert data["feed"]["title"] == "FX Wire"
+    assert data["items"][0]["title"] == "Dollar firms ahead of Fed"
+    assert data["items"][0]["link"] == "http://x/a"
+
+
+def test_parse_feed_rejects_garbage():
+    import pytest
+
+    from app.services import news
+
+    with pytest.raises(ValueError):
+        news.parse_feed("<<not xml>>")
+
+
 def test_retail_sentiment_parses_and_flags_contrarian(client, monkeypatch):
     payload = {
         "symbols": [

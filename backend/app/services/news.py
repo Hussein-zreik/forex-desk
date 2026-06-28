@@ -1,6 +1,9 @@
+import xml.etree.ElementTree as ET
+
 import httpx
 
-RSS2JSON = "https://api.rss2json.com/v1/api.json"
+# Browser-ish UA: some publisher feeds reject the default httpx agent.
+_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; ForexDesk/1.0)"}
 
 GOLD_FEEDS = [
     "https://www.kitco.com/rss/kitco-news.rss",
@@ -75,11 +78,59 @@ _NEGATIVE = {
 }
 
 
+_ATOM = "{http://www.w3.org/2005/Atom}"
+
+
+def parse_feed(xml_text: str) -> dict:
+    """Parse an RSS 2.0 or Atom document into our internal feed shape.
+
+    Returns ``{"feed": {"title": ...}, "items": [{title, link, pubDate}, ...]}``
+    so it stays drop-in compatible with ``normalize_news`` / ``aggregate``.
+    """
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError as exc:
+        raise ValueError(f"invalid feed XML: {exc}") from exc
+
+    # RSS 2.0: <rss><channel><item>…  (also covers RDF/RSS 1.0 channels)
+    channel = root.find("channel")
+    if channel is not None:
+        items = [
+            {
+                "title": (it.findtext("title") or "").strip(),
+                "link": (it.findtext("link") or "").strip(),
+                "pubDate": it.findtext("pubDate"),
+            }
+            for it in channel.findall("item")
+        ]
+        return {"feed": {"title": channel.findtext("title")}, "items": items}
+
+    # Atom: <feed><entry>… (link is an attribute, not text).
+    items = []
+    for entry in root.findall(f"{_ATOM}entry"):
+        link_el = entry.find(f"{_ATOM}link")
+        items.append(
+            {
+                "title": (entry.findtext(f"{_ATOM}title") or "").strip(),
+                "link": (link_el.get("href") if link_el is not None else "") or "",
+                "pubDate": entry.findtext(f"{_ATOM}updated")
+                or entry.findtext(f"{_ATOM}published"),
+            }
+        )
+    return {"feed": {"title": root.findtext(f"{_ATOM}title")}, "items": items}
+
+
 async def fetch_feed(url: str) -> dict:
-    async with httpx.AsyncClient(timeout=10) as client:
-        resp = await client.get(RSS2JSON, params={"rss_url": url, "count": 12})
+    """Fetch a publisher's RSS/Atom feed directly and parse it.
+
+    The backend has no CORS constraint, so we read the feed straight from the
+    source rather than via a third-party JSON relay (which was rate-limited and
+    increasingly key-gated, leaving the news widgets "unavailable").
+    """
+    async with httpx.AsyncClient(timeout=10, headers=_HEADERS, follow_redirects=True) as client:
+        resp = await client.get(url)
         resp.raise_for_status()
-        return resp.json()
+        return parse_feed(resp.text)
 
 
 def classify(title: str) -> str:
