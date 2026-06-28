@@ -3,6 +3,13 @@
 #
 # Deploy: push to GitHub → Render dashboard → "New +" → "Blueprint" → pick this
 # repo. Render reads this file, builds the root Dockerfile, and goes live.
+databases:
+  # Free Postgres so accounts / journal / portfolio / layouts survive redeploys
+  # and sleep (the in-container SQLite would reset each time). Free-tier Postgres
+  # expires ~90 days after creation — see DEPLOY.md.
+  - name: forex-desk-db
+    plan: free
+
 services:
   - type: web
     name: forex-desk
@@ -16,6 +23,12 @@ services:
         value: production
       - key: JWT_SECRET
         generateValue: true
+      # Persistent Postgres — the backend normalizes the postgresql:// URL to the
+      # async asyncpg driver (app/db/session.py).
+      - key: DATABASE_URL
+        fromDatabase:
+          name: forex-desk-db
+          property: connectionString
       # Background poller fetches live prices/feeds — Render has outbound internet.
       - key: POLLER_ENABLED
         value: "true"
