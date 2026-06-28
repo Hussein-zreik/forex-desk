@@ -130,6 +130,39 @@ def test_real_yield(client, monkeypatch):
     assert len(body["history"]) == 3
 
 
+def test_composite_aggregates_six_signals(client, monkeypatch):
+    closes = [float(x) for x in range(100, 160)]
+    rising = {"chart": {"result": [{"indicators": {"quote": [{"close": closes}]}}]}}
+    meta = {"regularMarketPrice": 30.0, "chartPreviousClose": 28.0}
+    chart = {"chart": {"result": [{"meta": meta}]}}
+    feed = {"feed": {"title": "Wire"}, "items": [{"title": "Gold rallies on demand", "link": "#"}]}
+
+    async def fake_ohlc(symbol, interval="1d", range_="6mo"):
+        return rising
+
+    async def fake_chart(symbol):
+        return chart
+
+    async def fake_series(series_id):
+        return "DATE,DFII10\n2026-06-20,2.10\n2026-06-21,2.20\n"
+
+    async def fake_feed(url):
+        return feed
+
+    monkeypatch.setattr("app.services.yahoo.fetch_ohlc", fake_ohlc)
+    monkeypatch.setattr("app.services.yahoo.fetch_chart", fake_chart)
+    monkeypatch.setattr("app.services.fred.fetch_series", fake_series)
+    monkeypatch.setattr("app.services.news.fetch_feed", fake_feed)
+
+    body = client.get("/api/indicators/composite", params={"symbol": "XAU=F"}).json()
+    assert len(body["signals"]) == 6
+    assert {s["dir"] for s in body["signals"]} <= {"bull", "bear", "neutral"}
+    assert body["label"] in {"BULLISH", "BEARISH", "NEUTRAL"}
+    assert body["bullish"] + body["bearish"] <= 6
+    labels = {s["label"] for s in body["signals"]}
+    assert "Macro Regime" in labels and "Real Yield" in labels
+
+
 def test_mtf_all_bullish(client, monkeypatch):
     closes = [float(x) for x in range(100, 160)]
     ohlc = {"chart": {"result": [{"indicators": {"quote": [{"close": closes}]}}]}}

@@ -40,7 +40,13 @@ export function QuoteCardWidget({ symbol, title, editMode, onRemove }: Props) {
   const signal = quoteSignal(quote)
   const hasDetail =
     quote &&
-    (quote.dayHigh != null || quote.dayLow != null || quote.bid != null || quote.ask != null)
+    (quote.dayHigh != null ||
+      quote.dayLow != null ||
+      quote.bid != null ||
+      quote.ask != null ||
+      quote.open != null)
+  const spread =
+    quote?.bid != null && quote?.ask != null ? Math.abs(quote.ask - quote.bid) : null
 
   return (
     <WidgetFrame
@@ -70,11 +76,13 @@ export function QuoteCardWidget({ symbol, title, editMode, onRemove }: Props) {
 
           {hasDetail && (
             <dl className="space-y-1 border-t border-border pt-2 text-xs">
+              {quote.open != null && <Row label="Open" value={fmtPrice(quote.open)} />}
               {quote.dayHigh != null && <Row label="High" value={fmtPrice(quote.dayHigh)} />}
               {quote.dayLow != null && <Row label="Low" value={fmtPrice(quote.dayLow)} />}
               {(quote.bid != null || quote.ask != null) && (
                 <Row label="Bid/Ask" value={`${fmtPrice(quote.bid)} / ${fmtPrice(quote.ask)}`} />
               )}
+              {spread != null && <Row label="Spread" value={fmtPrice(spread)} />}
             </dl>
           )}
 
