@@ -12,6 +12,7 @@ export interface Quote {
   dayLow?: number | null
   bid?: number | null
   ask?: number | null
+  open?: number | null
   error?: string
 }
 
