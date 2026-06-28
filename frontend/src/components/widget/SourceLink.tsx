@@ -12,7 +12,7 @@ export function SourceLink({ name, href }: Props) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="no-drag mt-auto block pt-1 text-center text-[10px] tracking-wide text-muted-foreground/70 transition-colors hover:text-primary"
+      className="no-drag mt-auto block pt-1 text-center text-[10px] tracking-wide text-muted-foreground transition-colors hover:text-primary"
     >
       source: {name} ↗
     </a>

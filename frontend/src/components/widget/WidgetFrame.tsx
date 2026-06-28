@@ -53,7 +53,7 @@ export function WidgetFrame({
         <div className="no-drag ml-auto flex items-center gap-1">
           {ago && (
             <span
-              className="mr-0.5 text-[10px] tabular-nums text-muted-foreground/70"
+              className="mr-0.5 text-[10px] tabular-nums text-muted-foreground"
               title="Last updated"
             >
               {ago}

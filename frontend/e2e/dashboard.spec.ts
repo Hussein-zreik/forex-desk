@@ -72,7 +72,9 @@ test('login lands on the dashboard with widgets', async ({ page }) => {
   await login(page)
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
   await expect(page.locator('.react-grid-item').first()).toBeVisible()
-  expect(overlaps(await boxes(page))).toBe(false)
+  // react-grid-layout applies absolute positions a tick after mount (items are
+  // briefly stacked at 0,0), so poll until the grid settles to no overlaps.
+  await expect.poll(async () => overlaps(await boxes(page)), { timeout: 5000 }).toBe(false)
 })
 
 test('edit mode: dragging a widget keeps the grid overlap-free', async ({ page }) => {
@@ -87,8 +89,7 @@ test('edit mode: dragging a widget keeps the grid overlap-free', async ({ page }
   await page.mouse.down()
   await page.mouse.move(dst.x + dst.width / 2 + 20, dst.y + 40, { steps: 16 })
   await page.mouse.up()
-  await page.waitForTimeout(500)
-  expect(overlaps(await boxes(page))).toBe(false)
+  await expect.poll(async () => overlaps(await boxes(page)), { timeout: 5000 }).toBe(false)
 })
 
 test('add-widget menu stays open and grows the grid', async ({ page }) => {
