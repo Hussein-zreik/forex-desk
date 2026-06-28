@@ -9,9 +9,9 @@ const ROWS: { name: string; values: number[] }[] = [
 ]
 
 function cell(v: number): string {
-  // Blend the teal accent glow by intensity.
+  // Blend accent glow by intensity.
   const alpha = (0.12 + (v / 100) * 0.6).toFixed(2)
-  return `rgba(45,212,191,${alpha})`
+  return `rgba(91,157,255,${alpha})`
 }
 
 interface Props {
