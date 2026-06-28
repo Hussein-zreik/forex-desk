@@ -23,7 +23,7 @@ export function Card({ className, spotlight = false, children, onMouseMove, ...p
       ref={ref}
       onMouseMove={handleMove}
       className={cn(
-        'group relative overflow-hidden rounded-[22px] border border-border p-6 shadow-card',
+        'group relative overflow-hidden rounded-[22px] border border-border p-5 shadow-card',
         'transition-[border-color,box-shadow] duration-300 ease-[var(--ease-expo)] hover:border-border-hover hover:shadow-card-hover',
         className,
       )}

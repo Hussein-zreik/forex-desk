@@ -1,3 +1,4 @@
+import { Newspaper } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
@@ -22,7 +23,9 @@ export function NewsSentimentWidget({ editMode, onRemove }: Props) {
       onRemove={onRemove}
       query={query}
       isEmpty={(d) => !!d.error}
-      empty={<EmptyState compact title="News unavailable" />}
+      empty={
+        <EmptyState compact icon={Newspaper} title="No news available at this time." />
+      }
     >
       {(data) => {
         const s = data.sentiment ?? { positive: 0, negative: 0, neutral: 0 }
@@ -32,7 +35,7 @@ export function NewsSentimentWidget({ editMode, onRemove }: Props) {
         const color = net > 0 ? 'text-up' : net < 0 ? 'text-down' : 'text-muted-foreground'
         return (
           <div className="flex h-full flex-col items-center justify-center gap-3">
-            <div className={cn('text-xl font-semibold', color)}>{label}</div>
+            <div className={cn('text-2xl font-bold', color)}>{label}</div>
             <div className="flex h-2 w-full overflow-hidden rounded-full bg-surface">
               <div className="bg-up" style={{ width: `${(s.positive / total) * 100}%` }} />
               <div

@@ -62,10 +62,12 @@ export function QuoteCardWidget({ symbol, title, editMode, onRemove }: Props) {
       ) : (
         <div className="flex h-full flex-col gap-3">
           <div>
-            <div className="text-2xl font-semibold tabular-nums">{fmtPrice(quote.price)}</div>
+            <div className="text-[2rem] font-bold leading-none tabular-nums">
+              {fmtPrice(quote.price)}
+            </div>
             <div
               className={cn(
-                'mt-1 flex items-center gap-2 text-sm tabular-nums',
+                'mt-1.5 flex items-center gap-2 text-base font-semibold tabular-nums',
                 up ? 'text-up' : 'text-down',
               )}
             >
