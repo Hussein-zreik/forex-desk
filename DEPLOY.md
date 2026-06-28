@@ -29,10 +29,12 @@ Notes for the free tier:
 
 - **Cold starts:** the service sleeps after ~15 min idle; the first request
   after that takes ~30–60s to wake. Subsequent requests are fast.
-- **Data resets:** SQLite lives inside the container, so accounts / journal /
-  saved layouts reset on each redeploy or wake. Fine for testing. To keep data,
-  add a Render Disk mounted where `forex_desk.db` lives, or switch
-  `DATABASE_URL` to a free Postgres.
+- **Persistent data:** `render.yaml` provisions a **free Postgres** (`forex-desk-db`)
+  and injects `DATABASE_URL`, so accounts / journal / portfolio / layouts survive
+  redeploys and sleep. The backend normalizes the `postgresql://` URL to the async
+  `asyncpg` driver automatically (`app/db/session.py`). Locally it still defaults to
+  SQLite. ⚠️ Render **free-tier Postgres expires ~90 days** after creation — upgrade
+  the instance (or recreate it) before then to avoid data loss.
 - **No domain needed:** the `*.onrender.com` subdomain is your live URL.
 
 ## Run the exact same image locally
