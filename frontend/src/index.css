@@ -42,7 +42,8 @@
   --accent-violet-glow: rgba(155, 108, 240, 0.22);
   --accent-amber: #ff9c52;
   --accent-amber-glow: rgba(255, 156, 82, 0.22);
-  --warning: #f5a623;
+  /* Amber darkened for light bg so it reads as text/labels (4.5:1+ on white) */
+  --warning: #b45309;
   --warning-glow: rgba(245, 166, 35, 0.22);
 
   /* Differentiate data families */
@@ -58,8 +59,8 @@
 
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  /* Market up/down */
-  --up: #16a34a;
+  /* Market up/down — green darkened to clear AA as text on white (4.5:1+) */
+  --up: #15803d;
   --down: #dc2626;
 
   --border: rgba(0, 0, 0, 0.08);
@@ -119,7 +120,9 @@
 
   /* Accents: primary blue, violet, warm orange (the glass-theme palette) */
   --primary: #5b9dff;
-  --primary-foreground: #ffffff;
+  /* Dark navy text on the bright azure fills (buttons, logo) — white only hits
+     2.7:1 on #5b9dff; this is 7:1 (AAA) while keeping the bright accent. */
+  --primary-foreground: #0a0f1c;
   --accent-bright: #7ab0ff;
   --accent-glow: rgba(91, 157, 255, 0.3);
   --accent-violet: #9b6cf0;
