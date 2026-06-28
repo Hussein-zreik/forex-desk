@@ -1,7 +1,8 @@
 /**
- * Central-bank policy rates — a static reference dataset (the app uses static
+ * Central-bank policy rates — a curated reference dataset (the app uses static
  * datasets for slow-moving macro data, like seasonality and rate differentials).
  * Indicative values; update `CB_AS_OF` and the rates after each decision cycle.
+ * See docs/data-sources.md for the live-vs-curated catalogue and refresh cadence.
  */
 export type RateBias = 'hike' | 'cut' | 'hold'
 
