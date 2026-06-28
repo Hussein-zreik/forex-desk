@@ -16,11 +16,11 @@ function TickerItem({ quote }: { quote: Quote }) {
   return (
     <span className="inline-flex items-center gap-2 text-xs">
       <span className="font-medium text-foreground">{symbolLabel(quote.symbol)}</span>
-      <span className="tabular-nums text-muted-foreground">
+      <span className="font-mono tabular-nums text-muted-foreground">
         {quote.price != null ? formatPrice(quote.price) : '—'}
       </span>
       {pct != null && (
-        <span className={cn('tabular-nums', up ? 'text-up' : 'text-down')}>
+        <span className={cn('font-mono tabular-nums', up ? 'text-up' : 'text-down')}>
           {up ? '▲' : '▼'} {Math.abs(pct).toFixed(2)}%
         </span>
       )}

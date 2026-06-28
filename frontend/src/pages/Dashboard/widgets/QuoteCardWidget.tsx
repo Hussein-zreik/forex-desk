@@ -1,3 +1,4 @@
+import { Coins } from 'lucide-react'
 import { useState } from 'react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { WidgetFrame } from '@/components/widget/WidgetFrame'
@@ -9,11 +10,13 @@ import { useMarketData, type Quote } from '@/store/useMarketData'
 interface Props {
   symbol: string
   title: string
+  /** Reserve the gold accent for gold-related instruments. */
+  accent?: 'gold'
   editMode?: boolean
   onRemove?: () => void
 }
 
-export function QuoteCardWidget({ symbol, title, editMode, onRemove }: Props) {
+export function QuoteCardWidget({ symbol, title, accent, editMode, onRemove }: Props) {
   const quote = useMarketData((s) => s.quotes[symbol])
   const upsertQuotes = useMarketData((s) => s.upsertQuotes)
   const [loading, setLoading] = useState(false)
@@ -51,6 +54,11 @@ export function QuoteCardWidget({ symbol, title, editMode, onRemove }: Props) {
   return (
     <WidgetFrame
       title={title}
+      icon={
+        accent === 'gold' ? (
+          <Coins className="h-3.5 w-3.5 shrink-0 text-accent-gold" aria-hidden />
+        ) : undefined
+      }
       editMode={editMode}
       onRemove={onRemove}
       onRefresh={refresh}
@@ -62,12 +70,17 @@ export function QuoteCardWidget({ symbol, title, editMode, onRemove }: Props) {
       ) : (
         <div className="flex h-full flex-col gap-3">
           <div>
-            <div className="text-[2rem] font-bold leading-none tabular-nums">
+            <div
+              className={cn(
+                'font-mono text-[2rem] font-semibold leading-none tabular-nums',
+                accent === 'gold' && 'text-accent-gold',
+              )}
+            >
               {fmtPrice(quote.price)}
             </div>
             <div
               className={cn(
-                'mt-1.5 flex items-center gap-2 text-base font-semibold tabular-nums',
+                'mt-1.5 flex items-center gap-2 font-mono text-base font-semibold tabular-nums',
                 up ? 'text-up' : 'text-down',
               )}
             >
@@ -127,7 +140,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-medium tabular-nums">{value}</dd>
+      <dd className="font-mono font-medium tabular-nums">{value}</dd>
     </div>
   )
 }

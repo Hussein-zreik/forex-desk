@@ -23,7 +23,7 @@ export function Card({ className, spotlight = false, children, onMouseMove, ...p
       ref={ref}
       onMouseMove={handleMove}
       className={cn(
-        'group relative overflow-hidden rounded-[22px] border border-border p-5 shadow-card',
+        'group relative overflow-hidden rounded-xl border border-border p-5 shadow-card',
         'transition-[border-color,box-shadow] duration-300 ease-[var(--ease-expo)] hover:border-border-hover hover:shadow-card-hover',
         className,
       )}
@@ -37,7 +37,7 @@ export function Card({ className, spotlight = false, children, onMouseMove, ...p
       {/* top inner-glow hairline */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent"
       />
       {spotlight && (
         <div
