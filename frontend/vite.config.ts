@@ -75,5 +75,7 @@ export default defineConfig(({ mode }) => ({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: true,
+    // Unit/component tests only — Playwright owns `e2e/`.
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
   },
 }))

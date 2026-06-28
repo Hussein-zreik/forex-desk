@@ -36,3 +36,8 @@ htmlcov/
 
 # Single-service deploy: built frontend bundled into the backend image
 backend/static/
+
+# Playwright E2E artifacts
+frontend/test-results/
+frontend/playwright-report/
+frontend/.playwright/
