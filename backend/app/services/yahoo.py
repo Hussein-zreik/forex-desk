@@ -18,11 +18,27 @@ def validate_symbol(symbol: str) -> str:
     return symbol
 
 
+# Some Yahoo tickers are unreliable for the same instrument — the spot-metal
+# aliases XAU=F / XAG=F intermittently resolve to stale/wrong data (e.g. gold
+# quoting ~900 while the COMEX future is 4000+). Fetch the canonical continuous
+# future instead, but keep returning data under the desk-facing symbol so the
+# rest of the app (labels, COT/sentiment maps, risk specs) is untouched.
+_FETCH_ALIAS = {
+    "XAU=F": "GC=F",  # gold: COMEX continuous future is the reliable feed
+    "XAG=F": "SI=F",  # silver: COMEX continuous future is the reliable feed
+}
+
+
+def resolve_symbol(symbol: str) -> str:
+    """Map a desk symbol to the canonical Yahoo ticker used for fetching."""
+    return _FETCH_ALIAS.get(symbol, symbol)
+
+
 async def fetch_chart(symbol: str) -> dict:
     """Fetch the raw Yahoo Finance chart payload for a symbol."""
-    validate_symbol(symbol)
+    fetch_sym = validate_symbol(resolve_symbol(symbol))
     async with httpx.AsyncClient(timeout=10, headers=_HEADERS) as client:
-        resp = await client.get(CHART_URL.format(symbol=symbol))
+        resp = await client.get(CHART_URL.format(symbol=fetch_sym))
         resp.raise_for_status()
         return resp.json()
 
@@ -33,9 +49,9 @@ async def fetch_quote_detail(symbol: str) -> dict:
     The v7 quote endpoint is rate-limited and may require auth at times; callers
     treat it as best-effort and fall back to the chart-only quote.
     """
-    validate_symbol(symbol)
+    fetch_sym = validate_symbol(resolve_symbol(symbol))
     async with httpx.AsyncClient(timeout=10, headers=_HEADERS) as client:
-        resp = await client.get(QUOTE_URL, params={"symbols": symbol})
+        resp = await client.get(QUOTE_URL, params={"symbols": fetch_sym})
         resp.raise_for_status()
         return resp.json()
 
@@ -56,10 +72,10 @@ def normalize_quote_detail(data: dict) -> dict:
 
 async def fetch_ohlc(symbol: str, interval: str = "1d", range_: str = "6mo") -> dict:
     """Fetch a historical OHLC series for a symbol."""
-    validate_symbol(symbol)
+    fetch_sym = validate_symbol(resolve_symbol(symbol))
     async with httpx.AsyncClient(timeout=10, headers=_HEADERS) as client:
         resp = await client.get(
-            CHART_URL.format(symbol=symbol),
+            CHART_URL.format(symbol=fetch_sym),
             params={"interval": interval, "range": range_},
         )
         resp.raise_for_status()

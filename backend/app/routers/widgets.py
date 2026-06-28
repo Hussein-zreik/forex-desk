@@ -81,11 +81,15 @@ async def news_feed(feed: str = "gold", db: AsyncSession = Depends(get_db)) -> d
     feeds = news.FEED_SETS.get(feed, news.GOLD_FEEDS)
     try:
         # Aggregate the first few sources in the set (cached per URL), dedupe, tag.
+        # Each source is fetched independently so one flaky feed doesn't sink the set.
         datasets = []
         for url in feeds[:3]:
-            datasets.append(
-                await get_cached(db, f"news:{url}", 600, lambda u=url: news.fetch_feed(u))
-            )
+            try:
+                datasets.append(
+                    await get_cached(db, f"news:{url}", 600, lambda u=url: news.fetch_feed(u))
+                )
+            except (httpx.HTTPError, ValueError, KeyError, TypeError):
+                continue
         articles = news.aggregate(datasets)
         if not articles:
             raise ValueError("empty")

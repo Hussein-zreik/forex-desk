@@ -10,12 +10,13 @@ blocked in the dev container, available on Render.
 | Data | Upstream | Endpoint / service |
 |------|----------|--------------------|
 | Quotes, ticker, hero cards, crypto, currency strength | Yahoo Finance v8 chart | `/api/quotes` · `yahoo.py` |
+| Gold / silver | Yahoo `GC=F` / `SI=F` (COMEX continuous futures) — the desk symbols `XAU=F` / `XAG=F` alias to these because Yahoo's spot-metal tickers return stale/wrong data | `yahoo.resolve_symbol` |
 | Hero bid/ask/open (single-symbol) | Yahoo Finance v7 quote | `/api/quotes` (best-effort) · `yahoo.fetch_quote_detail` |
 | Bias, MTF, **composite**, pivots, volatility, hi-lo, key levels, SMC, correlation, ETF flow, DXY trend | Yahoo OHLC (computed server-side) | `/api/indicators/*` |
 | Fear & Greed | alternative.me `fng?limit=35` | `/api/fear-greed` · `sentiment.py` |
 | 10Y real yield + breakeven, macro regime | FRED `DFII10` / `T10YIE` (+ VIX) | `/api/real-yield`, `/api/macro-regime` · `fred.py` |
 | Options sentiment (put/call) | CBOE daily stats CSV | `/api/options-sentiment` · `cboe.py` |
-| News + news sentiment | Kitco / FXStreet / Investing / DailyFX RSS via RSS2JSON | `/api/news` · `news.py` |
+| News + news sentiment | Kitco / FXStreet / Investing / DailyFX RSS (fetched & parsed directly server-side) | `/api/news` · `news.py` |
 | Economic calendar | Forex Factory weekly JSON | `/api/calendar` · `calendar.py` |
 | Retail sentiment | MyFXBook community outlook | `/api/retail-sentiment` · `sentiment.py` |
 | COT positioning | CFTC | `/api/cot` · `cot.py` |
