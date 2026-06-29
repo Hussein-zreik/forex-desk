@@ -33,12 +33,11 @@
   --muted-foreground: #5c616b;
   --foreground-subtle: rgba(0, 0, 0, 0.55);
 
-  /* Brand teal-green accent + gold / violet / warm companions (glass-theme palette).
-     Emerald-700 keeps AA (~5:1) both as text on white and behind white button text. */
-  --primary: #047857;
+  /* Brand blue accent + gold / violet / warm companions (glass-theme palette) */
+  --primary: #3a63e0;
   --primary-foreground: #ffffff;
-  --accent-bright: #059669;
-  --accent-glow: rgba(4, 120, 87, 0.18);
+  --accent-bright: #5b9dff;
+  --accent-glow: rgba(91, 157, 255, 0.2);
   /* Gold accent — reserved for gold-specific data (darkened for AA on white). */
   --accent-gold: #9a7b16;
   --accent-gold-glow: rgba(212, 175, 55, 0.22);
@@ -63,18 +62,18 @@
 
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  /* Market up/down — darkened to clear AA as text on white (4.5:1+) */
-  --up: #047857;
-  --down: #be123c;
+  /* Market up/down — green darkened to clear AA as text on white (4.5:1+) */
+  --up: #15803d;
+  --down: #dc2626;
 
   --border: rgba(0, 0, 0, 0.08);
   --border-hover: rgba(0, 0, 0, 0.12);
-  --border-accent: rgba(4, 120, 87, 0.35);
+  --border-accent: rgba(79, 124, 255, 0.35);
   --input: rgba(0, 0, 0, 0.12);
-  --ring: #047857;
+  --ring: #3a63e0;
 
-  /* Ambient background — teal-green / violet / warm amber light pools */
-  --blob-1: rgba(4, 120, 87, 0.12);
+  /* Ambient background — azure / violet / warm amber light pools */
+  --blob-1: rgba(79, 124, 255, 0.14);
   --blob-2: rgba(139, 92, 246, 0.09);
   --blob-3: rgba(245, 158, 11, 0.08);
   --grid-line: rgba(0, 0, 0, 0.04);
@@ -85,10 +84,10 @@
     0 0 0 1px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.08), 0 14px 32px rgba(0, 0, 0, 0.09),
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
   --shadow-card-hover-raw:
-    0 0 0 1px rgba(4, 120, 87, 0.28), 0 14px 36px rgba(0, 0, 0, 0.14),
-    0 0 50px rgba(4, 120, 87, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    0 0 0 1px rgba(79, 124, 255, 0.28), 0 14px 36px rgba(0, 0, 0, 0.14),
+    0 0 50px rgba(79, 124, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --shadow-cta-raw:
-    0 0 0 1px rgba(4, 120, 87, 0.5), 0 4px 12px rgba(4, 120, 87, 0.3),
+    0 0 0 1px rgba(79, 124, 255, 0.5), 0 4px 12px rgba(79, 124, 255, 0.3),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
   --shadow-inner-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
 
@@ -123,13 +122,13 @@
   --muted-foreground: #8b94a6;
   --foreground-subtle: rgba(255, 255, 255, 0.58);
 
-  /* Accents: primary teal-green, gold, violet, warm orange (the glass-theme palette) */
-  --primary: #00c896;
-  /* Dark ink on the bright teal-green fills (buttons, logo) — white only hits
-     ~1.9:1 on #00c896; this dark ink is ~11:1 (AAA) while keeping the bright accent. */
-  --primary-foreground: #06140f;
-  --accent-bright: #2fe0b6;
-  --accent-glow: rgba(0, 200, 150, 0.28);
+  /* Accents: primary blue, gold, violet, warm orange (the glass-theme palette) */
+  --primary: #5b9dff;
+  /* Dark navy text on the bright azure fills (buttons, logo) — white only hits
+     2.7:1 on #5b9dff; this is 7:1 (AAA) while keeping the bright accent. */
+  --primary-foreground: #0a0f1c;
+  --accent-bright: #7ab0ff;
+  --accent-glow: rgba(91, 157, 255, 0.3);
   /* Gold accent — reserved for gold-specific data. */
   --accent-gold: #f0c040;
   --accent-gold-glow: rgba(240, 192, 64, 0.22);
@@ -152,18 +151,19 @@
 
   --destructive: #ff4d6a;
   --destructive-foreground: #ffffff;
-  /* Gain/loss — teal-green gain (matches the brand) + a vivid-but-not-harsh red. */
-  --up: #00d4a4;
+  /* Gain/loss — a true saturated green (distinct from the blue accent) + a
+     vivid-but-not-harsh red. */
+  --up: #22c55e;
   --down: #ff4d6a;
 
   --border: rgba(255, 255, 255, 0.07);
   --border-hover: rgba(255, 255, 255, 0.12);
-  --border-accent: rgba(0, 200, 150, 0.35);
+  --border-accent: rgba(91, 157, 255, 0.3);
   --input: rgba(255, 255, 255, 0.1);
-  --ring: #00c896;
+  --ring: #5b9dff;
 
-  /* Two-tone wash: warm orange right-of-center, brand teal-green top-left, violet below */
-  --blob-1: rgba(0, 200, 150, 0.1);
+  /* Two-tone wash: warm orange right-of-center, cool blue top-left, violet below */
+  --blob-1: rgba(46, 76, 150, 0.16);
   --blob-2: rgba(155, 108, 240, 0.1);
   --blob-3: rgba(255, 140, 72, 0.2);
   --grid-line: rgba(255, 255, 255, 0.025);
@@ -175,10 +175,10 @@
     0 0 0 1px rgba(255, 255, 255, 0.07), 0 1px 2px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
   --shadow-card-hover-raw:
-    0 0 0 1px rgba(0, 200, 150, 0.3), 0 8px 24px rgba(0, 0, 0, 0.5),
-    0 0 40px rgba(0, 200, 150, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 0 0 1px rgba(91, 157, 255, 0.3), 0 8px 24px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(91, 157, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --shadow-cta-raw:
-    0 0 0 1px rgba(0, 200, 150, 0.5), 0 4px 12px rgba(0, 200, 150, 0.28),
+    0 0 0 1px rgba(91, 157, 255, 0.5), 0 4px 12px rgba(91, 157, 255, 0.28),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
   --shadow-inner-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
