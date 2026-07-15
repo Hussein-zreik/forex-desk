@@ -88,7 +88,7 @@ export function WidgetFrame({
           )}
         </div>
       </div>
-      <div className="relative min-h-0 flex-1 overflow-auto p-4">
+      <div className="relative min-h-0 flex-1 overflow-auto overscroll-contain p-4">
         {error ? <ErrorState message={error} onRetry={onRefresh} compact /> : children}
       </div>
     </div>

@@ -52,7 +52,10 @@ export function Sidebar() {
           <Newspaper className="h-4 w-4 text-primary" />
           <h2 className="text-sm font-semibold tracking-tight">Market News</h2>
         </div>
-        <div className="mt-3">
+        {/* Scrolls independently of the page: bounded to the viewport (below the
+            sticky offset + card chrome) with overscroll contained so the wheel
+            doesn't fall through to the page while browsing headlines. */}
+        <div className="mt-3 max-h-[calc(100dvh-13rem)] overflow-y-auto overscroll-contain">
           <AsyncBoundary
             compact
             data={query.data}
@@ -71,7 +74,7 @@ export function Sidebar() {
           >
             {(d) => (
               <ul className="flex flex-col gap-1">
-                {d.articles.slice(0, 8).map((a, i) => (
+                {d.articles.map((a, i) => (
                   <li key={i}>
                     <a
                       href={a.link}

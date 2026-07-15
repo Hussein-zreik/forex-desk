@@ -55,7 +55,7 @@ export function NewsWidget({ feed = 'gold', title, editMode, onRemove }: Props) 
       }
     >
       {(d) => (
-        <ul className="flex h-full flex-col gap-1 overflow-auto">
+        <ul className="flex h-full flex-col gap-1 overflow-auto overscroll-contain">
           {d.articles.map((a, i) => (
             <li key={i}>
               <a
