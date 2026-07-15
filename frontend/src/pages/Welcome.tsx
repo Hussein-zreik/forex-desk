@@ -46,9 +46,9 @@ const FEATURES: { icon: LucideIcon; title: string; desc: string }[] = [
 ]
 
 const STATS: { to?: number; suffix?: string; text?: string; label: string }[] = [
-  { to: 30, suffix: '+', label: 'Live instruments' },
-  { to: 6, label: 'Signals fused into bias' },
+  { to: 50, suffix: '+', label: 'Live markets' },
   { to: 50, suffix: '+', label: 'Dashboard widgets' },
+  { to: 6, label: 'Signals in the bias' },
   { text: 'Free', label: 'Open source, forever' },
 ]
 
@@ -104,7 +104,7 @@ const TESTIMONIALS: { quote: string; name: string; role: string; stars: number; 
 ]
 
 const TICKS: [string, string, string, boolean][] = [
-  ['XAU/USD', '3,421.80', '+0.54%', true],
+  ['XAU/USD', '4,018.90', '+0.54%', true],
   ['EUR/USD', '1.0892', '−0.21%', false],
   ['GBP/USD', '1.2734', '+0.12%', true],
   ['DXY', '104.32', '−0.18%', false],
@@ -154,24 +154,35 @@ function Shimmer({ children }: { children: ReactNode }) {
   )
 }
 
-/** Count-up number that animates the first time it scrolls into view. */
+/** Count-up number. Animates once when scrolled into view, with a mount-time
+ *  fallback so the final value always shows (never stuck at "0+"). */
 function Counter({ to, suffix = '' }: { to: number; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null)
-  const inView = useInView(ref, { once: true, margin: '-15% 0px' })
+  const inView = useInView(ref, { once: true, margin: '0px 0px -10% 0px' })
   const reduce = useReducedMotion()
   const [val, setVal] = useState(0)
+  const done = useRef(false)
   useEffect(() => {
-    if (!inView || reduce) return
-    let raf = 0
-    const start = performance.now()
-    const dur = 1100
-    const tick = (t: number) => {
-      const p = Math.min((t - start) / dur, 1)
-      setVal(Math.round(to * (1 - Math.pow(1 - p, 3))))
-      if (p < 1) raf = requestAnimationFrame(tick)
+    if (done.current || reduce) return
+    // Animate as soon as the element is in view; if the observer hasn't fired
+    // shortly after mount (e.g. already on-screen), start anyway so it can't stick at 0.
+    const begin = () => {
+      if (done.current) return
+      done.current = true
+      let raf = 0
+      const start = performance.now()
+      const dur = 1100
+      const tick = (t: number) => {
+        const p = Math.min((t - start) / dur, 1)
+        setVal(Math.round(to * (1 - Math.pow(1 - p, 3))))
+        if (p < 1) raf = requestAnimationFrame(tick)
+      }
+      raf = requestAnimationFrame(tick)
+      return () => cancelAnimationFrame(raf)
     }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
+    if (inView) return begin()
+    const id = setTimeout(begin, 700)
+    return () => clearTimeout(id)
   }, [inView, reduce, to])
   return (
     <span ref={ref}>
@@ -216,7 +227,7 @@ function SectionTitle({ children, id }: { children: ReactNode; id?: string }) {
 
 /* ── hero "live signal" visual ───────────────────────────────────────────── */
 
-const HERO_PRICES = ['3,418.90', '3,421.80', '3,424.10', '3,422.40', '3,419.60']
+const HERO_PRICES = ['4,012.40', '4,018.90', '4,024.10', '4,021.60', '4,016.30']
 const HERO_LINE = 'M0,72 L34,64 L68,68 L102,50 L136,55 L170,38 L204,43 L238,26 L272,31 L306,17 L340,22'
 
 function HeroVisual() {
@@ -370,7 +381,7 @@ export default function Welcome() {
 
       <main>
         {/* hero */}
-        <section className="relative mx-auto max-w-6xl px-5 pt-14 pb-20 sm:pt-20">
+        <section className="relative mx-auto max-w-6xl px-5 pt-14 pb-28 sm:pt-20 sm:pb-36">
           {/* animated aurora glow */}
           <motion.div
             aria-hidden
@@ -402,16 +413,20 @@ export default function Welcome() {
                 confluence and your own trade journal into one cinematic command center — so you
                 spend less time gathering data and more time deciding.
               </p>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-                <Button asChild size="lg">
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 lg:justify-start">
+                <Button
+                  asChild
+                  size="lg"
+                  className="h-[52px] px-9 text-base font-semibold shadow-cta sm:h-14 sm:px-10 sm:text-lg"
+                >
                   <Link to={primaryHref}>
                     {primaryLabel}
-                    <ArrowRight className="h-4 w-4" aria-hidden />
+                    <ArrowRight className="h-5 w-5" aria-hidden />
                   </Link>
                 </Button>
                 {!token && (
-                  <Button asChild size="lg" variant="secondary">
-                    <Link to="/login">Log in</Link>
+                  <Button asChild size="lg" variant="ghost" className="text-muted-foreground">
+                    <Link to="/login">Log in →</Link>
                   </Button>
                 )}
               </div>
@@ -488,7 +503,7 @@ export default function Welcome() {
                   delay={i * 0.05}
                   className="group flex gap-4 rounded-2xl border border-border bg-gradient-to-b from-surface to-surface/10 p-6 shadow-card backdrop-blur-sm transition-[transform,box-shadow,border-color] duration-300 ease-expo hover:-translate-y-1 hover:border-border-hover hover:shadow-card-hover"
                 >
-                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-border-hover bg-surface shadow-inner-top">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/15 shadow-inner-top">
                     <Icon className="h-5 w-5 text-primary" aria-hidden />
                   </div>
                   <div>
@@ -576,10 +591,14 @@ export default function Welcome() {
               ready right now.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Button asChild size="lg">
+              <Button
+                asChild
+                size="lg"
+                className="h-[52px] px-9 text-base font-semibold shadow-cta sm:h-14 sm:px-10 sm:text-lg"
+              >
                 <Link to={primaryHref}>
                   {primaryLabel}
-                  <ArrowRight className="h-4 w-4" aria-hidden />
+                  <ArrowRight className="h-5 w-5" aria-hidden />
                 </Link>
               </Button>
             </div>

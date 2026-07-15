@@ -32,7 +32,7 @@ export function WidgetFrame({
   return (
     <div
       className={cn(
-        'flex h-full flex-col overflow-hidden rounded-[22px] border border-border shadow-card transition-[transform,box-shadow,border-color] duration-300 ease-expo will-change-transform hover:-translate-y-[3px] hover:border-border-hover hover:shadow-card-hover',
+        'relative flex h-full flex-col overflow-hidden rounded-xl border border-border shadow-card transition-[transform,box-shadow,border-color] duration-300 ease-expo will-change-transform hover:-translate-y-[3px] hover:border-border-hover hover:shadow-card-hover',
         editMode && 'cursor-move',
       )}
       style={{
@@ -41,15 +41,22 @@ export function WidgetFrame({
         WebkitBackdropFilter: 'blur(var(--card-blur))',
       }}
     >
+      {/* faint top-edge highlight to lift the card off the background */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent"
+      />
       <div
         className={cn(
-          'widget-drag-handle flex items-center gap-1.5 border-b border-border px-3 py-2',
+          'widget-drag-handle flex items-center gap-1.5 border-b border-border px-4 py-2.5',
           editMode && 'cursor-move',
         )}
       >
         {editMode && <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
         {icon}
-        <h3 className="truncate text-xs font-semibold tracking-tight">{title}</h3>
+        <h3 className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          {title}
+        </h3>
         <div className="no-drag ml-auto flex items-center gap-1">
           {ago && (
             <span
@@ -81,7 +88,7 @@ export function WidgetFrame({
           )}
         </div>
       </div>
-      <div className="relative min-h-0 flex-1 overflow-auto p-3">
+      <div className="relative min-h-0 flex-1 overflow-auto overscroll-contain p-4">
         {error ? <ErrorState message={error} onRetry={onRefresh} compact /> : children}
       </div>
     </div>

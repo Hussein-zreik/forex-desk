@@ -1,3 +1,4 @@
+import { Newspaper } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { AsyncWidget } from '@/components/widget/AsyncWidget'
 import { useWidgetData } from '@/hooks/useWidgetData'
@@ -44,10 +45,17 @@ export function NewsWidget({ feed = 'gold', title, editMode, onRemove }: Props) 
       onRemove={onRemove}
       query={query}
       isEmpty={(d) => !!d.error || d.articles.length === 0}
-      empty={<EmptyState compact title={query.data?.error ? 'News unavailable' : 'No headlines'} />}
+      empty={
+        <EmptyState
+          compact
+          icon={Newspaper}
+          title="No news available at this time."
+          description="Headlines will appear here as soon as the feeds update."
+        />
+      }
     >
       {(d) => (
-        <ul className="flex h-full flex-col gap-1 overflow-auto">
+        <ul className="flex h-full flex-col gap-1 overflow-auto overscroll-contain">
           {d.articles.map((a, i) => (
             <li key={i}>
               <a

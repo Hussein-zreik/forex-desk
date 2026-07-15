@@ -44,7 +44,7 @@ export function TradingViewWidget({ editMode, onRemove }: Props) {
           key={src}
           src={src}
           title="TradingView chart"
-          className="min-h-0 w-full flex-1 rounded-lg border border-border"
+          className="min-h-0 w-full flex-1 rounded-xl border border-border bg-bg-elevated"
           loading="lazy"
         />
       </div>

@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
-import { GridLayout, useContainerWidth, verticalCompactor } from 'react-grid-layout'
+import { GridLayout, useContainerWidth } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import { cn } from '@/lib/cn'
+import { flowCompactor } from '@/lib/flowCompactor'
 import { BREAKPOINTS, COLS, type GridItem, useLayout } from '@/store/useLayout'
 import { WIDGETS } from './widgets/registry'
 
@@ -89,7 +90,10 @@ export function DashboardGrid() {
           width={width}
           layout={layout}
           gridConfig={gridConfig}
-          compactor={verticalCompactor}
+          // Flow ("wiggle-mode") reordering: items read like words in a paragraph,
+          // so dragging a widget slides its neighbours along the sequence instead
+          // of pushing whole columns up/down and distorting the grid.
+          compactor={flowCompactor}
           dragConfig={dragConfig}
           resizeConfig={resizeConfig}
           onDragStop={(l) => persist(l as unknown as GridItem[])}

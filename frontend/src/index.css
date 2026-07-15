@@ -2,7 +2,7 @@
  * Source of truth: docs/design-system/linear-modern.md
  * Dark is the signature experience; light is authored at full fidelity.
  */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import 'tailwindcss';
 
 /* Class-based dark mode: <html class="dark"> */
@@ -33,11 +33,14 @@
   --muted-foreground: #5c616b;
   --foreground-subtle: rgba(0, 0, 0, 0.55);
 
-  /* Brand blue accent + violet / warm companions (glass-theme palette) */
+  /* Brand blue accent + gold / violet / warm companions (glass-theme palette) */
   --primary: #3a63e0;
   --primary-foreground: #ffffff;
   --accent-bright: #5b9dff;
   --accent-glow: rgba(91, 157, 255, 0.2);
+  /* Gold accent — reserved for gold-specific data (darkened for AA on white). */
+  --accent-gold: #9a7b16;
+  --accent-gold-glow: rgba(212, 175, 55, 0.22);
   --accent-violet: #9b6cf0;
   --accent-violet-glow: rgba(155, 108, 240, 0.22);
   --accent-amber: #ff9c52;
@@ -88,29 +91,30 @@
     inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
   --shadow-inner-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
 
-  --radius: 0.5rem;
+  /* Card corner radius standardized to ~12px across components. */
+  --radius: 0.75rem;
 }
 
 /* ---------------------------------------------------------------------------
  * DARK THEME (.dark) — the deep-space signature
  * ------------------------------------------------------------------------ */
 .dark {
-  /* Canvas — near-black neutral; the glows below provide the two-tone wash */
-  --bg-deep: #050609;
-  --background: #07080c;
-  --bg-elevated: #0e1018;
+  /* Three-level surface hierarchy: page → card → elevated/hover */
+  --bg-deep: #06090f;
+  --background: #0a0e17;
+  --bg-elevated: #1c2535;
 
   /* Nested-control fill + hover surface */
-  --surface: rgba(255, 255, 255, 0.05);
-  --surface-hover: rgba(255, 255, 255, 0.08);
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.07);
 
-  /* Frosted-glass card */
-  --card-grad: linear-gradient(165deg, rgba(26, 29, 40, 0.62), rgba(14, 16, 23, 0.62));
+  /* Frosted-glass card — elevated→surface gradient with a faint top lift */
+  --card-grad: linear-gradient(165deg, rgba(28, 37, 53, 0.75), rgba(17, 24, 39, 0.78));
   --card-blur: 18px;
 
-  --card: #0e1018;
+  --card: #111827;
   --card-foreground: #eef1f7;
-  --popover: #0e1018;
+  --popover: #111827;
   --popover-foreground: #eef1f7;
 
   --foreground: #eef1f7;
@@ -118,13 +122,16 @@
   --muted-foreground: #8b94a6;
   --foreground-subtle: rgba(255, 255, 255, 0.58);
 
-  /* Accents: primary blue, violet, warm orange (the glass-theme palette) */
+  /* Accents: primary blue, gold, violet, warm orange (the glass-theme palette) */
   --primary: #5b9dff;
   /* Dark navy text on the bright azure fills (buttons, logo) — white only hits
      2.7:1 on #5b9dff; this is 7:1 (AAA) while keeping the bright accent. */
   --primary-foreground: #0a0f1c;
   --accent-bright: #7ab0ff;
   --accent-glow: rgba(91, 157, 255, 0.3);
+  /* Gold accent — reserved for gold-specific data. */
+  --accent-gold: #f0c040;
+  --accent-gold-glow: rgba(240, 192, 64, 0.22);
   --accent-violet: #9b6cf0;
   --accent-violet-glow: rgba(155, 108, 240, 0.3);
   --accent-amber: #ff9c52;
@@ -142,13 +149,15 @@
   --secondary: rgba(255, 255, 255, 0.05);
   --secondary-foreground: #eef1f7;
 
-  --destructive: #f43f5e;
+  --destructive: #ff4d6a;
   --destructive-foreground: #ffffff;
-  --up: #4ade80;
-  --down: #f4626f;
+  /* Gain/loss — a true saturated green (distinct from the blue accent) + a
+     vivid-but-not-harsh red. */
+  --up: #22c55e;
+  --down: #ff4d6a;
 
   --border: rgba(255, 255, 255, 0.07);
-  --border-hover: rgba(255, 255, 255, 0.13);
+  --border-hover: rgba(255, 255, 255, 0.12);
   --border-accent: rgba(91, 157, 255, 0.3);
   --input: rgba(255, 255, 255, 0.1);
   --ring: #5b9dff;
@@ -160,16 +169,18 @@
   --grid-line: rgba(255, 255, 255, 0.025);
   --noise-opacity: 0.015;
 
+  /* Dark surfaces lean on the low-opacity border + a faint top lift rather than
+     heavy drop shadows (cleaner on near-black). Hover adds a soft brand halo. */
   --shadow-card-raw:
-    0 0 0 1px rgba(255, 255, 255, 0.06), 0 2px 8px rgba(0, 0, 0, 0.5), 0 18px 40px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    0 0 0 1px rgba(255, 255, 255, 0.07), 0 1px 2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
   --shadow-card-hover-raw:
-    0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 32px rgba(0, 0, 0, 0.6),
-    0 0 64px rgba(91, 157, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 0 0 1px rgba(91, 157, 255, 0.3), 0 8px 24px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(91, 157, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --shadow-cta-raw:
-    0 0 0 1px rgba(91, 157, 255, 0.5), 0 4px 12px rgba(91, 157, 255, 0.3),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
-  --shadow-inner-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    0 0 0 1px rgba(91, 157, 255, 0.5), 0 4px 12px rgba(91, 157, 255, 0.28),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  --shadow-inner-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 /* ---------------------------------------------------------------------------
@@ -193,6 +204,8 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-accent-bright: var(--accent-bright);
   --color-accent-glow: var(--accent-glow);
+  --color-accent-gold: var(--accent-gold);
+  --color-accent-gold-glow: var(--accent-gold-glow);
   --color-accent-violet: var(--accent-violet);
   --color-accent-violet-glow: var(--accent-violet-glow);
   --color-accent-amber: var(--accent-amber);
@@ -219,7 +232,8 @@
   --shadow-inner-top: var(--shadow-inner-raw);
 
   --font-sans: 'Inter', 'Geist Sans', system-ui, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
+  /* Monospaced numerics keep price/ticker columns from shifting width on update. */
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -317,6 +331,27 @@
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * Thin, always-visible scrollbar for panel-local scroll areas (news sidebar)
+ * ------------------------------------------------------------------------ */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hover) transparent;
+}
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-hover);
+  border-radius: 9999px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground-subtle);
 }
 
 /* ---------------------------------------------------------------------------

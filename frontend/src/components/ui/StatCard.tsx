@@ -52,8 +52,8 @@ export function StatCard({
       </div>
       <div
         className={cn(
-          'font-semibold tabular-nums',
-          size === 'sm' ? 'mt-0.5 text-lg' : 'mt-1 text-2xl',
+          'font-mono font-semibold tabular-nums',
+          size === 'sm' ? 'mt-0.5 text-xl' : 'mt-1 text-3xl',
           color,
         )}
       >

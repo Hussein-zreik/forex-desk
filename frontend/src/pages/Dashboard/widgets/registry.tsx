@@ -109,7 +109,7 @@ export const WIDGETS: Record<string, WidgetDef> = {
     h: 3,
     minW: 2,
     minH: 3,
-    render: (c) => <QuoteCardWidget symbol="XAU=F" title="Gold — XAU/USD" {...c} />,
+    render: (c) => <QuoteCardWidget symbol="XAU=F" title="Gold — XAU/USD" accent="gold" {...c} />,
   },
   dxy: {
     type: 'dxy',
