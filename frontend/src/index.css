@@ -334,6 +334,27 @@
 }
 
 /* ---------------------------------------------------------------------------
+ * Thin, always-visible scrollbar for panel-local scroll areas (news sidebar)
+ * ------------------------------------------------------------------------ */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hover) transparent;
+}
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-hover);
+  border-radius: 9999px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground-subtle);
+}
+
+/* ---------------------------------------------------------------------------
  * react-grid-layout — themed
  * ------------------------------------------------------------------------ */
 .react-grid-item.react-grid-placeholder {

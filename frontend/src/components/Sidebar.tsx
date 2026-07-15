@@ -52,10 +52,12 @@ export function Sidebar() {
           <Newspaper className="h-4 w-4 text-primary" />
           <h2 className="text-sm font-semibold tracking-tight">Market News</h2>
         </div>
-        {/* Scrolls independently of the page: bounded to the viewport (below the
-            sticky offset + card chrome) with overscroll contained so the wheel
-            doesn't fall through to the page while browsing headlines. */}
-        <div className="mt-3 max-h-[calc(100dvh-13rem)] overflow-y-auto overscroll-contain">
+        {/* The panel's own scroller, fully independent of the page: a fixed
+            viewport-bound height (below navbar + ticker + sticky offset + card
+            chrome) so the headlines always scroll in place — with a visible thin
+            scrollbar — and contained overscroll so the wheel never falls through
+            to the page. */}
+        <div className="thin-scrollbar mt-3 h-[calc(100dvh-15rem)] overflow-y-auto overscroll-contain pr-1">
           <AsyncBoundary
             compact
             data={query.data}
