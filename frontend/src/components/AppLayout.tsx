@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import { Background } from '@/components/Background'
 import { Navbar } from '@/components/Navbar'
 import { Sidebar } from '@/components/Sidebar'
+import { Footer } from '@/components/Footer'
 import { VerifyEmailBanner } from '@/components/VerifyEmailBanner'
 import { TickerWidget } from '@/pages/Dashboard/widgets/TickerWidget'
 import { useAuth } from '@/store/useAuth'
@@ -34,6 +35,7 @@ export function AppLayout() {
         </main>
         <Sidebar />
       </div>
+      <Footer />
     </div>
   )
 }

@@ -618,7 +618,18 @@ export default function Welcome() {
               For informational purposes only — not financial advice. Trading carries significant
               risk.
             </p>
-            <p className="font-mono text-[11px] text-muted-foreground">© 2026 Forex Desk</p>
+            <nav className="flex items-center gap-4 font-mono text-[11px]">
+              <Link to="/disclaimer" className="text-muted-foreground hover:text-primary">
+                Risk disclaimer
+              </Link>
+              <Link to="/terms" className="text-muted-foreground hover:text-primary">
+                Terms
+              </Link>
+              <Link to="/privacy" className="text-muted-foreground hover:text-primary">
+                Privacy
+              </Link>
+              <span className="text-muted-foreground">© 2026 Forex Desk</span>
+            </nav>
           </div>
         </footer>
       </main>
