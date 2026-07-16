@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react'
 import { symbolLabel } from '@/lib/symbols'
 import { CALC_SYMBOLS } from '@/lib/risk'
+import { BiasTrackRecordWidget } from './BiasTrackRecordWidget'
 import { BiasWidget } from './BiasWidget'
 import { CBCalendarWidget } from './CBCalendarWidget'
 import { CBRatesWidget } from './CBRatesWidget'
@@ -153,6 +154,16 @@ export const WIDGETS: Record<string, WidgetDef> = {
     render: (c, cfg) => (
       <BiasWidget symbol={cfg?.symbol} title={indicatorTitle('Composite Bias', cfg)} {...c} />
     ),
+  },
+  biasTrackRecord: {
+    type: 'biasTrackRecord',
+    title: 'Bias Track Record',
+    category: 'Signals',
+    w: 4,
+    h: 5,
+    minW: 3,
+    minH: 4,
+    render: (c) => <BiasTrackRecordWidget {...c} />,
   },
   pivots: {
     type: 'pivots',

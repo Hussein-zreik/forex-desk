@@ -94,6 +94,22 @@ async def check_alerts() -> None:
             await manager.broadcast({"type": "alert_hit", "alerts": hits})
 
 
+_last_snapshot_bucket: str | None = None
+
+
+async def _maybe_snapshot() -> None:
+    """Once per UTC hour: record bias snapshots + grade due outcomes."""
+    global _last_snapshot_bucket
+    from app.services.bias_tracker import snapshot_tick
+
+    bucket = datetime.now(UTC).strftime("%Y-%m-%dT%H")
+    if bucket == _last_snapshot_bucket:
+        return
+    _last_snapshot_bucket = bucket
+    async with SessionLocal() as db:
+        await snapshot_tick(db)
+
+
 async def poll_loop() -> None:
     """Periodically poll quotes, broadcast them, and check price alerts."""
     while True:
@@ -103,3 +119,5 @@ async def poll_loop() -> None:
             await manager.broadcast({"type": "quotes", "quotes": quotes})
         with contextlib.suppress(Exception):
             await check_alerts()
+        with contextlib.suppress(Exception):
+            await _maybe_snapshot()
