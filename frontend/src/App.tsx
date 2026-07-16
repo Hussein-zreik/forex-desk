@@ -15,6 +15,7 @@ const Register = lazy(() => import('@/pages/auth/Register'))
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
 const VerifyEmail = lazy(() => import('@/pages/auth/VerifyEmail'))
+const Demo = lazy(() => import('@/pages/Demo'))
 const Terms = lazy(() => import('@/pages/legal/Terms'))
 const Privacy = lazy(() => import('@/pages/legal/Privacy'))
 const RiskDisclaimer = lazy(() => import('@/pages/legal/RiskDisclaimer'))
@@ -44,6 +45,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/demo" element={<Demo />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/disclaimer" element={<RiskDisclaimer />} />

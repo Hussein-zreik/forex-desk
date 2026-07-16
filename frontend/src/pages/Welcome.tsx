@@ -431,8 +431,14 @@ export default function Welcome() {
                 )}
               </div>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 lg:justify-start">
+                <Link
+                  to="/demo"
+                  className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
+                >
+                  <Check className="h-3.5 w-3.5 text-up" aria-hidden />
+                  No login to explore — try the live demo
+                </Link>
                 {[
-                  [Check, 'No login to explore'],
                   [ShieldCheck, 'Your journal stays yours'],
                   [Sparkles, 'Open source'],
                 ].map(([Icon, t], i) => (

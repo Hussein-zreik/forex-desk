@@ -83,7 +83,9 @@ export function BiasTrackRecordWidget({ symbol = 'XAU=F', editMode, onRemove }: 
       editMode={editMode}
       onRemove={onRemove}
       query={query}
-      isEmpty={(d) => d.stats.snapshots === 0}
+      // Defensive on shape: a degraded/unavailable payload must read as empty,
+      // never crash the page (widgets share one React tree).
+      isEmpty={(d) => !d.stats?.h1d || !d.history?.points || d.stats.snapshots === 0}
       empty={
         <EmptyState
           compact
