@@ -7,6 +7,9 @@ _TMP = tempfile.mkdtemp()
 os.environ.setdefault("DATABASE_URL", f"sqlite+aiosqlite:///{_TMP}/test.db")
 os.environ.setdefault("JWT_SECRET", "test-secret")
 os.environ.setdefault("POLLER_ENABLED", "false")
+# Rate limiting off by default so unrelated tests can hammer auth endpoints;
+# the ratelimit tests re-enable it via monkeypatched settings.
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

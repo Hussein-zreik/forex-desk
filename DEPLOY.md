@@ -36,6 +36,13 @@ Notes for the free tier:
   SQLite. ⚠️ Render **free-tier Postgres expires ~90 days** after creation — upgrade
   the instance (or recreate it) before then to avoid data loss.
 - **No domain needed:** the `*.onrender.com` subdomain is your live URL.
+- **Schema migrations:** the container runs `alembic upgrade head` before starting
+  the server, so every deploy applies pending migrations automatically. Outside dev
+  Alembic owns the schema (`create_all` runs only when `ENVIRONMENT=dev`); the
+  baseline migration is idempotent, so a database created before Alembic existed
+  converges without a manual stamp. Adding a model change? Generate a migration
+  (`cd backend && alembic revision --autogenerate -m "..."`) — CI fails if the head
+  schema drifts from the models (`tests/test_migrations.py`).
 
 ## Run the exact same image locally
 

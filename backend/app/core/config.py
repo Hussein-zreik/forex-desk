@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     poller_enabled: bool = True
     poller_interval_seconds: int = 8
 
+    # Per-IP rate limiting on the auth endpoints (tests disable via env).
+    rate_limit_enabled: bool = True
+
     # Telegram price-alert delivery (optional)
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
