@@ -85,11 +85,23 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             {isLogin ? 'Sign in' : 'Create account'}
           </Button>
 
-          {isLogin && (
+          {isLogin ? (
             <p className="text-center text-xs">
               <Link to="/forgot-password" className="text-muted-foreground hover:text-primary">
                 Forgot password?
               </Link>
+            </p>
+          ) : (
+            <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+              By creating an account you agree to the{' '}
+              <Link to="/terms" className="text-primary hover:text-accent-bright">
+                Terms
+              </Link>{' '}
+              and{' '}
+              <Link to="/disclaimer" className="text-primary hover:text-accent-bright">
+                Risk disclaimer
+              </Link>
+              .
             </p>
           )}
         </form>
