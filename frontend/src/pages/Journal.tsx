@@ -1,4 +1,4 @@
-import { ClipboardList, Trash2 } from 'lucide-react'
+import { ClipboardList, Pencil, Trash2 } from 'lucide-react'
 import { useMemo, useRef, useState, type FormEvent } from 'react'
 import {
   Area,
@@ -25,7 +25,9 @@ import { StatCard } from '@/components/ui/StatCard'
 import { useWidgetData } from '@/hooks/useWidgetData'
 import { api } from '@/lib/api'
 import {
+  byMistake,
   bySession,
+  byTag,
   byWeekday,
   equityCurve,
   type JournalEntry,
@@ -113,6 +115,24 @@ const COLUMNS: Column<JournalEntry>[] = [
     cellClassName: 'max-w-[12rem] truncate text-muted-foreground',
     hideOnMobile: true,
   },
+  {
+    key: 'tags',
+    header: 'Tags',
+    cell: (e) =>
+      e.tags ? (
+        <span className="flex flex-wrap gap-1">
+          {e.tags.split(',').map((t) => (
+            <span key={t} className="rounded bg-surface px-1 font-mono text-[10px]">
+              {t}
+            </span>
+          ))}
+        </span>
+      ) : (
+        '—'
+      ),
+    cellClassName: 'max-w-[12rem]',
+    hideOnMobile: true,
+  },
 ]
 
 export default function Journal() {
@@ -125,7 +145,7 @@ export default function Journal() {
   // Newest first for the table.
   const rows = useMemo(() => [...entries].reverse(), [entries])
 
-  const [form, setForm] = useState({
+  const blankForm = {
     symbol: 'XAU=F',
     direction: 'LONG',
     pnl: '',
@@ -133,11 +153,36 @@ export default function Journal() {
     session: '',
     mistake: '',
     notes: '',
-  })
+    tags: '',
+  }
+  const [form, setForm] = useState(blankForm)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [errors, setErrors] = useState<{ pnl?: string; traded_on?: string }>({})
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
+  const formRef = useRef<HTMLFormElement>(null)
 
-  async function add(e: FormEvent) {
+  function startEdit(entry: JournalEntry) {
+    setEditingId(entry.id)
+    setForm({
+      symbol: entry.symbol,
+      direction: entry.direction,
+      pnl: String(entry.pnl),
+      traded_on: entry.traded_on,
+      session: entry.session,
+      mistake: entry.mistake,
+      notes: entry.notes,
+      tags: entry.tags ?? '',
+    })
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setForm(blankForm)
+    setErrors({})
+  }
+
+  async function submit(e: FormEvent) {
     e.preventDefault()
     const pnl = parseFloat(form.pnl)
     const next: { pnl?: string; traded_on?: string } = {}
@@ -145,8 +190,16 @@ export default function Journal() {
     if (!form.traded_on) next.traded_on = 'Pick the trade date.'
     setErrors(next)
     if (next.pnl || next.traded_on) return
-    await api('/api/journal', { method: 'POST', body: JSON.stringify({ ...form, pnl }) })
-    setForm((f) => ({ ...f, pnl: '', mistake: '', notes: '' }))
+    if (editingId) {
+      await api(`/api/journal/${editingId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ ...form, pnl }),
+      })
+      cancelEdit()
+    } else {
+      await api('/api/journal', { method: 'POST', body: JSON.stringify({ ...form, pnl }) })
+      setForm((f) => ({ ...f, pnl: '', mistake: '', notes: '', tags: '' }))
+    }
     await refresh()
   }
 
@@ -219,8 +272,10 @@ export default function Journal() {
       </div>
 
       <Card>
-        <h2 className="mb-3 text-sm font-semibold tracking-tight">Log a Trade</h2>
-        <form onSubmit={add} className="flex flex-wrap items-start gap-3">
+        <h2 className="mb-3 text-sm font-semibold tracking-tight">
+          {editingId ? 'Edit Trade' : 'Log a Trade'}
+        </h2>
+        <form ref={formRef} onSubmit={submit} className="flex flex-wrap items-start gap-3">
           <Field label="Symbol" className="w-32">
             {(p) => (
               <Input {...p} value={form.symbol} onChange={(e) => set('symbol', e.target.value)} />
@@ -276,9 +331,24 @@ export default function Journal() {
               <Input {...p} value={form.mistake} onChange={(e) => set('mistake', e.target.value)} />
             )}
           </Field>
+          <Field label="Tags (comma-separated)" className="w-48">
+            {(p) => (
+              <Input
+                {...p}
+                value={form.tags}
+                onChange={(e) => set('tags', e.target.value)}
+                placeholder="fomo, breakout"
+              />
+            )}
+          </Field>
           <Button type="submit" className="mt-[22px]">
-            Log
+            {editingId ? 'Save' : 'Log'}
           </Button>
+          {editingId && (
+            <Button type="button" variant="ghost" className="mt-[22px]" onClick={cancelEdit}>
+              Cancel
+            </Button>
+          )}
         </form>
       </Card>
 
@@ -314,6 +384,31 @@ export default function Journal() {
         <BarPanel title="By Weekday" data={byWeekday(entries)} xKey="day" />
       </div>
 
+      {(byTag(entries).length > 0 || byMistake(entries).length > 0) && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {byTag(entries).length > 0 && (
+            <BarPanel title="P&L by Tag" data={byTag(entries)} xKey="tag" />
+          )}
+          {byMistake(entries).length > 0 && (
+            <Card>
+              <h3 className="mb-2 text-sm font-semibold tracking-tight">Top Mistakes</h3>
+              <ul className="space-y-1.5">
+                {byMistake(entries)
+                  .slice(0, 6)
+                  .map((m) => (
+                    <li key={m.mistake} className="flex items-center gap-2 text-sm">
+                      <span className="truncate text-muted-foreground">{m.mistake}</span>
+                      <span className="ml-auto rounded bg-down/15 px-1.5 font-mono text-xs text-down">
+                        ×{m.count}
+                      </span>
+                    </li>
+                  ))}
+              </ul>
+            </Card>
+          )}
+        </div>
+      )}
+
       <Card className="p-0">
         <AsyncBoundary
           data={query.data}
@@ -338,14 +433,24 @@ export default function Journal() {
               stickyHeader
               virtual={{ rowHeight: 48, threshold: 40, maxHeight: '34rem' }}
               rowActions={(e) => (
-                <button
-                  type="button"
-                  onClick={() => remove(e.id)}
-                  className="text-muted-foreground hover:text-destructive"
-                  aria-label="Delete entry"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <span className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => startEdit(e)}
+                    className="text-muted-foreground hover:text-primary"
+                    aria-label="Edit entry"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(e.id)}
+                    className="text-muted-foreground hover:text-destructive"
+                    aria-label="Delete entry"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </span>
               )}
             />
           )}

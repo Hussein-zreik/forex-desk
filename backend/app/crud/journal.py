@@ -21,6 +21,19 @@ async def create_entry(db: AsyncSession, user_id: str, data: dict) -> JournalEnt
     return entry
 
 
+async def update_entry(
+    db: AsyncSession, user_id: str, entry_id: str, changes: dict
+) -> JournalEntry | None:
+    entry = await db.get(JournalEntry, entry_id)
+    if entry is None or entry.user_id != user_id:
+        return None
+    for field, value in changes.items():
+        setattr(entry, field, value)
+    await db.commit()
+    await db.refresh(entry)
+    return entry
+
+
 async def delete_entry(db: AsyncSession, user_id: str, entry_id: str) -> bool:
     entry = await db.get(JournalEntry, entry_id)
     if entry is not None and entry.user_id == user_id:
