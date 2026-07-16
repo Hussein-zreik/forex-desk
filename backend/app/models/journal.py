@@ -31,4 +31,6 @@ class JournalEntry(Base):
     notes: Mapped[str] = mapped_column(String, default="")
     # Free-form labels, stored normalized: lowercase, comma-separated, deduped.
     tags: Mapped[str] = mapped_column(String, default="")
+    # Broker statement ticket/position id — import dedupe key (per user).
+    broker_ticket: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
