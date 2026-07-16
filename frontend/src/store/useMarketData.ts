@@ -18,11 +18,15 @@ export interface Quote {
 
 interface MarketState {
   quotes: Record<string, Quote>
+  /** Bumped when the server pushes an alert_hit — widgets refresh instantly. */
+  alertPing: number
   upsertQuotes: (quotes: Quote[]) => void
+  pingAlerts: () => void
 }
 
 export const useMarketData = create<MarketState>((set) => ({
   quotes: {},
+  alertPing: 0,
   upsertQuotes: (incoming) =>
     set((state) => {
       const next = { ...state.quotes }
@@ -31,4 +35,5 @@ export const useMarketData = create<MarketState>((set) => ({
       }
       return { quotes: next }
     }),
+  pingAlerts: () => set((state) => ({ alertPing: state.alertPing + 1 })),
 }))
