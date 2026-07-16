@@ -1,3 +1,5 @@
+import hashlib
+import secrets
 from datetime import UTC, datetime, timedelta
 
 import bcrypt
@@ -30,3 +32,17 @@ def decode_token(token: str) -> str | None:
     except JWTError:
         return None
     return payload.get("sub")
+
+
+def generate_one_time_token() -> tuple[str, str]:
+    """A single-use token: (raw value for the link, sha256 hex to store).
+
+    sha256 (not bcrypt) so the stored digest can be looked up by value —
+    the raw token already carries 256 bits of entropy, so no salt is needed.
+    """
+    raw = secrets.token_urlsafe(32)
+    return raw, hash_one_time_token(raw)
+
+
+def hash_one_time_token(raw: str) -> str:
+    return hashlib.sha256(raw.encode()).hexdigest()

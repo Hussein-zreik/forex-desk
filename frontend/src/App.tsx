@@ -12,6 +12,9 @@ import { useSettings } from '@/store/useSettings'
 const Welcome = lazy(() => import('@/pages/Welcome'))
 const Login = lazy(() => import('@/pages/auth/Login'))
 const Register = lazy(() => import('@/pages/auth/Register'))
+const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
+const VerifyEmail = lazy(() => import('@/pages/auth/VerifyEmail'))
 const Dashboard = lazy(() => import('@/pages/Dashboard/Dashboard'))
 const Portfolio = lazy(() => import('@/pages/Portfolio'))
 const Journal = lazy(() => import('@/pages/Journal'))
@@ -35,6 +38,9 @@ function App() {
         <Route path="/" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />

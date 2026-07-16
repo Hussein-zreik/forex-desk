@@ -84,6 +84,14 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
           <Button type="submit" size="lg" loading={loading} className="w-full">
             {isLogin ? 'Sign in' : 'Create account'}
           </Button>
+
+          {isLogin && (
+            <p className="text-center text-xs">
+              <Link to="/forgot-password" className="text-muted-foreground hover:text-primary">
+                Forgot password?
+              </Link>
+            </p>
+          )}
         </form>
 
         <p className="mt-5 text-center text-sm text-muted-foreground">
