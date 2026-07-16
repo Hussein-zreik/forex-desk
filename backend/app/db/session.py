@@ -31,7 +31,15 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db() -> None:
-    """Create tables for any model registered on Base.metadata."""
+    """Create tables for any model registered on Base.metadata.
+
+    Dev/test convenience only: outside dev the schema is owned by Alembic
+    (`alembic upgrade head` runs before the server starts — see Dockerfile),
+    because `create_all` can only add brand-new tables, never evolve existing
+    ones.
+    """
+    if settings.environment != "dev":
+        return
     import app.models  # noqa: F401  (register models)
 
     async with engine.begin() as conn:

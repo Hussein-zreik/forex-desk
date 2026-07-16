@@ -28,4 +28,5 @@ COPY --from=frontend /app/frontend/dist ./static
 # Hosts (Render, etc.) inject the port via $PORT; default to 8000 locally.
 ENV PORT=8000
 EXPOSE 8000
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Migrations first (Alembic owns the schema outside dev), then the server.
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
