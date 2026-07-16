@@ -135,12 +135,68 @@ const COLUMNS: Column<JournalEntry>[] = [
   },
 ]
 
+interface AlignmentStats {
+  n: number
+  win_rate: number | null
+  avg_pnl: number | null
+}
+
+interface Alignment {
+  with: AlignmentStats
+  against: AlignmentStats
+  no_data: AlignmentStats
+}
+
+function AlignmentRow({ label, s, tone }: { label: string; s: AlignmentStats; tone?: string }) {
+  return (
+    <li className="flex items-center gap-2 text-sm">
+      <span className={tone ?? 'text-muted-foreground'}>{label}</span>
+      <span className="ml-auto font-mono text-xs tabular-nums">
+        {s.n === 0 ? (
+          <span className="text-muted-foreground">no trades</span>
+        ) : (
+          <>
+            {s.win_rate}% win · avg {money(s.avg_pnl ?? 0)} · n={s.n}
+          </>
+        )}
+      </span>
+    </li>
+  )
+}
+
+function BiasAlignmentCard({ version }: { version: number }) {
+  const query = useWidgetData<Alignment>(() => api('/api/journal/bias-alignment'), [version])
+  const d = query.data
+  if (!d) return null
+  const graded = d.with.n + d.against.n
+  return (
+    <Card>
+      <h3 className="mb-2 text-sm font-semibold tracking-tight">Bias Alignment</h3>
+      {graded === 0 ? (
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          No overlap yet between your trades and the recorded bias — snapshots accrue hourly, so
+          this fills in as you trade tracked symbols.
+          {d.no_data.n > 0 && ` (${d.no_data.n} trades without a same-day snapshot.)`}
+        </p>
+      ) : (
+        <ul className="space-y-1.5">
+          <AlignmentRow label="With published bias" s={d.with} tone="text-up" />
+          <AlignmentRow label="Against published bias" s={d.against} tone="text-down" />
+          <AlignmentRow label="No same-day snapshot" s={d.no_data} />
+        </ul>
+      )}
+    </Card>
+  )
+}
+
 export default function Journal() {
   const query = useWidgetData<JournalEntry[]>(() => api('/api/journal'), [])
   const { refresh } = query
   const entries = useMemo(() => query.data ?? [], [query.data])
   const stats = summarize(entries)
   const fileRef = useRef<HTMLInputElement>(null)
+  const stmtRef = useRef<HTMLInputElement>(null)
+  const [importMsg, setImportMsg] = useState<string | null>(null)
 
   // Newest first for the table.
   const rows = useMemo(() => [...entries].reverse(), [entries])
@@ -227,12 +283,36 @@ export default function Journal() {
     await refresh()
   }
 
+  async function importStatement(file: File) {
+    setImportMsg(null)
+    const body = new FormData()
+    body.append('file', file)
+    try {
+      const res = await api<{ imported: number; skipped: number; errors: string[] }>(
+        '/api/journal/import',
+        { method: 'POST', body },
+      )
+      setImportMsg(
+        `Imported ${res.imported} trade${res.imported === 1 ? '' : 's'}` +
+          (res.skipped ? `, skipped ${res.skipped} already imported` : '') +
+          (res.errors.length ? ` — ${res.errors.length} rows had problems` : '') +
+          '.',
+      )
+      await refresh()
+    } catch {
+      setImportMsg('Could not read that file — export the statement from MT4/MT5 as HTML or CSV.')
+    }
+  }
+
   return (
     <div className="animate-fade-up space-y-6">
       <PageHeader
         title="Journal"
         actions={
           <>
+            <Button size="sm" variant="secondary" onClick={() => stmtRef.current?.click()}>
+              Import MT4/MT5
+            </Button>
             <Button size="sm" variant="secondary" onClick={() => fileRef.current?.click()}>
               Import CSV
             </Button>
@@ -250,9 +330,26 @@ export default function Journal() {
                 e.target.value = ''
               }}
             />
+            <input
+              ref={stmtRef}
+              type="file"
+              accept=".html,.htm,.csv"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) void importStatement(f)
+                e.target.value = ''
+              }}
+            />
           </>
         }
       />
+
+      {importMsg && (
+        <p role="status" className="text-xs text-muted-foreground">
+          {importMsg}
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard size="sm" label="Total P&L" value={stats.totalPnl} format="money" colorByValue />
@@ -383,6 +480,8 @@ export default function Journal() {
         <BarPanel title="By Session" data={bySession(entries)} xKey="session" />
         <BarPanel title="By Weekday" data={byWeekday(entries)} xKey="day" />
       </div>
+
+      <BiasAlignmentCard version={entries.length} />
 
       {(byTag(entries).length > 0 || byMistake(entries).length > 0) && (
         <div className="grid gap-4 lg:grid-cols-2">
