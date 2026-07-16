@@ -10,12 +10,20 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.db.session import init_db
 from app.realtime.poller import poll_loop
-from app.routers import auth, journal, layout, market, portfolio, userdata, widgets, ws
+from app.routers import auth, journal, layout, market, portfolio, telegram, userdata, widgets, ws
+from app.services import telegram as telegram_service
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    # Register the Telegram webhook so /start deep-links reach us. Best-effort,
+    # and only outside dev (localhost isn't reachable by Telegram anyway).
+    if settings.telegram_bot_token and settings.environment != "dev":
+        import contextlib
+
+        with contextlib.suppress(Exception):
+            await telegram_service.set_webhook(f"{settings.public_base_url}/api/telegram/webhook")
     poller_task: asyncio.Task | None = None
     if settings.poller_enabled:
         poller_task = asyncio.create_task(poll_loop())
@@ -43,6 +51,7 @@ app.include_router(layout.router)
 app.include_router(userdata.router)
 app.include_router(portfolio.router)
 app.include_router(journal.router)
+app.include_router(telegram.router)
 app.include_router(ws.router)
 
 

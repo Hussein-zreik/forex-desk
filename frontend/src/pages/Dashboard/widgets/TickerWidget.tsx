@@ -64,6 +64,7 @@ export function TickerWidget() {
     const unsubscribe = socket.subscribe((data) => {
       const msg = data as { type?: string; quotes?: Quote[] }
       if (msg.type === 'quotes' && msg.quotes) upsertQuotes(msg.quotes)
+      if (msg.type === 'alert_hit') useMarketData.getState().pingAlerts()
     })
     socket.connect()
 

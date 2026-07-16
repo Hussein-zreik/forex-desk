@@ -41,10 +41,47 @@ async def list_alerts(db: AsyncSession, user_id: str) -> list[PriceAlert]:
 
 
 async def create_alert(
-    db: AsyncSession, user_id: str, symbol: str, condition: str, level: float
+    db: AsyncSession,
+    user_id: str,
+    symbol: str,
+    condition: str,
+    level: float,
+    notify_email: bool = False,
 ) -> PriceAlert:
-    alert = PriceAlert(user_id=user_id, symbol=symbol, condition=condition, level=level)
+    alert = PriceAlert(
+        user_id=user_id,
+        symbol=symbol,
+        condition=condition,
+        level=level,
+        notify_email=notify_email,
+    )
     db.add(alert)
+    await db.commit()
+    await db.refresh(alert)
+    return alert
+
+
+async def update_alert(
+    db: AsyncSession,
+    user_id: str,
+    alert_id: str,
+    *,
+    status: str | None = None,
+    seen: bool | None = None,
+    notify_email: bool | None = None,
+) -> PriceAlert | None:
+    alert = await db.get(PriceAlert, alert_id)
+    if alert is None or alert.user_id != user_id:
+        return None
+    if status == "ACTIVE":  # re-arm a fired alert
+        alert.status = "ACTIVE"
+        alert.triggered_at = None
+        alert.triggered_price = None
+        alert.seen = False
+    if seen is not None:
+        alert.seen = seen
+    if notify_email is not None:
+        alert.notify_email = notify_email
     await db.commit()
     await db.refresh(alert)
     return alert
