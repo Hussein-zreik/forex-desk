@@ -57,20 +57,24 @@ def test_upgrade_head_matches_models():
 
 
 def test_baseline_is_idempotent_on_existing_schema():
-    """Upgrading a DB that create_all already populated must not error.
+    """Upgrading a DB that already has the baseline tables must not error.
 
-    This is the live-Render path: the prod database predates Alembic, so the
-    baseline skips tables that already exist and still stamps the revision.
+    This is the live-Render path: the prod database was created by create_all
+    before Alembic existed (i.e. it has the baseline schema but no version
+    stamp), so 0001 must skip existing tables and later migrations apply
+    additively.
     """
     with tempfile.TemporaryDirectory() as tmp:
         db = f"{tmp}/existing.db"
-        import app.models  # noqa: F401
-
+        cfg = _alembic_config(db)
+        # Build the pre-Alembic prod state: baseline tables, no version stamp.
+        command.upgrade(cfg, "0001")
         engine = create_engine(f"sqlite:///{db}")
-        Base.metadata.create_all(engine)
+        with engine.begin() as conn:
+            conn.exec_driver_sql("DROP TABLE alembic_version")
         engine.dispose()
 
-        command.upgrade(_alembic_config(db), "head")  # must not raise
+        command.upgrade(cfg, "head")  # must not raise
         assert _schema(db) == _model_schema()
 
         # And the revision is stamped, so the next deploy is a no-op.

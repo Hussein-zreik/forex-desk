@@ -39,6 +39,21 @@ class Settings(BaseSettings):
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
 
+    # Public URL of the deployed app (no trailing slash) — used to build links
+    # in outbound email (password reset / verification).
+    public_base_url: str = "http://localhost:5173"
+
+    # Outbound email. "console" logs the message (dev default, $0);
+    # "smtp" uses the stdlib client; "resend" posts to the Resend API
+    # (free tier). Features degrade gracefully when unconfigured.
+    email_provider: str = "console"
+    email_from: str = "Forex Desk <onboarding@resend.dev>"
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    resend_api_key: str = ""
+
     @model_validator(mode="after")
     def _require_real_secret_outside_dev(self) -> "Settings":
         # Refuse to run with the committed default secret in any non-dev env,

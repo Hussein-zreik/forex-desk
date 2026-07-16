@@ -6,6 +6,7 @@ export interface User {
   id: string
   email: string
   theme: string
+  email_verified?: boolean
 }
 
 interface AuthState {
