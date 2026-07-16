@@ -22,7 +22,7 @@ def _clear_caches() -> None:
     path = os.environ["DATABASE_URL"].split(":///")[-1]
     try:
         conn = sqlite3.connect(path)
-        for table in ("data_cache", "quote_cache"):
+        for table in ("data_cache", "quote_cache", "bias_snapshot"):
             try:
                 conn.execute(f"DELETE FROM {table}")
             except sqlite3.OperationalError:

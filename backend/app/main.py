@@ -10,7 +10,18 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.db.session import init_db
 from app.realtime.poller import poll_loop
-from app.routers import auth, journal, layout, market, portfolio, telegram, userdata, widgets, ws
+from app.routers import (
+    auth,
+    bias,
+    journal,
+    layout,
+    market,
+    portfolio,
+    telegram,
+    userdata,
+    widgets,
+    ws,
+)
 from app.services import telegram as telegram_service
 
 
@@ -52,6 +63,7 @@ app.include_router(userdata.router)
 app.include_router(portfolio.router)
 app.include_router(journal.router)
 app.include_router(telegram.router)
+app.include_router(bias.router)
 app.include_router(ws.router)
 
 
