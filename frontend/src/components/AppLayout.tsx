@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import { Background } from '@/components/Background'
 import { Navbar } from '@/components/Navbar'
 import { Sidebar } from '@/components/Sidebar'
+import { BottomNav } from '@/components/BottomNav'
 import { Footer } from '@/components/Footer'
 import { VerifyEmailBanner } from '@/components/VerifyEmailBanner'
 import { TickerWidget } from '@/pages/Dashboard/widgets/TickerWidget'
@@ -29,13 +30,15 @@ export function AppLayout() {
       <Navbar />
       <VerifyEmailBanner />
       <TickerWidget />
-      <div className="mx-auto flex max-w-[1600px] gap-6 px-4 py-6">
+      {/* pb clears the fixed BottomNav on phones. */}
+      <div className="mx-auto flex max-w-[1600px] gap-6 px-4 py-6 pb-20 md:pb-6">
         <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 focus:outline-none">
           <Outlet />
         </main>
         <Sidebar />
       </div>
       <Footer />
+      <BottomNav />
     </div>
   )
 }

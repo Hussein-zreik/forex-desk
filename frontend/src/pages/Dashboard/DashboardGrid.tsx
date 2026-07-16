@@ -2,8 +2,10 @@ import { useMemo } from 'react'
 import { GridLayout, useContainerWidth } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { cn } from '@/lib/cn'
 import { flowCompactor } from '@/lib/flowCompactor'
+import { MobileWidgetList } from './MobileWidgetList'
 import { BREAKPOINTS, COLS, type GridItem, useLayout } from '@/store/useLayout'
 import { WIDGETS } from './widgets/registry'
 
@@ -36,6 +38,9 @@ export function DashboardGrid() {
   const commitLayout = useLayout((s) => s.commitLayout)
   const removeWidget = useLayout((s) => s.removeWidget)
   const { width, containerRef, mounted } = useContainerWidth()
+  // Phones get a plain single column with button reordering — cheaper and far
+  // more reliable than touch-dragging react-grid-layout.
+  const isPhone = useMediaQuery('(max-width: 767px)')
 
   const bp = breakpointForWidth(width)
   const cols = COLS[bp]
@@ -82,6 +87,8 @@ export function DashboardGrid() {
   )
 
   const persist = (next: readonly GridItem[]) => commitLayout(bp, next as GridItem[])
+
+  if (isPhone) return <MobileWidgetList />
 
   return (
     <div ref={containerRef} className={cn('-mx-2', editMode && 'rgl-editing')}>
