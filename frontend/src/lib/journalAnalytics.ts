@@ -7,6 +7,8 @@ export interface JournalEntry {
   session: string
   mistake: string
   notes: string
+  /** Comma-separated lowercase labels, e.g. "fomo,breakout". */
+  tags: string
 }
 
 export interface Summary {
@@ -114,6 +116,22 @@ export function bySession(entries: JournalEntry[]): { session: string; pnl: numb
   return Object.entries(m).map(([session, pnl]) => ({ session, pnl: r2(pnl) }))
 }
 
+export function byTag(entries: JournalEntry[]): { tag: string; pnl: number; count: number }[] {
+  const pnl: Record<string, number> = {}
+  const count: Record<string, number> = {}
+  for (const e of entries) {
+    for (const raw of (e.tags ?? '').split(',')) {
+      const tag = raw.trim()
+      if (!tag) continue
+      pnl[tag] = (pnl[tag] ?? 0) + e.pnl
+      count[tag] = (count[tag] ?? 0) + 1
+    }
+  }
+  return Object.keys(pnl)
+    .map((tag) => ({ tag, pnl: r2(pnl[tag]), count: count[tag] }))
+    .sort((a, b) => b.count - a.count)
+}
+
 export function byMistake(entries: JournalEntry[]): { mistake: string; count: number }[] {
   const counts: Record<string, number> = {}
   for (const e of entries) {
@@ -125,10 +143,10 @@ export function byMistake(entries: JournalEntry[]): { mistake: string; count: nu
 }
 
 export function toCsv(entries: JournalEntry[]): string {
-  const header = 'symbol,direction,pnl,traded_on,session,mistake,notes'
+  const header = 'symbol,direction,pnl,traded_on,session,mistake,notes,tags'
   const esc = (s: string) => `"${String(s).replace(/"/g, '""')}"`
   const rows = entries.map((e) =>
-    [e.symbol, e.direction, e.pnl, e.traded_on, e.session, e.mistake, e.notes]
+    [e.symbol, e.direction, e.pnl, e.traded_on, e.session, e.mistake, e.notes, e.tags]
       .map((v) => esc(String(v ?? '')))
       .join(','),
   )
@@ -153,6 +171,7 @@ export function parseCsv(text: string): Partial<JournalEntry>[] {
       session: obj.session ?? '',
       mistake: obj.mistake ?? '',
       notes: obj.notes ?? '',
+      tags: obj.tags ?? '',
     }
   })
 }

@@ -29,4 +29,6 @@ class JournalEntry(Base):
     session: Mapped[str] = mapped_column(String, default="")
     mistake: Mapped[str] = mapped_column(String, default="")
     notes: Mapped[str] = mapped_column(String, default="")
+    # Free-form labels, stored normalized: lowercase, comma-separated, deduped.
+    tags: Mapped[str] = mapped_column(String, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
