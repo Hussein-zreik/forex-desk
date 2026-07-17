@@ -14,6 +14,12 @@ COPY frontend/ ./
 # Empty API base ⇒ the app calls /api and /ws on its own origin (the backend
 # below). Must be set at build time; Vite inlines it into the bundle.
 ENV VITE_API_URL=""
+# Optional build-time config (Render exposes env vars to Docker builds when
+# declared as ARGs): error tracking + canonical URL for the prerendered meta.
+ARG VITE_SENTRY_DSN=""
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
+ARG PUBLIC_BASE_URL=""
+ENV PUBLIC_BASE_URL=$PUBLIC_BASE_URL
 RUN npm run build
 
 # ---- Stage 2: backend + bundled frontend ----
