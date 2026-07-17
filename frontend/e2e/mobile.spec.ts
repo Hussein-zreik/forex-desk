@@ -23,6 +23,7 @@ async function mockApi(page: Page, layoutPuts: unknown[]) {
       }
       return route.fulfill(j({ widgets: [], layouts: {} })) // app builds defaults
     }
+    if (path.endsWith('/api/journal')) return route.fulfill(j([]))
     if (path.endsWith('/api/quotes')) {
       const syms = decodeURIComponent((url.split('symbols=')[1] || '').split('&')[0])
         .split(',')
