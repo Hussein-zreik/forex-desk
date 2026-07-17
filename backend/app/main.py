@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
+from app.core.observability import init_sentry
 from app.db.session import init_db
 from app.realtime.poller import poll_loop
 from app.routers import (
@@ -44,6 +45,9 @@ async def lifespan(app: FastAPI):
         if poller_task is not None:
             poller_task.cancel()
 
+
+# Before the app so the FastAPI/Starlette integrations hook automatically.
+init_sentry()
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
 

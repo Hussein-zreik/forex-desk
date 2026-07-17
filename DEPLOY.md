@@ -60,3 +60,42 @@ Run the backend locally (it serves the SPA too) and expose it:
 cloudflared tunnel --url http://localhost:8000   # → https://<random>.trycloudflare.com
 # or: ngrok http 8000
 ```
+
+## Production checklist (the paid step — everything here is optional until launch)
+
+The app runs 100% functional on the free tier; these upgrades remove the free-tier
+sharp edges. All code paths are env-gated: nothing below requires a code change.
+
+1. **Kill cold starts** — `render.yaml`: web `plan: free` → `starter` (~$7/mo).
+   The free instance sleeps after ~15 min idle; the first request then takes
+   30–60 s, which is fatal for a trading tool.
+2. **Durable Postgres** — db `plan: free` → `basic-256mb` (~$6/mo). Removes the
+   **90-day free-Postgres expiry** (data loss!) and adds point-in-time recovery.
+   Keep `numInstances: 1` — the auth rate limiter and poller state are
+   process-local by design.
+3. **Custom domain** (~$12/yr) — Render dashboard → service → Settings → Custom
+   Domains; add the CNAME at your registrar; TLS is automatic. Then set
+   `PUBLIC_BASE_URL=https://yourdomain.com` (emailed links, Telegram webhook,
+   prerendered canonical/OG URLs all use it) and redeploy so the prerender bakes
+   the right URLs.
+4. **Error tracking** (free tier) — create a Sentry project, set `SENTRY_DSN`
+   (backend) and `VITE_SENTRY_DSN` (frontend build). Both are no-ops when unset.
+5. **Uptime monitoring** (free) — point UptimeRobot (or similar) at
+   `https://<app>/health` (already the Render health check), 5-min interval,
+   alert on 2 consecutive failures.
+6. **Backups & restore drill** — paid Render Postgres has point-in-time recovery;
+   still rehearse a manual round-trip once:
+
+   ```bash
+   # Render dashboard → forex-desk-db → "External Connection String"
+   pg_dump "$EXTERNAL_URL" -Fc -f forex-desk-$(date +%F).dump   # backup
+   pg_restore --clean --no-owner -d "$RESTORE_URL" forex-desk-*.dump  # restore
+   ```
+
+   Verify after restore: log in, journal entries present, `alembic_version` row
+   matches head. Automate weekly dumps with any cron runner if you want belt +
+   suspenders beyond PITR.
+
+Rough steady-state cost: **~$13/mo + domain**, before any licensed-data upgrade
+(`MARKET_PROVIDER=twelvedata` runs on Twelve Data's free tier; their paid tiers
+start ~$29/mo when you need more than 800 requests/day).

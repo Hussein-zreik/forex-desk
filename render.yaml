@@ -1,21 +1,31 @@
-# Render blueprint — one free web service running the whole platform
+# Render blueprint — one web service running the whole platform
 # (FastAPI API + bundled React app) at a single https://<name>.onrender.com URL.
 #
 # Deploy: push to GitHub → Render dashboard → "New +" → "Blueprint" → pick this
 # repo. Render reads this file, builds the root Dockerfile, and goes live.
+#
+# ── Going paid (see DEPLOY.md → "Production checklist") ─────────────────────
+# The committed defaults stay on the free tier so a fresh deploy costs $0.
+# For production, flip the two `plan:` lines below:
+#   - web `plan: starter`   (~$7/mo)  → no cold starts (free sleeps ~15 min idle)
+#   - db  `plan: basic-256mb` (~$6/mo) → removes the 90-day free-Postgres expiry,
+#     adds point-in-time recovery
 databases:
   # Free Postgres so accounts / journal / portfolio / layouts survive redeploys
   # and sleep (the in-container SQLite would reset each time). Free-tier Postgres
   # expires ~90 days after creation — see DEPLOY.md.
   - name: forex-desk-db
-    plan: free
+    plan: free # production: basic-256mb
 
 services:
   - type: web
     name: forex-desk
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: free
+    plan: free # production: starter
+    # Single instance is an invariant, not a budget choice: the auth rate
+    # limiter and the poller/webhook state are process-local (core/ratelimit.py).
+    numInstances: 1
     healthCheckPath: /health
     envVars:
       # Non-dev environment ⇒ a real JWT secret is required (Render generates one).
@@ -32,3 +42,26 @@ services:
       # Background poller fetches live prices/feeds — Render has outbound internet.
       - key: POLLER_ENABLED
         value: "true"
+      # ── Optional integrations (set values in the Render dashboard; every one
+      #    of these is env-gated — the app runs fine with them unset) ─────────
+      # Public URL used in emailed links, Telegram webhook and prerendered meta.
+      - key: PUBLIC_BASE_URL
+        sync: false
+      # Transactional email: "resend" + key (free tier), or SMTP_* vars.
+      - key: EMAIL_PROVIDER
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      # Per-user alert DMs (create a bot with @BotFather).
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      # Licensed market data (falls back to Yahoo per symbol).
+      - key: MARKET_PROVIDER
+        sync: false
+      - key: TWELVEDATA_API_KEY
+        sync: false
+      # Error tracking (backend; set VITE_SENTRY_DSN too for the frontend build).
+      - key: SENTRY_DSN
+        sync: false
+      - key: VITE_SENTRY_DSN
+        sync: false

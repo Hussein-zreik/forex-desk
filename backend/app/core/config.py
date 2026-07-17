@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     market_provider: str = "yahoo"
     twelvedata_api_key: str = ""
 
+    # Error tracking (optional) — Sentry activates only when a DSN is set.
+    sentry_dsn: str = ""
+
     # Telegram price-alert delivery (optional)
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
