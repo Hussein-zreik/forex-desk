@@ -74,6 +74,9 @@ test('bottom nav is visible and navigates', async ({ page }) => {
   await expect(nav).toBeVisible()
   await nav.getByRole('link', { name: /journal/i }).click()
   await expect(page).toHaveURL(/\/journal$/)
+  // Wait for the lazy Journal chunk to render: the route-level Suspense swaps
+  // the whole tree while loading, which would detach the nav link mid-click.
+  await expect(page.getByRole('heading', { name: 'Journal' })).toBeVisible()
   await nav.getByRole('link', { name: /desk/i }).click()
   await expect(page).toHaveURL(/\/dashboard$/)
 })
