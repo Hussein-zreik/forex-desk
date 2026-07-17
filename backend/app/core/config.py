@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     # Per-IP rate limiting on the auth endpoints (tests disable via env).
     rate_limit_enabled: bool = True
 
+    # Market-data source: "yahoo" (default) or "twelvedata" (licensed; needs
+    # an API key). Unsupported symbols/errors fall back to yahoo per symbol.
+    market_provider: str = "yahoo"
+    twelvedata_api_key: str = ""
+
     # Telegram price-alert delivery (optional)
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""

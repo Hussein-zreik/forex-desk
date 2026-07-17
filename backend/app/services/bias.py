@@ -9,7 +9,7 @@ import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.indicators.bias import composite_bias
-from app.services import fred, news, yahoo
+from app.services import fred, news, providers, yahoo
 from app.services.cache import get_cached
 from app.services.market import get_quote
 
@@ -46,14 +46,16 @@ async def compute_composite(db: AsyncSession, symbol: str) -> dict:
 
     # 2. DXY trend — a rising dollar is bearish for gold (inverted).
     try:
-        raw = await get_cached(db, "ohlc:DX-Y.NYB:1d", 300, lambda: yahoo.fetch_ohlc("DX-Y.NYB"))
+        raw = await get_cached(
+            db, "ohlc:DX-Y.NYB:1d", 300, lambda: providers.fetch_ohlc("DX-Y.NYB")
+        )
         add("DXY Trend", -composite_bias(yahoo.extract_closes(raw))["score"])
     except _ERRORS:
         add("DXY Trend", 0)
 
     # 3. MTF confluence on the symbol itself.
     try:
-        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: yahoo.fetch_ohlc(symbol))
+        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: providers.fetch_ohlc(symbol))
         add("MTF Confluence", composite_bias(yahoo.extract_closes(raw))["score"])
     except _ERRORS:
         add("MTF Confluence", 0)

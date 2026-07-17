@@ -9,7 +9,7 @@ blocked in the dev container, available on Render.
 
 | Data | Upstream | Endpoint / service |
 |------|----------|--------------------|
-| Quotes, ticker, hero cards, crypto, currency strength | Yahoo Finance v8 chart | `/api/quotes` · `yahoo.py` |
+| Quotes, ticker, hero cards, crypto, currency strength | Provider-selected (default Yahoo Finance v8 chart; set `MARKET_PROVIDER=twelvedata` + `TWELVEDATA_API_KEY` for licensed data — unsupported symbols fall back to Yahoo per symbol) | `/api/quotes` · `services/providers/` |
 | Gold / silver | Yahoo `GC=F` / `SI=F` (COMEX continuous futures) — the desk symbols `XAU=F` / `XAG=F` alias to these because Yahoo's spot-metal tickers return stale/wrong data | `yahoo.resolve_symbol` |
 | Hero bid/ask/open (single-symbol) | Yahoo Finance v7 quote | `/api/quotes` (best-effort) · `yahoo.fetch_quote_detail` |
 | Bias, MTF, **composite**, pivots, volatility, hi-lo, key levels, SMC, correlation, ETF flow, DXY trend | Yahoo OHLC (computed server-side) | `/api/indicators/*` |

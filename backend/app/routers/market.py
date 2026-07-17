@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.services import yahoo
+from app.services import providers, yahoo
 from app.services.cache import get_cached
 from app.services.market import get_quote
 
@@ -34,7 +34,7 @@ async def quotes(
                 db,
                 f"qdetail:{requested[0]}",
                 15,
-                lambda: yahoo.fetch_quote_detail(requested[0]),
+                lambda: providers.fetch_quote_detail(requested[0]),
             )
             results[0] = {**results[0], **yahoo.normalize_quote_detail(raw)}
         except _QUOTE_ERRORS:
