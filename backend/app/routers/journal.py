@@ -1,8 +1,11 @@
+from datetime import UTC, datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
+from app.core.plans import FREE_JOURNAL_WINDOW_DAYS, get_plan
 from app.crud.journal import create_entry, delete_entry, list_entries, update_entry
 from app.db.session import get_db
 from app.models.bias import BiasSnapshot
@@ -20,7 +23,15 @@ _MAX_STATEMENT_BYTES = 2 * 1024 * 1024
 async def get_entries(
     current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
-    return await list_entries(db, current_user.id)
+    entries = await list_entries(db, current_user.id)
+    # Free plan sees a rolling window (data is kept, not deleted — upgrading
+    # restores full history). Enforced only when billing is configured.
+    if await get_plan(db, current_user.id) == "free":
+        cutoff = (datetime.now(UTC) - timedelta(days=FREE_JOURNAL_WINDOW_DAYS)).strftime(
+            "%Y-%m-%d"
+        )
+        entries = [e for e in entries if e.traded_on >= cutoff]
+    return entries
 
 
 @router.post("", response_model=JournalOut, status_code=status.HTTP_201_CREATED)

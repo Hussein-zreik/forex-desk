@@ -1,4 +1,5 @@
 from app.models.bias import BiasSnapshot
+from app.models.billing import Subscription
 from app.models.dashboard import DashboardLayout
 from app.models.journal import JournalEntry
 from app.models.market import DataCache, QuoteCache
@@ -18,4 +19,5 @@ __all__ = [
     "JournalEntry",
     "OneTimeToken",
     "BiasSnapshot",
+    "Subscription",
 ]

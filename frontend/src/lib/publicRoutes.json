@@ -10,6 +10,11 @@
     "description": "Explore the Forex Desk dashboard with real live market data — no account needed."
   },
   {
+    "path": "/pricing",
+    "title": "Pricing — Forex Desk",
+    "description": "Free forever for the full dashboard; Pro unlocks unlimited alerts, email delivery and unlimited journal history."
+  },
+  {
     "path": "/economic-calendar",
     "title": "Economic Calendar — this week's high-impact forex events | Forex Desk",
     "description": "This week's economic releases with impact ratings, forecasts and previous prints — FOMC, NFP, CPI and every event that moves forex and gold."

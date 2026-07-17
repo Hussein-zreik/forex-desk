@@ -43,6 +43,12 @@ class Settings(BaseSettings):
     # Error tracking (optional) — Sentry activates only when a DSN is set.
     sentry_dsn: str = ""
 
+    # Billing (optional) — plan gates enforce only when Stripe is configured;
+    # without keys every feature stays unlimited (no upgrade path = no gate).
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_price_id_pro: str = ""
+
     # Telegram price-alert delivery (optional)
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
