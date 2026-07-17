@@ -12,3 +12,4 @@ python-jose[cryptography]==3.5.0
 apscheduler==3.11.2
 python-multipart==0.0.20
 sentry-sdk[fastapi]==2.66.0
+stripe==15.3.1

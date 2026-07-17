@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
+from app.core.plans import FREE_MAX_ACTIVE_ALERTS, get_plan
 from app.crud.widgets import (
     adjust_eco_surprise,
     create_alert,
@@ -57,6 +59,25 @@ async def alerts_create(
     condition = body.condition.upper()
     if condition not in ("ABOVE", "BELOW"):
         raise HTTPException(status_code=400, detail="condition must be ABOVE or BELOW")
+    # Plan gates (enforced only when billing is configured — see core/plans.py).
+    if await get_plan(db, current_user.id) == "free":
+        from app.models.widgets import PriceAlert
+
+        active = await db.execute(
+            select(func.count())
+            .select_from(PriceAlert)
+            .where(PriceAlert.user_id == current_user.id, PriceAlert.status == "ACTIVE")
+        )
+        if (active.scalar_one() or 0) >= FREE_MAX_ACTIVE_ALERTS:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Free plan allows {FREE_MAX_ACTIVE_ALERTS} active alerts — "
+                "upgrade to Pro for unlimited alerts.",
+            )
+        if body.notify_email:
+            raise HTTPException(
+                status_code=403, detail="Email alert delivery is a Pro feature."
+            )
     return await create_alert(
         db, current_user.id, body.symbol, condition, body.level, body.notify_email
     )

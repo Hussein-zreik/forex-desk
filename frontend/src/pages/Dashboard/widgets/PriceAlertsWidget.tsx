@@ -1,5 +1,6 @@
 import { Mail, RotateCcw, Send, Volume2, VolumeX, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { AsyncBoundary } from '@/components/ui/AsyncBoundary'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { WidgetFrame } from '@/components/widget/WidgetFrame'
 import { useWidgetData } from '@/hooks/useWidgetData'
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { fmtPrice } from '@/lib/format'
 import { playAlertChime } from '@/lib/sound'
@@ -138,16 +139,24 @@ export function PriceAlertsWidget({ editMode, onRemove }: Props) {
     prevStatus.current = Object.fromEntries(alerts.map((a) => [a.id, a.status]))
   }, [alerts, soundEnabled])
 
+  const [gateMsg, setGateMsg] = useState<string | null>(null)
+
   async function add(e: FormEvent) {
     e.preventDefault()
     const lv = parseFloat(level)
     if (!lv) return
-    await api<Alert>('/api/alerts', {
-      method: 'POST',
-      body: JSON.stringify({ symbol, condition, level: lv, notify_email: notifyEmail }),
-    })
-    setLevel('')
-    await refresh()
+    setGateMsg(null)
+    try {
+      await api<Alert>('/api/alerts', {
+        method: 'POST',
+        body: JSON.stringify({ symbol, condition, level: lv, notify_email: notifyEmail }),
+      })
+      setLevel('')
+      await refresh()
+    } catch (err) {
+      // Plan gate (403) or transient failure — show it where the user acted.
+      setGateMsg(err instanceof ApiError ? err.message : 'Could not create the alert.')
+    }
   }
 
   async function remove(id: string) {
@@ -241,6 +250,15 @@ export function PriceAlertsWidget({ editMode, onRemove }: Props) {
             )}
           </button>
         </form>
+
+        {gateMsg && (
+          <p role="alert" className="text-[11px] leading-relaxed text-warning">
+            {gateMsg}{' '}
+            <Link to="/pricing" className="no-drag font-medium text-primary hover:text-accent-bright">
+              See plans
+            </Link>
+          </p>
+        )}
 
         <div className="min-h-0 flex-1 overflow-auto">
           <AsyncBoundary

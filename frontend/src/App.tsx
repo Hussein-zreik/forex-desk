@@ -16,6 +16,7 @@ const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
 const VerifyEmail = lazy(() => import('@/pages/auth/VerifyEmail'))
 const Demo = lazy(() => import('@/pages/Demo'))
+const Pricing = lazy(() => import('@/pages/Pricing'))
 const EconomicCalendarPage = lazy(() => import('@/pages/public/EconomicCalendarPage'))
 const CotPage = lazy(() => import('@/pages/public/CotPage'))
 const GoldSeasonalityPage = lazy(() => import('@/pages/public/GoldSeasonalityPage'))
@@ -49,6 +50,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/demo" element={<Demo />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/economic-calendar" element={<EconomicCalendarPage />} />
         <Route path="/cot" element={<CotPage />} />
         <Route path="/gold-seasonality" element={<GoldSeasonalityPage />} />

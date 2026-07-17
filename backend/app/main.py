@@ -14,6 +14,7 @@ from app.realtime.poller import poll_loop
 from app.routers import (
     auth,
     bias,
+    billing,
     journal,
     layout,
     market,
@@ -68,6 +69,7 @@ app.include_router(portfolio.router)
 app.include_router(journal.router)
 app.include_router(telegram.router)
 app.include_router(bias.router)
+app.include_router(billing.router)
 app.include_router(ws.router)
 
 
