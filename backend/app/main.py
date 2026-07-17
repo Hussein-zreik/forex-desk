@@ -87,8 +87,13 @@ if (_FRONTEND_DIST / "index.html").is_file():
     @app.get("/{full_path:path}", include_in_schema=False)
     async def spa(full_path: str) -> FileResponse:
         """Return real static files (icons, manifest, sw.js) when they exist,
-        otherwise index.html so client-side routes (e.g. /dashboard) resolve."""
+        otherwise index.html so client-side routes (e.g. /dashboard) resolve.
+        Prerendered routes live as directory indexes (dist/<route>/index.html)
+        so crawlers get route-specific meta before any JS runs."""
         candidate = _FRONTEND_DIST / full_path
         if full_path and candidate.is_file():
             return FileResponse(candidate)
+        prerendered = candidate / "index.html"
+        if full_path and prerendered.is_file():
+            return FileResponse(prerendered)
         return FileResponse(_FRONTEND_DIST / "index.html")

@@ -1,0 +1,42 @@
+[
+  {
+    "path": "/",
+    "title": "Forex Desk — trade gold & forex with a clearer edge",
+    "description": "Live prices, a 6-signal composite bias, multi-timeframe confluence and a trade journal in one free, open-source trading command center."
+  },
+  {
+    "path": "/demo",
+    "title": "Live demo — Forex Desk",
+    "description": "Explore the Forex Desk dashboard with real live market data — no account needed."
+  },
+  {
+    "path": "/economic-calendar",
+    "title": "Economic Calendar — this week's high-impact forex events | Forex Desk",
+    "description": "This week's economic releases with impact ratings, forecasts and previous prints — FOMC, NFP, CPI and every event that moves forex and gold."
+  },
+  {
+    "path": "/cot",
+    "title": "COT Report — CFTC positioning for gold & FX futures | Forex Desk",
+    "description": "Weekly Commitments of Traders positioning: how large speculators are net-positioned in gold and major currency futures, updated from CFTC data."
+  },
+  {
+    "path": "/gold-seasonality",
+    "title": "Gold Seasonality — average monthly returns | Forex Desk",
+    "description": "Which months have historically been strong or weak for gold: average monthly seasonality at a glance."
+  },
+  {
+    "path": "/terms",
+    "title": "Terms of Service — Forex Desk",
+    "description": "The terms that govern your use of Forex Desk."
+  },
+  {
+    "path": "/privacy",
+    "title": "Privacy Policy — Forex Desk",
+    "description": "What Forex Desk stores, why, and what it never does with your data."
+  },
+  {
+    "path": "/disclaimer",
+    "title": "Risk Disclaimer — Forex Desk",
+    "description": "Market data and model signals on Forex Desk are indicative only — not investment advice."
+  }
+]
