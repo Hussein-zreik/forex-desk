@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.market import QuoteCache
-from app.services import yahoo
+from app.services import providers, yahoo
 
 CACHE_TTL = timedelta(seconds=15)
 
@@ -18,7 +18,7 @@ async def get_quote(db: AsyncSession, symbol: str, *, force: bool = False) -> di
         if datetime.now(UTC) - updated < CACHE_TTL:
             return row.payload
 
-    data = await yahoo.fetch_chart(symbol)
+    data = await providers.fetch_chart(symbol)
     quote = yahoo.normalize_quote(symbol, data)
 
     if row is not None:

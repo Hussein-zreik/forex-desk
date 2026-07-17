@@ -8,7 +8,7 @@ from app.indicators.smc import smc
 from app.indicators.technical import atr, key_levels, pearson, pivot_points, returns
 from app.services import bias as bias_service
 from app.services import calendar as cal_svc
-from app.services import cboe, cot, fred, news, sentiment, yahoo
+from app.services import cboe, cot, fred, news, providers, sentiment, yahoo
 from app.services.cache import get_cached
 from app.services.market import get_quote
 
@@ -29,7 +29,7 @@ async def fear_greed(db: AsyncSession = Depends(get_db)) -> dict:
 @router.get("/indicators/bias")
 async def bias(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
     try:
-        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: yahoo.fetch_ohlc(symbol))
+        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: providers.fetch_ohlc(symbol))
         result = composite_bias(yahoo.extract_closes(raw))
         result["symbol"] = symbol
         return result
@@ -40,7 +40,7 @@ async def bias(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> 
 @router.get("/indicators/pivots")
 async def pivots(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
     try:
-        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: yahoo.fetch_ohlc(symbol))
+        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: providers.fetch_ohlc(symbol))
         candles = yahoo.extract_candles(raw)
         if not candles:
             return {"symbol": symbol, "error": "unavailable"}
@@ -57,7 +57,7 @@ async def pivots(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -
 @router.get("/indicators/volatility")
 async def volatility(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
     try:
-        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: yahoo.fetch_ohlc(symbol))
+        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: providers.fetch_ohlc(symbol))
         candles = yahoo.extract_candles(raw)
         value = atr(candles)
         if value is None:
@@ -167,7 +167,7 @@ async def mtf(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> d
                 db,
                 f"ohlc:{symbol}:{interval}",
                 300,
-                lambda i=interval, r=rng: yahoo.fetch_ohlc(symbol, i, r),
+                lambda i=interval, r=rng: providers.fetch_ohlc(symbol, i, r),
             )
             result = composite_bias(yahoo.extract_closes(raw))
             rows.append({"tf": label, "label": result["label"], "score": result["score"]})
@@ -197,7 +197,7 @@ async def hilo(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     try:
-        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: yahoo.fetch_ohlc(symbol))
+        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: providers.fetch_ohlc(symbol))
         candles = yahoo.extract_candles(raw)
         if len(candles) < days + 1:
             return {"symbol": symbol, "error": "unavailable"}
@@ -221,7 +221,7 @@ async def hilo(
 @router.get("/indicators/key-levels")
 async def key_levels_endpoint(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
     try:
-        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: yahoo.fetch_ohlc(symbol))
+        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: providers.fetch_ohlc(symbol))
         candles = yahoo.extract_candles(raw)
         if not candles:
             return {"symbol": symbol, "error": "unavailable"}
@@ -234,7 +234,7 @@ async def key_levels_endpoint(symbol: str = Query(...), db: AsyncSession = Depen
 @router.get("/indicators/smc")
 async def smc_endpoint(symbol: str = Query(...), db: AsyncSession = Depends(get_db)) -> dict:
     try:
-        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: yahoo.fetch_ohlc(symbol))
+        raw = await get_cached(db, f"ohlc:{symbol}:1d", 300, lambda: providers.fetch_ohlc(symbol))
         result = smc(yahoo.extract_candles(raw))
         if not result:
             return {"symbol": symbol, "error": "unavailable"}
@@ -249,7 +249,7 @@ async def correlation(symbols: str = Query(...), db: AsyncSession = Depends(get_
     series: dict[str, list[float]] = {}
     for s in syms:
         try:
-            raw = await get_cached(db, f"ohlc:{s}:1d", 300, lambda x=s: yahoo.fetch_ohlc(x))
+            raw = await get_cached(db, f"ohlc:{s}:1d", 300, lambda x=s: providers.fetch_ohlc(x))
             series[s] = returns(yahoo.extract_closes(raw))
         except _OHLC_ERRORS:
             series[s] = []
@@ -332,7 +332,7 @@ async def etf_flow(db: AsyncSession = Depends(get_db)) -> dict:
     out: dict[str, dict | None] = {}
     for sym in ("GLD", "IAU"):
         try:
-            raw = await get_cached(db, f"ohlc:{sym}:1d", 300, lambda s=sym: yahoo.fetch_ohlc(s))
+            raw = await get_cached(db, f"ohlc:{sym}:1d", 300, lambda s=sym: providers.fetch_ohlc(s))
             volumes = yahoo.extract_volumes(raw)
             if len(volumes) < 21:
                 out[sym] = None
