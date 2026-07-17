@@ -159,6 +159,8 @@ interface LayoutState {
   commitLayout: (bp: string, layout: GridItem[]) => void
   addWidget: (type: string, config?: WidgetConfig) => void
   removeWidget: (id: string) => void
+  /** Move a widget up/down in the mobile (single-column) order. */
+  moveWidget: (id: string, delta: -1 | 1) => void
   toggleEdit: () => void
   reset: () => void
 }
@@ -250,6 +252,29 @@ export const useLayout = create<LayoutState>((set, get) => ({
       layouts[bp] = state.layouts[bp].filter((it) => it.i !== id)
     }
     set({ widgets, layouts })
+    scheduleSave(get)
+  },
+
+  moveWidget(id, delta) {
+    const state = get()
+    const layouts: Layouts = { ...state.layouts }
+    // Mobile breakpoints only: reorder the reading-order stack and rewrite it
+    // as a full-width column (x=0, cumulative y) — the mobile canonical shape.
+    for (const bp of ["xxs", "xs"]) {
+      const cols = COLS[bp]
+      const items = [...(layouts[bp] ?? [])].sort((a, b) => a.y - b.y || a.x - b.x)
+      const index = items.findIndex((it) => it.i === id)
+      const target = index + delta
+      if (index === -1 || target < 0 || target >= items.length) continue
+      ;[items[index], items[target]] = [items[target], items[index]]
+      let y = 0
+      layouts[bp] = items.map((it) => {
+        const next = { ...it, x: 0, w: cols, y }
+        y += it.h
+        return next
+      })
+    }
+    set({ layouts })
     scheduleSave(get)
   },
 

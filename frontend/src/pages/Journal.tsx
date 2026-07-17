@@ -167,7 +167,9 @@ function AlignmentRow({ label, s, tone }: { label: string; s: AlignmentStats; to
 function BiasAlignmentCard({ version }: { version: number }) {
   const query = useWidgetData<Alignment>(() => api('/api/journal/bias-alignment'), [version])
   const d = query.data
-  if (!d) return null
+  // Defensive on shape: degraded/unavailable payloads hide the card rather
+  // than throwing into the page tree.
+  if (!d?.with || !d.against || !d.no_data) return null
   const graded = d.with.n + d.against.n
   return (
     <Card>
@@ -192,7 +194,11 @@ function BiasAlignmentCard({ version }: { version: number }) {
 export default function Journal() {
   const query = useWidgetData<JournalEntry[]>(() => api('/api/journal'), [])
   const { refresh } = query
-  const entries = useMemo(() => query.data ?? [], [query.data])
+  // Array-guard: an error payload must never crash the page (spread below).
+  const entries = useMemo(
+    () => (Array.isArray(query.data) ? query.data : []),
+    [query.data],
+  )
   const stats = summarize(entries)
   const fileRef = useRef<HTMLInputElement>(null)
   const stmtRef = useRef<HTMLInputElement>(null)

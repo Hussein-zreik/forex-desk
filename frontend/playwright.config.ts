@@ -18,7 +18,24 @@ export default defineConfig({
     serviceWorkers: 'block',
     ...(executablePath ? { launchOptions: { executablePath } } : {}),
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      testIgnore: /mobile\.spec\.ts/,
+    },
+    {
+      name: 'mobile',
+      // Pixel 7 minus isMobile: the bundled chromium build doesn't support the
+      // mobile emulation flag, and viewport/touch are what the specs exercise.
+      use: {
+        ...devices['Pixel 7'],
+        isMobile: false,
+        ...(executablePath ? { launchOptions: { executablePath } } : {}),
+      },
+      testMatch: /mobile\.spec\.ts/,
+    },
+  ],
   webServer: {
     // Build same-origin (empty API base ⇒ relative /api) so the in-test route
     // mocks intercept cleanly with no cross-origin CORS preflight.
