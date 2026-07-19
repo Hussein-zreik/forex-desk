@@ -373,6 +373,41 @@
 .react-grid-item:hover > .react-resizable-handle {
   opacity: 1;
 }
+/* iOS-style wiggle while rearranging. The standalone `rotate` property keeps
+   clear of RGL's positioning `transform`; the dragged card and the drop
+   placeholder stay still so the grid reads calmly under the pointer. */
+@keyframes rgl-wiggle {
+  0% {
+    rotate: -0.4deg;
+  }
+  50% {
+    rotate: 0.4deg;
+  }
+  100% {
+    rotate: -0.4deg;
+  }
+}
+/* Animate the card content, not the grid item: the item's own box stays
+   geometrically stable, which RGL's drag math (and tooling that waits for
+   element stability) depends on. */
+.rgl-editing .react-grid-item > * {
+  animation: rgl-wiggle 0.3s ease-in-out infinite;
+}
+.rgl-editing .react-grid-item:nth-child(2n) > * {
+  animation-delay: -0.15s;
+}
+.rgl-editing .react-grid-item:nth-child(3n) > * {
+  animation-duration: 0.34s;
+}
+.rgl-editing .react-grid-item.react-draggable-dragging > *,
+.rgl-editing .react-grid-item.resizing > * {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rgl-editing .react-grid-item > * {
+    animation: none;
+  }
+}
 /* Corner grip — resize width + height */
 .react-grid-item > .react-resizable-handle-se::after {
   border-right: 2px solid var(--primary);
