@@ -9,6 +9,7 @@ asyncpg==0.30.0
 alembic==1.18.5
 bcrypt==5.0.0
 python-jose[cryptography]==3.5.0
+pyotp==2.9.0
 apscheduler==3.11.2
 python-multipart==0.0.20
 sentry-sdk[fastapi]==2.66.0
