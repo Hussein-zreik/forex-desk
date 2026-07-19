@@ -31,6 +31,31 @@ def decode_token(token: str) -> str | None:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
     except JWTError:
         return None
+    # Scoped tokens (e.g. the TOTP challenge) are not access tokens.
+    if payload.get("scope") is not None:
+        return None
+    return payload.get("sub")
+
+
+# TOTP login challenge: a short-lived scoped JWT proving the password step
+# passed, exchangeable only at /auth/totp/verify.
+_CHALLENGE_TTL_MINUTES = 5
+
+
+def create_challenge_token(subject: str) -> str:
+    expire = datetime.now(UTC) + timedelta(minutes=_CHALLENGE_TTL_MINUTES)
+    payload = {"sub": subject, "exp": expire, "scope": "totp"}
+    return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+
+
+def decode_challenge_token(token: str) -> str | None:
+    """Return the subject of a TOTP challenge token, or None for anything else."""
+    try:
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+    except JWTError:
+        return None
+    if payload.get("scope") != "totp":
+        return None
     return payload.get("sub")
 
 

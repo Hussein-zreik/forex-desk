@@ -1,4 +1,4 @@
-import { LogOut, Menu, X } from 'lucide-react'
+import { LogOut, Menu, ShieldCheck, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { Clock } from '@/components/Clock'
@@ -55,6 +55,14 @@ export function Navbar() {
               <span className="max-w-[140px] truncate text-xs text-muted-foreground">
                 {user.email}
               </span>
+              <Link
+                to="/security"
+                aria-label="Security settings"
+                title="Security settings"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-200 hover:bg-surface hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+              >
+                <ShieldCheck className="h-4 w-4" />
+              </Link>
               <IconButton onClick={logout} aria-label="Log out" title="Log out">
                 <LogOut className="h-4 w-4" />
               </IconButton>
@@ -83,6 +91,11 @@ export function Navbar() {
                 {item.label}
               </NavLink>
             ))}
+            {user && (
+              <NavLink to="/security" className={navLinkClass} onClick={() => setOpen(false)}>
+                Security
+              </NavLink>
+            )}
             {user && (
               <button
                 type="button"

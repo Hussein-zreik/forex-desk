@@ -7,12 +7,20 @@ export interface User {
   email: string
   theme: string
   email_verified?: boolean
+  totp_enabled?: boolean
+}
+
+/** Resolved login: either signed in, or the server wants a 2FA code first. */
+export interface LoginResult {
+  totpRequired: boolean
+  challengeToken?: string
 }
 
 interface AuthState {
   token: string | null
   user: User | null
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<LoginResult>
+  verifyTotp: (challengeToken: string, code: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>
   logout: () => void
   loadMe: () => Promise<void>
@@ -22,6 +30,12 @@ interface TokenResponse {
   access_token: string
 }
 
+interface LoginResponse {
+  access_token?: string
+  totp_required?: boolean
+  challenge_token?: string
+}
+
 export const useAuth = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -29,9 +43,25 @@ export const useAuth = create<AuthState>()(
       user: null,
 
       async login(email, password) {
-        const { access_token } = await api<TokenResponse>('/api/auth/login', {
+        const res = await api<LoginResponse>('/api/auth/login', {
           method: 'POST',
           body: JSON.stringify({ email, password }),
+        })
+        if (res.totp_required && res.challenge_token) {
+          return { totpRequired: true, challengeToken: res.challenge_token }
+        }
+        const access = res.access_token
+        if (!access) throw new Error('Login failed — no token returned')
+        setAuthToken(access)
+        set({ token: access })
+        await get().loadMe()
+        return { totpRequired: false }
+      },
+
+      async verifyTotp(challengeToken, code) {
+        const { access_token } = await api<TokenResponse>('/api/auth/totp/verify', {
+          method: 'POST',
+          body: JSON.stringify({ challenge_token: challengeToken, code }),
         })
         setAuthToken(access_token)
         set({ token: access_token })

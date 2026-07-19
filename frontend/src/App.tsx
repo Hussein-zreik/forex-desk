@@ -28,6 +28,7 @@ const Portfolio = lazy(() => import('@/pages/Portfolio'))
 const Journal = lazy(() => import('@/pages/Journal'))
 const Learning = lazy(() => import('@/pages/Learning'))
 const Calendar = lazy(() => import('@/pages/Calendar'))
+const Security = lazy(() => import('@/pages/Security'))
 
 function App() {
   const theme = useSettings((s) => s.theme)
@@ -64,6 +65,7 @@ function App() {
             <Route path="/journal" element={<Journal />} />
             <Route path="/learn" element={<Learning />} />
             <Route path="/calendar" element={<Calendar />} />
+            <Route path="/security" element={<Security />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
