@@ -39,6 +39,16 @@ def _clear_caches() -> None:
         pass
 
 
+@pytest.fixture(autouse=True)
+def _reset_provider_breakers():
+    """Circuit-breaker state is module-level; clear it so tests don't leak."""
+    from app.services import providers
+
+    providers.reset_breakers()
+    yield
+    providers.reset_breakers()
+
+
 @pytest.fixture()
 def client():
     # `with` triggers lifespan → init_db() creates the schema.

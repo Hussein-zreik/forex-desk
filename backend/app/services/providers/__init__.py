@@ -9,6 +9,7 @@ import logging
 
 from app.core.config import settings
 from app.services.providers.base import MarketDataProvider, UnsupportedSymbol
+from app.services.providers.resilience import CircuitBreaker, retry_async
 from app.services.providers.twelvedata import TwelveDataProvider
 from app.services.providers.yahoo_provider import YahooProvider
 
@@ -29,6 +30,22 @@ _PROVIDERS: dict[str, MarketDataProvider] = {
     "twelvedata": TwelveDataProvider(),
 }
 
+# One breaker per provider, keyed by name, so a sustained upstream outage stops
+# being retried every poll cycle and short-circuits straight to the fallback.
+_BREAKERS: dict[str, CircuitBreaker] = {}
+
+
+def _breaker(name: str) -> CircuitBreaker:
+    breaker = _BREAKERS.get(name)
+    if breaker is None:
+        breaker = _BREAKERS[name] = CircuitBreaker(name)
+    return breaker
+
+
+def reset_breakers() -> None:
+    """Clear all breaker state (used by tests)."""
+    _BREAKERS.clear()
+
 
 def get_provider() -> MarketDataProvider:
     provider = _PROVIDERS.get(settings.market_provider)
@@ -41,15 +58,36 @@ def get_provider() -> MarketDataProvider:
 async def _dispatch(method: str, symbol: str, *args) -> dict:
     provider = get_provider()
     if provider is not _YAHOO:
-        try:
-            return await getattr(provider, method)(symbol, *args)
-        except UnsupportedSymbol:
+        breaker = _breaker(provider.name)
+        if breaker.allow():
+            try:
+                result = await retry_async(
+                    lambda: getattr(provider, method)(symbol, *args),
+                    do_not_retry=(UnsupportedSymbol,),
+                )
+                breaker.record_success()
+                return result
+            except UnsupportedSymbol:
+                # A per-symbol gap, not an outage — don't hold it against the
+                # provider's health; just fall back for this symbol.
+                logger.debug(
+                    "%s: %s unsupported for %s — yahoo fallback", provider.name, method, symbol
+                )
+            except Exception:
+                breaker.record_failure()
+                logger.warning(
+                    "%s: %s failed for %s — yahoo fallback", provider.name, method, symbol
+                )
+        else:
             logger.debug(
-                "%s: %s unsupported for %s — yahoo fallback", provider.name, method, symbol
+                "%s circuit open — %s for %s going straight to yahoo",
+                provider.name,
+                method,
+                symbol,
             )
-        except Exception:
-            logger.warning("%s: %s failed for %s — yahoo fallback", provider.name, method, symbol)
-    return await getattr(_YAHOO, method)(symbol, *args)
+    # Yahoo (the fallback / last resort) still gets retry for transient blips;
+    # if it too fails, the caller's cache layer serves the last known value.
+    return await retry_async(lambda: getattr(_YAHOO, method)(symbol, *args))
 
 
 async def fetch_chart(symbol: str) -> dict:
