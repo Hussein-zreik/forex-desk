@@ -48,6 +48,11 @@ class VerifyEmailIn(BaseModel):
     token: str
 
 
+class ChangePasswordIn(BaseModel):
+    current_password: str
+    new_password: str
+
+
 class AuthConfigOut(BaseModel):
     """Server capabilities the auth UI adapts to."""
 

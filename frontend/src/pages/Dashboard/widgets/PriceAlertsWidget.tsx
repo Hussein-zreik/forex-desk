@@ -1,6 +1,7 @@
-import { Mail, RotateCcw, Send, Volume2, VolumeX, X } from 'lucide-react'
+import { Mail, RotateCcw, Volume2, VolumeX, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { TelegramLink } from '@/components/TelegramLink'
 import { AsyncBoundary } from '@/components/ui/AsyncBoundary'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -11,7 +12,7 @@ import { useWidgetData } from '@/hooks/useWidgetData'
 import { api, ApiError } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { fmtPrice } from '@/lib/format'
-import { playAlertChime } from '@/lib/sound'
+import { playAlertSound } from '@/lib/sound'
 import { SYMBOL_LABELS, symbolLabel } from '@/lib/symbols'
 import { useMarketData } from '@/store/useMarketData'
 import { useSettings } from '@/store/useSettings'
@@ -27,79 +28,11 @@ interface Alert {
   notify_email?: boolean
 }
 
-interface TelegramStatus {
-  configured: boolean
-  linked: boolean
-}
-
 const SYMBOLS = ['XAU=F', 'EURUSD=X', 'GBPUSD=X', 'USDJPY=X', 'DX-Y.NYB', 'BTC-USD']
 
 interface Props {
   editMode?: boolean
   onRemove?: () => void
-}
-
-/** Compact Telegram link/unlink row (hidden while the server has no bot). */
-function TelegramLink() {
-  const [status, setStatus] = useState<TelegramStatus | null>(null)
-  const [busy, setBusy] = useState(false)
-
-  useEffect(() => {
-    api<TelegramStatus>('/api/telegram/status')
-      .then(setStatus)
-      .catch(() => {})
-  }, [])
-
-  if (!status?.configured) return null
-
-  async function link() {
-    setBusy(true)
-    try {
-      const { link } = await api<{ link: string }>('/api/telegram/link', { method: 'POST' })
-      window.open(link, '_blank', 'noopener')
-      // Optimistic: the user completes /start in Telegram; refresh shortly after.
-      setTimeout(() => {
-        api<TelegramStatus>('/api/telegram/status').then(setStatus).catch(() => {})
-      }, 8000)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function unlink() {
-    await api('/api/telegram/link', { method: 'DELETE' })
-    setStatus({ configured: true, linked: false })
-  }
-
-  return (
-    <div className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2 py-1.5 text-[11px]">
-      <Send className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
-      {status.linked ? (
-        <>
-          <span className="text-muted-foreground">Telegram linked — alerts DM you.</span>
-          <button
-            type="button"
-            onClick={unlink}
-            className="no-drag ml-auto cursor-pointer text-muted-foreground hover:text-destructive"
-          >
-            Unlink
-          </button>
-        </>
-      ) : (
-        <>
-          <span className="text-muted-foreground">Get alerts in Telegram.</span>
-          <button
-            type="button"
-            onClick={link}
-            disabled={busy}
-            className="no-drag ml-auto cursor-pointer font-medium text-primary hover:text-accent-bright disabled:opacity-50"
-          >
-            Link now
-          </button>
-        </>
-      )}
-    </div>
-  )
 }
 
 export function PriceAlertsWidget({ editMode, onRemove }: Props) {
@@ -114,6 +47,7 @@ export function PriceAlertsWidget({ editMode, onRemove }: Props) {
   const [notifyEmail, setNotifyEmail] = useState(false)
 
   const soundEnabled = useSettings((s) => s.soundEnabled)
+  const soundPattern = useSettings((s) => s.soundPattern)
   const toggleSound = useSettings((s) => s.toggleSound)
 
   // Server push: refresh the list the moment any alert fires.
@@ -133,11 +67,11 @@ export function PriceAlertsWidget({ editMode, onRemove }: Props) {
     const seeded = Object.keys(prev).length > 0
     if (seeded && soundEnabled) {
       for (const a of alerts) {
-        if (prev[a.id] === 'ACTIVE' && a.status === 'HIT') playAlertChime()
+        if (prev[a.id] === 'ACTIVE' && a.status === 'HIT') playAlertSound(soundPattern)
       }
     }
     prevStatus.current = Object.fromEntries(alerts.map((a) => [a.id, a.status]))
-  }, [alerts, soundEnabled])
+  }, [alerts, soundEnabled, soundPattern])
 
   const [gateMsg, setGateMsg] = useState<string | null>(null)
 
