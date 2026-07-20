@@ -23,6 +23,7 @@ interface AuthState {
   verifyTotp: (challengeToken: string, code: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>
   logout: () => void
+  logoutEverywhere: () => Promise<void>
   loadMe: () => Promise<void>
 }
 
@@ -81,6 +82,16 @@ export const useAuth = create<AuthState>()(
       logout() {
         setAuthToken(null)
         set({ token: null, user: null })
+      },
+
+      // Invalidate every other session; the server returns a fresh token so
+      // this device stays signed in.
+      async logoutEverywhere() {
+        const { access_token } = await api<TokenResponse>('/api/auth/logout-all', {
+          method: 'POST',
+        })
+        setAuthToken(access_token)
+        set({ token: access_token })
       },
 
       async loadMe() {

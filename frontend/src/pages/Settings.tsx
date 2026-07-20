@@ -193,6 +193,7 @@ export default function Settings() {
   const { hash } = useLocation()
   const user = useAuth((s) => s.user)
   const logout = useAuth((s) => s.logout)
+  const logoutEverywhere = useAuth((s) => s.logoutEverywhere)
 
   // SPA routers don't scroll to #anchors on their own.
   useEffect(() => {
@@ -212,6 +213,21 @@ export default function Settings() {
   const setShareErrorReports = useSettings((s) => s.setShareErrorReports)
 
   const [resent, setResent] = useState(false)
+  const [loggingOutAll, setLoggingOutAll] = useState(false)
+  const [loggedOutAll, setLoggedOutAll] = useState(false)
+
+  async function signOutEverywhere() {
+    setLoggingOutAll(true)
+    setLoggedOutAll(false)
+    try {
+      await logoutEverywhere()
+      setLoggedOutAll(true)
+    } catch {
+      // transient — the current session is unaffected
+    } finally {
+      setLoggingOutAll(false)
+    }
+  }
 
   async function resendVerification() {
     try {
@@ -321,6 +337,17 @@ export default function Settings() {
           <Button size="sm" variant="secondary" onClick={switchAccount}>
             Sign out
           </Button>
+        </Row>
+        <Row
+          label="Sign out everywhere"
+          hint="Ends every other signed-in session (other browsers and devices). You stay signed in here."
+        >
+          <div className="flex flex-col items-end gap-1">
+            <Button size="sm" variant="secondary" loading={loggingOutAll} onClick={signOutEverywhere}>
+              Sign out other sessions
+            </Button>
+            {loggedOutAll && <span className="text-xs text-up">Other sessions signed out.</span>}
+          </div>
         </Row>
         <p className="text-xs text-muted-foreground">
           What we store and why:{' '}
