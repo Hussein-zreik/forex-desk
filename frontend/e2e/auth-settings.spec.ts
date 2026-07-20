@@ -117,7 +117,8 @@ test('watchlist editor toggles a symbol and persists via PUT', async ({ page }) 
   await page.getByRole('button', { name: 'Edit watchlist' }).click()
   await expect(page.getByText('Your watchlist (2)')).toBeVisible()
 
-  await page.getByRole('button', { name: /S&P 500/ }).click()
+  // Catalog rows are now menuitems (roving-focus a11y).
+  await page.getByRole('menuitem', { name: /S&P 500/ }).click()
   await expect(page.getByText('Your watchlist (3)')).toBeVisible()
   expect(puts.at(-1)).toEqual(['XAU=F', 'EURUSD=X', '^GSPC'])
 })

@@ -9,8 +9,8 @@ import {
   Sun,
   UserRound,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useMenu } from '@/hooks/useMenu'
 import { cn } from '@/lib/cn'
 import { useAuth } from '@/store/useAuth'
 import { useSettings } from '@/store/useSettings'
@@ -28,37 +28,20 @@ const itemClass =
 
 /** Header options menu: settings sections, theme switch and sign-out in one place. */
 export function SettingsMenu() {
-  const [open, setOpen] = useState(false)
-  const rootRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
+  const { open, setOpen, toggle, rootRef, triggerRef, surfaceProps } = useMenu({ mode: 'menu' })
 
   const user = useAuth((s) => s.user)
   const logout = useAuth((s) => s.logout)
   const theme = useSettings((s) => s.theme)
   const toggleTheme = useSettings((s) => s.toggleTheme)
 
-  // Close on outside click / Escape.
-  useEffect(() => {
-    if (!open) return
-    function onPointerDown(e: PointerEvent) {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
-    }
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [open])
-
   return (
     <div ref={rootRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Options"
@@ -76,7 +59,7 @@ export function SettingsMenu() {
 
       {open && (
         <div
-          role="menu"
+          {...surfaceProps}
           aria-label="Options"
           className="absolute right-0 z-50 mt-2 w-64 rounded-xl border border-border bg-background/95 p-2 shadow-xl backdrop-blur-xl"
         >
@@ -85,7 +68,14 @@ export function SettingsMenu() {
           )}
 
           {SECTIONS.map(({ to, label, icon: Icon }) => (
-            <Link key={to} to={to} role="menuitem" className={itemClass} onClick={() => setOpen(false)}>
+            <Link
+              key={to}
+              to={to}
+              role="menuitem"
+              tabIndex={-1}
+              className={itemClass}
+              onClick={() => setOpen(false)}
+            >
               <Icon className="h-4 w-4 text-muted-foreground" aria-hidden />
               {label}
             </Link>
@@ -93,7 +83,7 @@ export function SettingsMenu() {
 
           <hr className="my-2 border-border" />
 
-          <button type="button" role="menuitem" className={itemClass} onClick={toggleTheme}>
+          <button type="button" role="menuitem" tabIndex={-1} className={itemClass} onClick={toggleTheme}>
             {theme === 'dark' ? (
               <Sun className="h-4 w-4 text-muted-foreground" aria-hidden />
             ) : (
@@ -105,6 +95,7 @@ export function SettingsMenu() {
           <button
             type="button"
             role="menuitem"
+            tabIndex={-1}
             className={cn(itemClass, 'text-destructive hover:text-destructive')}
             onClick={() => {
               setOpen(false)

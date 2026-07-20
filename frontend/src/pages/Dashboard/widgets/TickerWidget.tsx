@@ -1,5 +1,6 @@
 import { Check, ListPlus } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import { useMenu } from '@/hooks/useMenu'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { symbolLabel } from '@/lib/symbols'
@@ -53,27 +54,10 @@ export function TickerStrip({ quotes }: { quotes: Quote[] }) {
 
 /** Popover for picking watchlist symbols from the server catalog. */
 function WatchlistEditor() {
-  const [open, setOpen] = useState(false)
-  const rootRef = useRef<HTMLDivElement>(null)
+  const { open, toggle: toggleOpen, rootRef, triggerRef, surfaceProps } = useMenu({ mode: 'menu' })
   const symbols = useWatchlist((s) => s.symbols)
   const catalog = useWatchlist((s) => s.catalog)
   const save = useWatchlist((s) => s.save)
-
-  useEffect(() => {
-    if (!open) return
-    function onPointerDown(e: PointerEvent) {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
-    }
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [open])
 
   if (catalog.length === 0) return null // logged out / not loaded yet
 
@@ -86,8 +70,9 @@ function WatchlistEditor() {
   return (
     <div ref={rootRef} className="relative flex items-center">
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggleOpen}
         aria-expanded={open}
         aria-label="Edit watchlist"
         title="Edit watchlist"
@@ -101,7 +86,11 @@ function WatchlistEditor() {
         <ListPlus className="h-3.5 w-3.5" />
       </button>
       {open && (
-        <div className="absolute top-9 right-0 z-50 max-h-80 w-56 overflow-y-auto rounded-xl border border-border bg-background/95 p-2 shadow-xl backdrop-blur-xl">
+        <div
+          {...surfaceProps}
+          aria-label="Edit watchlist"
+          className="absolute top-9 right-0 z-50 max-h-80 w-56 overflow-y-auto rounded-xl border border-border bg-background/95 p-2 shadow-xl backdrop-blur-xl"
+        >
           <p className="px-2 pt-1 pb-2 text-[11px] text-muted-foreground">
             Your watchlist ({symbols.length})
           </p>
@@ -111,6 +100,9 @@ function WatchlistEditor() {
               <button
                 key={symbol}
                 type="button"
+                role="menuitem"
+                tabIndex={-1}
+                aria-checked={active}
                 onClick={() => toggle(symbol)}
                 className={cn(
                   'flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-xs',

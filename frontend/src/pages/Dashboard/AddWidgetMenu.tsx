@@ -4,23 +4,21 @@ import { Button } from '@/components/ui/Button'
 import { IconButton } from '@/components/ui/IconButton'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { useMenu } from '@/hooks/useMenu'
 import { symbolLabel } from '@/lib/symbols'
 import { useLayout } from '@/store/useLayout'
 import { type WidgetDef, WIDGET_LIST } from './widgets/registry'
 
 export function AddWidgetMenu() {
-  const [open, setOpen] = useState(false)
+  // 'dialog' mode: the surface owns a search input and inline selects, so Tab
+  // traps across all focusables (not roving menuitems); Escape returns focus.
+  const { open, toggle, setOpen, rootRef, triggerRef, surfaceProps } = useMenu({ mode: 'dialog' })
   const [query, setQuery] = useState('')
   const [symbolFor, setSymbolFor] = useState<Record<string, string>>({})
   const addWidget = useLayout((s) => s.addWidget)
 
   // Widgets can be added more than once, so the list isn't filtered by presence.
   const available = WIDGET_LIST.filter((d) => d.title.toLowerCase().includes(query.toLowerCase()))
-
-  function close() {
-    setOpen(false)
-    setQuery('')
-  }
 
   function add(d: WidgetDef) {
     if (d.symbols?.length) {
@@ -33,16 +31,19 @@ export function AddWidgetMenu() {
   }
 
   return (
-    <div className="relative">
-      <Button size="sm" variant="secondary" onClick={() => setOpen((v) => !v)}>
+    <div ref={rootRef} className="relative">
+      <Button ref={triggerRef} size="sm" variant="secondary" onClick={toggle} aria-expanded={open}>
         <Plus className="h-4 w-4" /> Add widget
       </Button>
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={close} aria-hidden />
-          <div className="absolute right-0 z-50 mt-2 w-72 rounded-xl border border-border bg-popover p-2 shadow-card-hover">
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
+          <div
+            {...surfaceProps}
+            aria-label="Add widget"
+            className="absolute right-0 z-50 mt-2 w-72 rounded-xl border border-border bg-popover p-2 shadow-card-hover"
+          >
             <Input
-              autoFocus
               placeholder="Search widgets…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
