@@ -19,14 +19,16 @@ def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode()[:_MAX_BYTES], hashed.encode())
 
 
-def create_access_token(subject: str) -> str:
+def create_access_token(subject: str, token_version: int = 0) -> str:
     expire = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
-    payload = {"sub": subject, "exp": expire}
+    # `ver` binds the token to the user's current token_version so a
+    # "sign out everywhere" (version bump) invalidates every issued token.
+    payload = {"sub": subject, "exp": expire, "ver": token_version}
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
-def decode_token(token: str) -> str | None:
-    """Return the token subject (user id), or None if invalid/expired."""
+def decode_access_token(token: str) -> dict | None:
+    """Return the full access-token payload, or None if invalid/expired/scoped."""
     try:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
     except JWTError:
@@ -34,7 +36,13 @@ def decode_token(token: str) -> str | None:
     # Scoped tokens (e.g. the TOTP challenge) are not access tokens.
     if payload.get("scope") is not None:
         return None
-    return payload.get("sub")
+    return payload
+
+
+def decode_token(token: str) -> str | None:
+    """Return the token subject (user id), or None if invalid/expired."""
+    payload = decode_access_token(token)
+    return payload.get("sub") if payload else None
 
 
 # TOTP login challenge: a short-lived scoped JWT proving the password step

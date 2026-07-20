@@ -63,7 +63,7 @@ async def register(data: UserCreate, db: AsyncSession = Depends(get_db)) -> Toke
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
     user = await create_user(db, data.email, hash_password(data.password))
     await _send_verification(db, user)
-    return Token(access_token=create_access_token(user.id))
+    return Token(access_token=create_access_token(user.id, user.token_version))
 
 
 @router.post(
@@ -78,7 +78,7 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)) -> LoginOut
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     if user.totp_enabled:
         return LoginOut(totp_required=True, challenge_token=create_challenge_token(user.id))
-    return LoginOut(access_token=create_access_token(user.id))
+    return LoginOut(access_token=create_access_token(user.id, user.token_version))
 
 
 @router.get("/me", response_model=UserOut)
@@ -137,6 +137,17 @@ async def change_password(
     current_user.hashed_password = hash_password(data.new_password)
     await db.commit()
     return {"ok": True}
+
+
+@router.post("/logout-all", response_model=Token)
+async def logout_all(
+    current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+) -> Token:
+    """Invalidate every issued token by bumping token_version, then hand this
+    device a fresh token at the new version so the caller stays signed in."""
+    current_user.token_version += 1
+    await db.commit()
+    return Token(access_token=create_access_token(current_user.id, current_user.token_version))
 
 
 @router.post("/verify-email")
@@ -228,7 +239,7 @@ async def totp_verify(data: TotpVerifyIn, db: AsyncSession = Depends(get_db)) ->
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Code already used")
     user.totp_last_counter = counter
     await db.commit()
-    return Token(access_token=create_access_token(user.id))
+    return Token(access_token=create_access_token(user.id, user.token_version))
 
 
 @router.post(

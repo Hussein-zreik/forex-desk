@@ -40,6 +40,18 @@ describe('useAuth login', () => {
     expect(useAuth.getState().token).toBeNull()
   })
 
+  it('logoutEverywhere swaps in the fresh token and stays signed in', async () => {
+    useAuth.setState({ token: 'old-tok', user: { id: '1', email: 'a@b.c', theme: 'dark' } })
+    mockedApi.mockResolvedValueOnce({ access_token: 'new-tok' })
+
+    await useAuth.getState().logoutEverywhere()
+
+    expect(mockedApi).toHaveBeenCalledWith('/api/auth/logout-all', { method: 'POST' })
+    expect(mockedSetToken).toHaveBeenCalledWith('new-tok')
+    expect(useAuth.getState().token).toBe('new-tok')
+    expect(useAuth.getState().user).not.toBeNull() // still signed in
+  })
+
   it('verifyTotp exchanges challenge + code for a session', async () => {
     mockedApi
       .mockResolvedValueOnce({ access_token: 'tok-2' }) // totp/verify
