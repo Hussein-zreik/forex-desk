@@ -44,3 +44,14 @@ class PriceAlertOut(BaseModel):
     triggered_price: float | None = None
     seen: bool = False
     notify_email: bool = False
+
+
+class AlertHitOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    symbol: str
+    condition: str
+    level: float
+    price: float
+    fired_at: datetime

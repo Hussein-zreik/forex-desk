@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 
 from app.core.config import settings
+from app.crud.widgets import prune_alert_hits, record_alert_hit
 from app.db.session import SessionLocal
 from app.models.market import QuoteCache
 from app.models.user import User
@@ -83,6 +84,7 @@ async def check_alerts() -> None:
                 alert.triggered_at = datetime.now(UTC)
                 alert.triggered_price = price
                 alert.seen = False
+                record_alert_hit(db, alert, price)  # durable history row
                 await _notify_owner(db, alert, price)
                 hits.append(
                     {
@@ -114,6 +116,8 @@ async def _maybe_snapshot() -> None:
     _last_snapshot_bucket = bucket
     async with SessionLocal() as db:
         await snapshot_tick(db)
+        with contextlib.suppress(Exception):
+            await prune_alert_hits(db)  # hourly housekeeping
 
 
 async def poll_loop() -> None:

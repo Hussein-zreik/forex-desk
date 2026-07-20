@@ -44,3 +44,23 @@ class PriceAlert(Base):
     seen: Mapped[bool] = mapped_column(Boolean, default=False)
     notify_email: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class AlertHit(Base):
+    """An immutable record of a price alert firing.
+
+    Written on every trigger (kept even if the alert is later re-armed or
+    deleted) so the user has a durable log to learn from. `alert_id` is stored
+    without an FK so history survives the parent alert's deletion.
+    """
+
+    __tablename__ = "alert_hit"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("user.id"), index=True)
+    alert_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    symbol: Mapped[str] = mapped_column(String)
+    condition: Mapped[str] = mapped_column(String)
+    level: Mapped[float] = mapped_column(Float)
+    price: Mapped[float] = mapped_column(Float)
+    fired_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)

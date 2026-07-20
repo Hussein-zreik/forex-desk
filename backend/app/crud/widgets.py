@@ -1,7 +1,11 @@
-from sqlalchemy import select
+from datetime import UTC, datetime, timedelta
+
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.widgets import EcoSurprise, PriceAlert
+from app.models.widgets import AlertHit, EcoSurprise, PriceAlert
+
+ALERT_HISTORY_RETENTION_DAYS = 180
 
 CURRENCIES = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "NZD"]
 
@@ -85,6 +89,36 @@ async def update_alert(
     await db.commit()
     await db.refresh(alert)
     return alert
+
+
+def record_alert_hit(db: AsyncSession, alert: PriceAlert, price: float) -> AlertHit:
+    """Stage an immutable history row for a fired alert (caller commits)."""
+    hit = AlertHit(
+        user_id=alert.user_id,
+        alert_id=alert.id,
+        symbol=alert.symbol,
+        condition=alert.condition,
+        level=alert.level,
+        price=price,
+    )
+    db.add(hit)
+    return hit
+
+
+async def list_alert_hits(db: AsyncSession, user_id: str, limit: int = 100) -> list[AlertHit]:
+    result = await db.execute(
+        select(AlertHit)
+        .where(AlertHit.user_id == user_id)
+        .order_by(AlertHit.fired_at.desc())
+        .limit(limit)
+    )
+    return list(result.scalars())
+
+
+async def prune_alert_hits(db: AsyncSession) -> None:
+    cutoff = datetime.now(UTC) - timedelta(days=ALERT_HISTORY_RETENTION_DAYS)
+    await db.execute(delete(AlertHit).where(AlertHit.fired_at < cutoff))
+    await db.commit()
 
 
 async def delete_alert(db: AsyncSession, user_id: str, alert_id: str) -> bool:

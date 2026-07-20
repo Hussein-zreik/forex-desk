@@ -6,7 +6,7 @@ from app.models.market import DataCache, QuoteCache
 from app.models.portfolio import Position
 from app.models.token import OneTimeToken
 from app.models.user import User
-from app.models.widgets import EcoSurprise, PriceAlert
+from app.models.widgets import AlertHit, EcoSurprise, PriceAlert
 
 __all__ = [
     "User",
@@ -15,6 +15,7 @@ __all__ = [
     "DashboardLayout",
     "EcoSurprise",
     "PriceAlert",
+    "AlertHit",
     "Position",
     "JournalEntry",
     "OneTimeToken",
