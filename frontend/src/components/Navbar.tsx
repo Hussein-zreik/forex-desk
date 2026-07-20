@@ -1,8 +1,8 @@
-import { LogOut, Menu, ShieldCheck, X } from 'lucide-react'
+import { LogOut, Menu, SlidersHorizontal, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { Clock } from '@/components/Clock'
-import { ThemeToggle } from '@/components/ThemeToggle'
+import { SettingsMenu } from '@/components/SettingsMenu'
 import { IconButton } from '@/components/ui/IconButton'
 import { cn } from '@/lib/cn'
 import { useAuth } from '@/store/useAuth'
@@ -49,25 +49,7 @@ export function Navbar() {
 
         <div className="ml-auto flex items-center gap-3">
           <Clock />
-          <ThemeToggle />
-          {user && (
-            <div className="hidden items-center gap-2 sm:flex">
-              <span className="max-w-[140px] truncate text-xs text-muted-foreground">
-                {user.email}
-              </span>
-              <Link
-                to="/security"
-                aria-label="Security settings"
-                title="Security settings"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-200 hover:bg-surface hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
-              >
-                <ShieldCheck className="h-4 w-4" />
-              </Link>
-              <IconButton onClick={logout} aria-label="Log out" title="Log out">
-                <LogOut className="h-4 w-4" />
-              </IconButton>
-            </div>
-          )}
+          <SettingsMenu />
           <IconButton
             className="md:hidden"
             onClick={() => setOpen((v) => !v)}
@@ -92,8 +74,10 @@ export function Navbar() {
               </NavLink>
             ))}
             {user && (
-              <NavLink to="/security" className={navLinkClass} onClick={() => setOpen(false)}>
-                Security
+              <NavLink to="/settings" className={navLinkClass} onClick={() => setOpen(false)}>
+                <span className="flex items-center gap-2">
+                  <SlidersHorizontal className="h-4 w-4" /> Options
+                </span>
               </NavLink>
             )}
             {user && (

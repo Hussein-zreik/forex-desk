@@ -20,6 +20,7 @@ from app.db.session import get_db
 from app.models.user import User
 from app.schemas.auth import (
     AuthConfigOut,
+    ChangePasswordIn,
     ForgotPasswordIn,
     LoginOut,
     ResetPasswordIn,
@@ -116,6 +117,24 @@ async def reset_password(data: ResetPasswordIn, db: AsyncSession = Depends(get_d
     if not user:
         raise HTTPException(status_code=400, detail="Invalid or expired reset link")
     user.hashed_password = hash_password(data.new_password)
+    await db.commit()
+    return {"ok": True}
+
+
+@router.post(
+    "/change-password",
+    dependencies=[Depends(rate_limit(times=5, seconds=3600))],
+)
+async def change_password(
+    data: ChangePasswordIn,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    if not verify_password(data.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    if len(data.new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+    current_user.hashed_password = hash_password(data.new_password)
     await db.commit()
     return {"ok": True}
 

@@ -27,13 +27,31 @@ function tone(audio: AudioContext, freq: number, start: number, duration: number
   osc.stop(start + duration)
 }
 
-/** Play the price-alert chime. Safe to call from a browser event/poll. */
-export function playAlertChime(): void {
+export type AlertSoundPattern = 'chime' | 'pulse' | 'beep'
+
+/** Play a price-alert sound. Safe to call from a browser event/poll. */
+export function playAlertSound(pattern: AlertSoundPattern = 'chime'): void {
   const audio = getCtx()
   if (!audio) return
   // Browsers start the context suspended until a user gesture; resume best-effort.
   if (audio.state === 'suspended') void audio.resume()
   const t = audio.currentTime
-  tone(audio, 880, t, 0.18) // A5
-  tone(audio, 1318.5, t + 0.16, 0.28) // E6
+  switch (pattern) {
+    case 'pulse': // three quick same-note taps
+      tone(audio, 987.8, t, 0.09) // B5
+      tone(audio, 987.8, t + 0.14, 0.09)
+      tone(audio, 987.8, t + 0.28, 0.09)
+      break
+    case 'beep': // single clear note
+      tone(audio, 1046.5, t, 0.3) // C6
+      break
+    default: // two-note ding-dong
+      tone(audio, 880, t, 0.18) // A5
+      tone(audio, 1318.5, t + 0.16, 0.28) // E6
+  }
+}
+
+/** Back-compat alias for the default pattern. */
+export function playAlertChime(): void {
+  playAlertSound('chime')
 }
