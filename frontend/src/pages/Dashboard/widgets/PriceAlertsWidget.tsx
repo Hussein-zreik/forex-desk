@@ -1,4 +1,4 @@
-import { Mail, RotateCcw, Volume2, VolumeX, X } from 'lucide-react'
+import { History, Mail, RotateCcw, Volume2, VolumeX, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { TelegramLink } from '@/components/TelegramLink'
@@ -29,9 +29,69 @@ interface Alert {
   notify_email?: boolean
 }
 
+interface AlertHit {
+  id: string
+  symbol: string
+  condition: string
+  level: number
+  price: number
+  fired_at: string
+}
+
 interface Props {
   editMode?: boolean
   onRemove?: () => void
+}
+
+function fmtWhen(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+}
+
+/** Read-only log of past alert fires. */
+function AlertHistoryList() {
+  const query = useWidgetData<AlertHit[]>(() => api('/api/alerts/history'), [], {
+    pollMs: 60_000,
+  })
+  return (
+    <AsyncBoundary
+      data={query.data}
+      loading={query.loading}
+      error={query.error}
+      onRetry={query.refresh}
+      isEmpty={(d) => d.length === 0}
+      empty={<EmptyState compact title="No alerts have fired yet" />}
+      compact
+    >
+      {(hits) => (
+        <ul className="space-y-1">
+          {hits.map((h) => (
+            <li
+              key={h.id}
+              className="flex items-center gap-2 rounded-lg bg-surface px-2 py-1.5 text-xs"
+            >
+              <span className="font-medium">{symbolLabel(h.symbol)}</span>
+              <span className="text-muted-foreground">
+                {h.condition} {h.level}
+              </span>
+              <span className="rounded bg-up/20 px-1 font-mono text-[10px] text-up">
+                @ {fmtPrice(h.price)}
+              </span>
+              <span className="ml-auto font-mono text-[10px] text-muted-foreground">
+                {fmtWhen(h.fired_at)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </AsyncBoundary>
+  )
 }
 
 export function PriceAlertsWidget({ editMode, onRemove }: Props) {
@@ -49,6 +109,7 @@ export function PriceAlertsWidget({ editMode, onRemove }: Props) {
   const [condition, setCondition] = useState('ABOVE')
   const [level, setLevel] = useState('')
   const [notifyEmail, setNotifyEmail] = useState(false)
+  const [tab, setTab] = useState<'active' | 'history'>('active')
 
   const soundEnabled = useSettings((s) => s.soundEnabled)
   const soundPattern = useSettings((s) => s.soundPattern)
@@ -125,6 +186,36 @@ export function PriceAlertsWidget({ editMode, onRemove }: Props) {
     >
       <div className="flex h-full flex-col gap-2">
         <TelegramLink />
+        <div className="flex items-center gap-1 text-xs">
+          {(['active', 'history'] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              className={cn(
+                'no-drag rounded-md px-2 py-1 font-medium capitalize transition-colors',
+                tab === t
+                  ? 'bg-primary/15 text-primary'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {t === 'history' ? (
+                <span className="flex items-center gap-1">
+                  <History className="h-3 w-3" /> History
+                </span>
+              ) : (
+                'Active'
+              )}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'history' ? (
+          <div className="min-h-0 flex-1 overflow-auto">
+            <AlertHistoryList />
+          </div>
+        ) : (
+          <>
         <form onSubmit={add} className="flex flex-wrap items-center gap-1">
           <Select
             value={symbol}
@@ -277,6 +368,8 @@ export function PriceAlertsWidget({ editMode, onRemove }: Props) {
             )}
           </AsyncBoundary>
         </div>
+          </>
+        )}
       </div>
     </WidgetFrame>
   )

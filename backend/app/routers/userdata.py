@@ -10,12 +10,14 @@ from app.crud.widgets import (
     create_alert,
     delete_alert,
     get_eco_surprises,
+    list_alert_hits,
     list_alerts,
     update_alert,
 )
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.widgets import (
+    AlertHitOut,
     EcoAdjust,
     EcoSurpriseOut,
     PriceAlertCreate,
@@ -49,6 +51,13 @@ async def alerts_list(
     current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     return await list_alerts(db, current_user.id)
+
+
+@router.get("/alerts/history", response_model=list[AlertHitOut])
+async def alerts_history(
+    current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    return await list_alert_hits(db, current_user.id)
 
 
 @router.post("/alerts", response_model=PriceAlertOut, status_code=status.HTTP_201_CREATED)
