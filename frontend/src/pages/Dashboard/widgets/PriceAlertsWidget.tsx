@@ -16,6 +16,7 @@ import { playAlertSound } from '@/lib/sound'
 import { SYMBOL_LABELS, symbolLabel } from '@/lib/symbols'
 import { useMarketData } from '@/store/useMarketData'
 import { useSettings } from '@/store/useSettings'
+import { useWatchlist } from '@/store/useWatchlist'
 
 interface Alert {
   id: string
@@ -28,8 +29,6 @@ interface Alert {
   notify_email?: boolean
 }
 
-const SYMBOLS = ['XAU=F', 'EURUSD=X', 'GBPUSD=X', 'USDJPY=X', 'DX-Y.NYB', 'BTC-USD']
-
 interface Props {
   editMode?: boolean
   onRemove?: () => void
@@ -41,7 +40,12 @@ export function PriceAlertsWidget({ editMode, onRemove }: Props) {
   })
   const { data, refresh } = query
   const alerts = useMemo(() => data ?? [], [data])
-  const [symbol, setSymbol] = useState('XAU=F')
+  // Alertable symbols follow the user's watchlist (loaded by the ticker).
+  const watchSymbols = useWatchlist((s) => s.symbols)
+  const [picked, setPicked] = useState('XAU=F')
+  // Keep the selection valid as the watchlist changes, without a sync effect.
+  const symbol = watchSymbols.includes(picked) ? picked : (watchSymbols[0] ?? 'XAU=F')
+  const setSymbol = setPicked
   const [condition, setCondition] = useState('ABOVE')
   const [level, setLevel] = useState('')
   const [notifyEmail, setNotifyEmail] = useState(false)
@@ -129,7 +133,7 @@ export function PriceAlertsWidget({ editMode, onRemove }: Props) {
             className={compactSelect}
             aria-label="Alert symbol"
           >
-            {SYMBOLS.map((s) => (
+            {watchSymbols.map((s) => (
               <option key={s} value={s}>
                 {SYMBOL_LABELS[s] ?? s}
               </option>

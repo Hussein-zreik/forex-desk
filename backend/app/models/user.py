@@ -23,6 +23,8 @@ class User(Base):
     )
     # Telegram DM target for this user's alerts (set via the /start deep-link).
     telegram_chat_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Comma-separated custom watchlist; NULL = the default list (core/symbols.py).
+    watchlist: Mapped[str | None] = mapped_column(String, nullable=True)
     # TOTP 2FA: secret is written at setup but only enforced once enabled_at is set;
     # last_counter blocks replay of an already-consumed login code.
     totp_secret: Mapped[str | None] = mapped_column(String, nullable=True)

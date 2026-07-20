@@ -18,11 +18,17 @@ from app.main import app  # noqa: E402
 
 
 def _clear_caches() -> None:
-    """Wipe cache tables so tests don't share cached upstream responses."""
+    """Reset per-test state: upstream caches plus price_alert.
+
+    The suite shares one SQLite DB across a session, so leftover ACTIVE alerts
+    from earlier tests otherwise leak into later ones — and since the poller now
+    fetches a quote on demand for any alerted symbol, a stale alert can fire and
+    pollute an unrelated test's delivery assertions.
+    """
     path = os.environ["DATABASE_URL"].split(":///")[-1]
     try:
         conn = sqlite3.connect(path)
-        for table in ("data_cache", "quote_cache", "bias_snapshot"):
+        for table in ("data_cache", "quote_cache", "bias_snapshot", "price_alert"):
             try:
                 conn.execute(f"DELETE FROM {table}")
             except sqlite3.OperationalError:

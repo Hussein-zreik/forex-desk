@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.core.plans import FREE_MAX_ACTIVE_ALERTS, get_plan
+from app.core.symbols import SUPPORTED_SYMBOLS
 from app.crud.widgets import (
     adjust_eco_surprise,
     create_alert,
@@ -59,6 +60,8 @@ async def alerts_create(
     condition = body.condition.upper()
     if condition not in ("ABOVE", "BELOW"):
         raise HTTPException(status_code=400, detail="condition must be ABOVE or BELOW")
+    if body.symbol not in SUPPORTED_SYMBOLS:
+        raise HTTPException(status_code=400, detail="Unsupported symbol")
     # Plan gates (enforced only when billing is configured — see core/plans.py).
     if await get_plan(db, current_user.id) == "free":
         from app.models.widgets import PriceAlert
