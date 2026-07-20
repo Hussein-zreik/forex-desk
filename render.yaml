@@ -65,6 +65,13 @@ services:
         sync: false
       - key: VITE_SENTRY_DSN
         sync: false
+      # Cookieless analytics (build-time; Plausible/Umami). Ships nothing unset.
+      - key: VITE_ANALYTICS_SRC
+        sync: false
+      - key: VITE_ANALYTICS_DOMAIN
+        sync: false
+      - key: VITE_ANALYTICS_WEBSITE_ID
+        sync: false
 
 # ── Weekly off-site DB backup (opt-in) ──────────────────────────────────────
 # Uncomment to enable a Sunday 04:00 UTC pg_dump → S3-compatible storage. The

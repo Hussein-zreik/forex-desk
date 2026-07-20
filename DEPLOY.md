@@ -83,6 +83,11 @@ sharp edges. All code paths are env-gated: nothing below requires a code change.
 5. **Uptime monitoring** (free) — point UptimeRobot (or similar) at
    `https://<app>/health` (already the Render health check), 5-min interval,
    alert on 2 consecutive failures.
+5b. **Privacy-friendly analytics** (free/cheap, optional) — cookieless, no
+   consent banner needed. Set the build-time `VITE_ANALYTICS_SRC` to your
+   provider's script URL, plus `VITE_ANALYTICS_DOMAIN` (Plausible) or
+   `VITE_ANALYTICS_WEBSITE_ID` (Umami). Unset ships zero analytics code, and
+   the snippet honours Do Not Track. Lets you see whether `/demo` converts.
 6. **Backups & restore drill** — paid Render Postgres has point-in-time recovery;
    still rehearse a manual round-trip once:
 
