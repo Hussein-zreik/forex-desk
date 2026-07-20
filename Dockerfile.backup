@@ -1,0 +1,14 @@
+# Tiny purpose-built image for the weekly DB backup cron (keeps pg_dump + aws
+# CLI out of the slim web runtime image). Used only by the render.yaml cron job.
+#
+#   docker build -f Dockerfile.backup -t forex-desk-backup .
+FROM alpine:3.20
+
+# postgresql-client → pg_dump; aws-cli → S3-compatible upload.
+RUN apk add --no-cache postgresql16-client aws-cli
+
+WORKDIR /app
+COPY scripts/backup_db.sh /app/backup_db.sh
+RUN chmod +x /app/backup_db.sh
+
+CMD ["/app/backup_db.sh"]

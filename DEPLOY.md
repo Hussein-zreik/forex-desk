@@ -93,8 +93,32 @@ sharp edges. All code paths are env-gated: nothing below requires a code change.
    ```
 
    Verify after restore: log in, journal entries present, `alembic_version` row
-   matches head. Automate weekly dumps with any cron runner if you want belt +
-   suspenders beyond PITR.
+   matches head.
+
+   **Automated weekly off-site backups** — [`scripts/backup_db.sh`](./scripts/backup_db.sh)
+   streams a compressed `pg_dump` to any S3-compatible bucket (AWS S3, Backblaze
+   B2, Cloudflare R2, MinIO). A ready-made Render cron job lives commented in
+   [`render.yaml`](./render.yaml) (`forex-desk-backup`, Sundays 04:00 UTC, built
+   from [`Dockerfile.backup`](./Dockerfile.backup)). To enable:
+
+   1. Create a bucket and access keys at your storage provider. Add a lifecycle
+      rule to expire objects after your retention window (e.g. 90 days) — the
+      script only writes; the bucket handles pruning.
+   2. Uncomment the `forex-desk-backup` cron block in `render.yaml`.
+   3. Set on that service: `BACKUP_S3_BUCKET`, `AWS_ACCESS_KEY_ID`,
+      `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION` (and `BACKUP_S3_ENDPOINT` for
+      non-AWS stores). The script is inert (exits 0) until `BACKUP_S3_BUCKET`
+      is set, so enabling the cron before configuring storage is safe.
+
+   Restore from an uploaded dump:
+
+   ```bash
+   aws s3 cp "s3://$BUCKET/forex-desk/forex-desk-<timestamp>.dump" ./restore.dump
+   pg_restore --clean --no-owner -d "$RESTORE_URL" restore.dump
+   ```
+
+   Render cron jobs are a paid feature (~$1/mo), hence commented per the
+   costs-last convention; PITR on paid Postgres already covers most cases.
 
 Rough steady-state cost: **~$13/mo + domain**, before any licensed-data upgrade
 (`MARKET_PROVIDER=twelvedata` runs on Twelve Data's free tier; their paid tiers
