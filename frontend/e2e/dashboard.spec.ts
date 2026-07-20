@@ -23,6 +23,8 @@ async function mockApi(page: Page) {
       return route.fulfill(j({ access_token: 'e2e-token' }))
     if (path.endsWith('/api/auth/me'))
       return route.fulfill(j({ id: '1', email: 'e2e@test.dev', theme: 'dark' }))
+    if (path.endsWith('/api/watchlist'))
+      return route.fulfill(j({ symbols: ['XAU=F', 'EURUSD=X', 'BTC-USD'], catalog: [] }))
     if (path.endsWith('/api/layout')) {
       if (route.request().method() !== 'GET') return route.fulfill(j({ ok: true }))
       return route.fulfill(j({ widgets: [], layouts: {} })) // empty → app builds defaults

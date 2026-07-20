@@ -13,6 +13,8 @@ test('demo dashboard works logged-out with zero authed calls', async ({ page }) 
     const req = route.request()
     if (req.headers()['authorization']) authedCalls.push(req.url())
     const path = req.url().split('?')[0]
+    if (path.endsWith('/api/watchlist'))
+      return route.fulfill(j({ symbols: ['XAU=F', 'EURUSD=X', 'BTC-USD'], catalog: [] }))
     if (path.endsWith('/api/quotes')) {
       const url = req.url()
       const syms = decodeURIComponent((url.split('symbols=')[1] || '').split('&')[0])

@@ -21,6 +21,7 @@ from app.routers import (
     portfolio,
     telegram,
     userdata,
+    watchlist,
     widgets,
     ws,
 )
@@ -70,6 +71,7 @@ app.include_router(journal.router)
 app.include_router(telegram.router)
 app.include_router(bias.router)
 app.include_router(billing.router)
+app.include_router(watchlist.router)
 app.include_router(ws.router)
 
 

@@ -71,6 +71,12 @@ async def check_alerts() -> None:
             cached = await db.get(QuoteCache, alert.symbol)
             price = cached.payload.get("price") if cached and cached.payload else None
             if price is None:
+                # Watchlist symbols outside the streamed core set: fetch on
+                # demand (get_quote caches, so upstream sees one call per TTL).
+                with contextlib.suppress(Exception):
+                    quote = await get_quote(db, alert.symbol)
+                    price = quote.get("price")
+            if price is None:
                 continue
             if alert_hit(alert.condition, alert.level, price):
                 alert.status = "HIT"
