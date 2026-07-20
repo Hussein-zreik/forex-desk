@@ -65,3 +65,31 @@ services:
         sync: false
       - key: VITE_SENTRY_DSN
         sync: false
+
+# ── Weekly off-site DB backup (opt-in) ──────────────────────────────────────
+# Uncomment to enable a Sunday 04:00 UTC pg_dump → S3-compatible storage. The
+# script is inert until BACKUP_S3_BUCKET + AWS_* creds are set, so enabling the
+# cron before configuring storage is safe. Render cron jobs are a paid feature
+# (~$1/mo), hence commented per the costs-last convention. See DEPLOY.md.
+#  - type: cron
+#    name: forex-desk-backup
+#    runtime: docker
+#    dockerfilePath: ./Dockerfile.backup
+#    schedule: "0 4 * * 0"
+#    envVars:
+#      - key: DATABASE_URL
+#        fromDatabase:
+#          name: forex-desk-db
+#          property: connectionString
+#      - key: BACKUP_S3_BUCKET
+#        sync: false
+#      - key: BACKUP_S3_ENDPOINT   # optional: B2 / R2 / MinIO endpoint URL
+#        sync: false
+#      - key: BACKUP_S3_PREFIX
+#        sync: false
+#      - key: AWS_ACCESS_KEY_ID
+#        sync: false
+#      - key: AWS_SECRET_ACCESS_KEY
+#        sync: false
+#      - key: AWS_DEFAULT_REGION
+#        sync: false
